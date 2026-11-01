@@ -75,6 +75,10 @@ test.describe('Parcours principal (inspiré de l’analyse Eventro, habillé CRN
 test.describe('Accessibilité (NF-CNV-008)', () => {
   for (const chemin of ['/', '/programme', '/billetterie', '/faq']) {
     test(`axe ne relève aucune violation critique sur ${chemin}`, async ({ page }) => {
+      // Audit de l'état final : sans cela, axe mesure parfois des éléments en plein fondu d'entrée
+      // (compteurs de la bande de chiffres), d'où des contrastes transitoires aléatoires en CI.
+      // Le site respecte prefers-reduced-motion (règle 10), qui affiche directement cet état final.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.goto(chemin);
       const resultats = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa'])

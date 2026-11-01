@@ -80,10 +80,12 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
     overflow: hidden;
     background: var(--crn-bleu-nuit);
     color: var(--crn-blanc);
-    /* Remonte sous l'en-tête transparent (hauteur réelle mesurée : 96 px mobile / 100 px desktop)
-       pour que le pavé du logo et la grille de navigation paraissent posés sur l'image du héros. */
-    margin-top: -96px;
-    padding-top: calc(var(--space-6) + 96px);
+    /* Remonte sous l'en-tête transparent pour que le pavé du logo et la grille de navigation
+       paraissent posés sur l'image du héros. --site-header-h = hauteur réelle mesurée
+       (Header.astro) ; une valeur fixe laissait une bande du fond de page visible sous la barre
+       du haut dès que l'en-tête était plus haut que prévu. */
+    margin-top: calc(-1 * var(--site-header-h, 96px));
+    padding-top: calc(var(--space-6) + var(--site-header-h, 96px));
     padding-bottom: var(--space-3);
   }
 
@@ -347,8 +349,8 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
 
   @media (min-width: 1024px) {
     .hero {
-      margin-top: -100px;
-      padding-top: calc(var(--space-10) + 100px);
+      margin-top: calc(-1 * var(--site-header-h, 100px));
+      padding-top: calc(var(--space-10) + var(--site-header-h, 100px));
       padding-bottom: var(--space-10);
       min-height: 640px;
       display: flex;

@@ -102,6 +102,21 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   </div>
 </header>
 
+<!-- Hauteur réelle de l'en-tête, pour que le héros de l'accueil remonte exactement dessous (elle
+     varie selon la largeur d'écran et le chargement des polices). En ligne et synchrone : la valeur
+     est posée avant l'affichage du héros, donc sans décalage visible. -->
+<script is:inline>
+  (function () {
+    var header = document.getElementById('site-header');
+    if (!header) return;
+    var set = function () {
+      document.documentElement.style.setProperty('--site-header-h', header.offsetHeight + 'px');
+    };
+    set();
+    if ('ResizeObserver' in window) new ResizeObserver(set).observe(header);
+  })();
+</script>
+
 <script>
   const toggle = document.getElementById('nav-toggle');
   const nav = document.getElementById('site-nav');
