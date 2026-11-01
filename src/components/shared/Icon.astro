@@ -32,7 +32,9 @@ export type IconName =
   | 'instagram'
   | 'tiktok'
   | 'x'
-  | 'search';
+  | 'search'
+  | 'chat'
+  | 'send';
 
 interface Props {
   name: IconName;
@@ -144,6 +146,10 @@ const { name, size = 24 } = Astro.props;
       <path d="M20 20l-4.8-4.8" />
     </>
   )}
+  {name === 'chat' && (
+    <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4.5 3.5A1 1 0 0 1 3 19.7V6a1 1 0 0 1 1-1Z" />
+  )}
+  {name === 'send' && <path d="M4 11l16-7-7 16-2.5-7.5L4 11Z" stroke-linejoin="round" />}
 </svg>
 
 <style>

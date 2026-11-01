@@ -1,20 +1,12 @@
 ---
 import Icon from '../shared/Icon.astro';
+import { reseauxSociaux } from '../../lib/social';
 
 /*
   Barre utilitaire permanente (hotline + réseaux sociaux), distincte du bandeau d'information
   (F-CNV-004, piloté par src/content/settings). Les icônes sociales sont de simples liens de
   sortie, jamais des intégrations/scripts tiers (NF-CNV-001 ; cf. docs/CONV-BENCH-01.md §2.3).
-  URL des comptes à renseigner par l'équipe digitale du CRN — voir docs/conformite.md.
 */
-const reseaux: { name: 'facebook' | 'youtube' | 'linkedin' | 'instagram' | 'tiktok' | 'x'; label: string }[] = [
-  { name: 'facebook', label: 'Facebook' },
-  { name: 'youtube', label: 'YouTube' },
-  { name: 'linkedin', label: 'LinkedIn' },
-  { name: 'instagram', label: 'Instagram' },
-  { name: 'tiktok', label: 'TikTok' },
-  { name: 'x', label: 'X' },
-];
 ---
 
 <div class="top-bar">
@@ -30,9 +22,9 @@ const reseaux: { name: 'facebook' | 'youtube' | 'linkedin' | 'instagram' | 'tikt
     </a>
 
     <ul class="top-bar__social" aria-label="Réseaux sociaux du CRN">
-      {reseaux.map((r) => (
+      {reseauxSociaux.map((r) => (
         <li>
-          <a href="#" aria-label={r.label}>
+          <a href={r.href} target="_blank" rel="noopener noreferrer" aria-label={r.label}>
             <Icon name={r.name} size={20} />
           </a>
         </li>

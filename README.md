@@ -27,11 +27,13 @@ npm run dev
 
 Lot **L2** (version minimale de l'état 1) livré : accueil, programme, orateurs, billetterie,
 académie, action sociale, infos pratiques, diaspora, FAQ, mentions légales, confidentialité,
-contact. Voir [`docs/conformite.md`](docs/conformite.md) pour le détail des exigences couvertes et
-les limites assumées à ce stade.
+contact. Lot **L3** (back-office) en cours — voir [`backend/README.md`](backend/README.md). Voir
+[`docs/conformite.md`](docs/conformite.md) pour le détail des exigences couvertes et les limites
+assumées à ce stade.
 
 ## Architecture
 
 Astro (statique) + TypeScript strict, contenu en Astro Content Collections (schémas alignés sur le
-futur CMS Payload), CSS natif fondé sur les jetons du GBIS v2.1, polices auto-hébergées (aucune
-dépendance vers un domaine bloqué au Gabon). Détails dans `docs/conformite.md`.
+CMS Payload du back-office — `backend/`), CSS natif fondé sur les jetons du GBIS v2.1, polices
+auto-hébergées (aucune dépendance vers un domaine bloqué au Gabon). Détails dans
+`docs/conformite.md`.

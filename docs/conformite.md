@@ -83,6 +83,148 @@ internes (hors accueil, déjà traité) reçoivent un gabarit d'en-tête commun 
 Aucun changement de contenu ni de palette ; build de production (27 pages), `npm run typecheck` et
 `npm run lint` vérifiés sans erreur après la refonte.
 
+## Nom de domaine et hébergement (1er novembre 2026) — ARB-PAGE-02 résolu
+
+Le Commanditaire a confirmé le nom de domaine définitif : `www.crn-convention2026.events`,
+hébergement Hostinger. Reporté dans `astro.config.mjs` (`site`) et dans les gabarits `.env.example`
+(racine et `backend/`).
+
+**Reste ouvert** : le type d'offre Hostinger (mutualisé/partagé ou VPS) n'est pas encore précisé —
+cela conditionne directement la faisabilité du back-office (lot L3) tel que construit (Docker +
+PostgreSQL), qui nécessite un VPS. Un hébergement mutualisé classique ne permet pas de faire
+tourner Docker/Postgres ; le cas échéant, le back-office devrait être hébergé ailleurs (VPS séparé)
+ou son architecture reconsidérée. Signalé au Commanditaire avant toute tentative de déploiement.
+
+## Lot L3 — Back-office (1er novembre 2026, en cours)
+
+Scaffold du back-office demandé par le Commanditaire : `backend/` (Payload CMS 3 sur Next.js +
+SQLite — voir entrée « bascule PostgreSQL → SQLite » ci-dessous), collections/globals alignés 1:1
+sur `src/content.config.ts` (`Venues`, `Artists`, `Faq`, `Speakers`, `Products`, `Announcements`,
+`ProgramDays`, global `Settings`), comptes `Users` avec rôle `admin`/`editeur`, script de migration
+`backend/scripts/migrate-from-content.ts` (reprend le contenu réel existant, n'en invente aucun),
+adaptateur de lecture `src/lib/cms.ts` côté site. Détail complet et flux de publication dans
+`C:\Users\Mael\.claude\plans\jaunty-cuddling-kahn.md` (section « Lot L3 »).
+
+**Statut : Partiel.** Démarrage réel confirmé en développement (`npm run dev`) et en production
+(`npm run build` + migrations + `node server.js`) : base SQLite créée/migrée, admin Payload
+accessible. Reste à confirmer sur un poste disposant de Docker : `docker compose up` (qui applique
+les migrations automatiquement, voir `Dockerfile`), création du premier compte, import réel du
+contenu existant, lecture du contenu importé par le site. **Les pages du site ne sont
+volontairement pas encore rebranchées sur `src/lib/cms.ts`** (elles continuent de lire
+`src/content/**` via Astro Content Collections) : basculer maintenant aurait rendu le site,
+actuellement fonctionnel et déployé, dépendant d'un back-office non encore entièrement vérifié
+(migration réelle, puis compatibilité de l'offre Hostinger). Le rebranchement interviendra une fois
+le back-office confirmé opérationnel en production.
+
+## Lot L3 — bascule PostgreSQL → SQLite (1er novembre 2026) — adaptation hébergement mutualisé
+
+Le Commanditaire a confirmé l'hébergement retenu : `www.crn-convention2026.events` sur Hostinger,
+offre **mutualisée** (Premium/Business), pas un VPS. Or l'architecture approuvée pour le lot L3
+reposait sur PostgreSQL + Docker, tous deux absents d'un hébergement mutualisé. **Écart signalé par
+écrit avant modification** : trois options proposées (VPS séparé, report du back-office, adaptation
+à l'hébergement mutualisé) — le Commanditaire a choisi l'adaptation. Changement effectué :
+adaptateur de base de données remplacé par `@payloadcms/db-sqlite` (fichier local, aucun serveur de
+base de données séparé requis), dans `backend/payload.config.ts`, `backend/package.json`,
+`backend/docker-compose.yml`, `backend/.env.example`, `backend/README.md` (section de déploiement
+Hostinger ajoutée). Les collections, globals et le script de migration restent inchangés (API
+Payload indépendante de l'adaptateur de base de données).
+
+**Suivi du 1er novembre 2026 — disponibilité Node.js confirmée.** Le Commanditaire a vérifié dans
+hPanel : une application Node.js est disponible sur son offre (section *Avancé → Node.js App*),
+versions 18/20/22/24 proposées. `backend/package.json` déclare `"engines": {"node": ">=20.9.0"}`
+(exigence de Payload 3.45), donc 20.x/22.x/24.x conviennent ; Hostinger détecte la version adaptée
+à partir de ce champ.
+
+Point technique résiduel traité en conséquence : l'offre Node.js App d'hPanel (modèle Phusion
+Passenger) attend typiquement un fichier de démarrage qui écoute sur le port fourni via la
+variable d'environnement `PORT`, pas un script `npm start` à port fixe. Un fichier
+`backend/server.js` dédié a été ajouté (serveur Next.js personnalisé, `process.env.PORT`) et
+**vérifié réellement** : `PORT=3055 NODE_ENV=production node server.js` démarre et sert l'admin
+Payload sur ce port.
+
+Cette vérification de bout en bout (`npm run build` puis démarrage en production) a aussi révélé
+deux défauts réels, corrigés :
+- `backend/scripts/migrate-from-content.ts` contenait une erreur de typage sur les identifiants
+  d'orateurs (hypothèse de l'ancienne architecture Postgres, incompatible avec les identifiants
+  numériques de SQLite) — détectée seulement par `next build` (pas par `tsc --noEmit` seul) et
+  corrigée.
+- Le mode production de Payload (contrairement au mode développement) ne crée pas le schéma de
+  base automatiquement : une première tentative de démarrage en production échouait
+  (`SQLITE_ERROR: no such table: users`). Ajout du flux de migrations Payload standard
+  (`npm run migrate:create` / `npm run migrate`), migration initiale commitée
+  (`backend/src/migrations/20261101_141150.ts`), appliquée automatiquement par le conteneur Docker
+  (`Dockerfile`, `CMD`) et documentée pour Hostinger dans `backend/README.md`.
+
+**Statut : Partiel.** Démarrage réel en production vérifié localement (build, migration, admin
+accessible via `server.js` sur un port assigné dynamiquement — le mécanisme attendu par Hostinger).
+Écart résiduel, non vérifiable depuis cet environnement : le comportement exact de l'interface
+Node.js App d'hPanel sur le compte réel du Commanditaire (limites mémoire, étapes d'installation
+propres à Hostinger) — à confirmer par le Commanditaire lors du déploiement réel. En cas
+d'incompatibilité malgré cette préparation, la solution de repli reste un VPS séparé.
+
+## Réseaux sociaux (1er novembre 2026) — liens réels
+
+Les icônes Facebook/YouTube/TikTok/Instagram/LinkedIn/X (barre utilitaire + page Contact)
+pointaient vers `#` (URL à renseigner, signalé dans le code depuis le début du lot L2). Le
+Commanditaire a fourni les URL réelles des comptes CRN International : reprises telles quelles
+dans `src/lib/social.ts`, en simples liens de sortie ouverts en nouvel onglet
+(`target="_blank" rel="noopener noreferrer"`) — toujours aucune intégration/widget/SDK tiers,
+conforme NF-CNV-001 (cf. commentaire déjà présent dans `TopBar.astro`).
+
+## Agent d'accueil NASTY (1er novembre 2026) — chat sur site, pas de canal WhatsApp
+
+Le Commanditaire a demandé un agent conversationnel (« NASTY ») accessible en permanence
+(bouton flottant bas-droite, toutes pages) et joignable *aussi* par WhatsApp Business.
+
+**Écart signalé et tranché avant codage** : WhatsApp (whatsapp.com) figure explicitement sur la
+liste des domaines interdits (NF-CNV-001) — l'intégrer contredirait la raison d'être du site
+(rester accessible sans VPN aux fidèles du Gabon, où WhatsApp/Facebook/etc. sont bloqués).
+Informé de ce conflit, **le Commanditaire a choisi l'option conforme** : NASTY reste strictement
+sur le site, aucun canal WhatsApp.
+
+Implémentation :
+- `src/components/shared/ChatWidget.astro` — bouton flottant bas-droite (toutes pages, via
+  `BaseLayout.astro`), persona et ton définis par le Commanditaire (jeune Gabonaise de 25 ans,
+  experte en communication événementielle) ; avatar en monogramme stylisé, **jamais de visage
+  généré par IA** (règle n°4) ; respecte `prefers-reduced-motion` (le halo pulsé du bouton suit la
+  même règle globale que les autres animations du site).
+- `backend/src/lib/nasty.ts` — persona + base de connaissance, reprise mot pour mot de
+  `docs/donnees-reference.md`. Les contenus interdits au public (repas DIAMANT, petit-déjeuner des
+  orateurs, enregistrements médias) sont **absents de ce qu'elle sait**, plutôt que « sus mais
+  consigne de ne pas dire » — elle ne peut pas révéler ce qu'elle ignore.
+- `backend/src/app/(payload)/api/chat/route.ts` — point d'entrée appelé par le navigateur du
+  visiteur en direct (seule exception du site à « aucun appel réseau client vers un service
+  externe » : ici le service appelé, api.anthropic.com, n'est pas un domaine interdit de la liste
+  NF-CNV-001). Limiteur de débit basique par IP (`backend/src/lib/rate-limit.ts`). Sans
+  `ANTHROPIC_API_KEY` configurée, répond par un message d'indisponibilité élégant plutôt que de
+  planter.
+
+**Statut : Partiel.** Le widget et sa gestion d'erreur sont vérifiés dans le navigateur (ouverture/
+fermeture, envoi, message de repli si le serveur ne répond pas). Le serveur `backend/` démarre
+avec succès (Next.js + Payload compilent et s'initialisent correctement) et échoue exactement là
+où attendu sans base de données réelle (erreur de connexion PostgreSQL, ECONNREFUSED) — confirme
+que l'ensemble de la chaîne est correctement raccordé, reste à vérifier avec un vrai Postgres
+(`docker compose up`, hors de ce bac à sable). L'appel réel à l'IA n'a pas pu être vérifié de bout
+en bout (pas de clé API fournie au moment de l'écriture). À vérifier une fois
+`ANTHROPIC_API_KEY` renseignée.
+
+### Écart assumé par le Commanditaire — photo de NASTY (1er novembre 2026)
+
+Le Commanditaire a fourni une photo pour représenter NASTY (badge/bannière au texte déformé,
+aspect caractéristique d'une image générée par IA) — en écart avec la règle absolue « Aucun visage
+généré par IA. Photos réelles uniquement. » **Écart signalé par écrit avant intégration**,
+accompagné d'une seconde réserve : NASTY étant présentée aux visiteurs comme une IA
+conversationnelle, lui donner un visage photoréaliste risque de laisser croire qu'un agent humain
+répond derrière le chat. **Le Commanditaire a explicitement choisi d'intégrer la photo malgré ces
+deux réserves**, acceptant la responsabilité de cette décision pour son propre projet (même
+mécanisme que l'écart Trône/Autel/Cité ci-dessus). Sur cette base, la photo a été intégrée :
+`public/images/nasty/nasty.webp`, utilisée dans `ChatWidget.astro` (bouton flottant et en-tête du
+panneau) et sur sa page dédiée `src/pages/nasty.astro`.
+
+**Statut : Partiel.** Conforme à la décision assumée du Commanditaire, en écart persistant avec la
+règle écrite du cahier des charges — à reconsidérer si le Commanditaire change d'avis, et à ne pas
+reproduire ailleurs sur le site sans confirmation équivalente au cas par cas.
+
 ## Page Contact (1er novembre 2026) — formulaire sans back-end
 
 Nouvelle page `/contact` (mise en page inspirée d'un modèle fourni par le Commanditaire — jamais

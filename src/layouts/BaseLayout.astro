@@ -6,6 +6,7 @@ import EcosystemBand from '../components/layout/EcosystemBand.astro';
 import InfoBanner from '../components/layout/InfoBanner.astro';
 import TopBar from '../components/layout/TopBar.astro';
 import VideoModal from '../components/shared/VideoModal.astro';
+import ChatWidget from '../components/shared/ChatWidget.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -54,6 +55,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <EcosystemBand />
     <Footer />
     <VideoModal />
+    <ChatWidget />
 
     <script>
       // Révélation au défilement, sitewide — une seule apparition par élément, jamais de boucle

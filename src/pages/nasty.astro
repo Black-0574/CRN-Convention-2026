@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import PageHero from '../components/shared/PageHero.astro';
+import InfoCard from '../components/shared/InfoCard.astro';
+import Icon from '../components/shared/Icon.astro';
+
+const sujets = [
+  { icone: 'calendar' as const, titre: 'Le programme', texte: 'Horaires, lieux et intervenants de chaque séance, jour par jour.' },
+  { icone: 'ticket' as const, titre: 'La billetterie', texte: 'Tarifs, pass disponibles et règles d’accès par QR code.' },
+  { icone: 'people' as const, titre: 'Les orateurs', texte: 'Qui intervient, et à quel moment de la Convention.' },
+  { icone: 'wifi' as const, titre: 'La diaspora', texte: 'Suivre à distance, donner en ligne, rejoindre la session du 19 décembre.' },
+];
+---
+
+<BaseLayout
+  title="NASTY, votre agent d’accueil"
+  description="NASTY, l’agent d’accueil et de renseignement du site de la Convention CRN 2026 : posez-lui vos questions à tout moment."
+>
+  <PageHero
+    eyebrow="Votre agent d’accueil"
+    title="NASTY"
+    intro="Disponible 24h/24 et 7j/7, directement sur le site, pour vous accueillir et répondre à vos questions sur la Convention CRN 2026."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'NASTY' }]}
+  />
+
+  <Section tone="default" ariaLabel="Présentation de NASTY">
+    <div class="nasty-intro">
+      <img src="/images/nasty/nasty.webp" alt="NASTY, assistante d’accueil de la Convention CRN 2026" width="480" height="640" class="nasty-intro__photo" loading="lazy" />
+      <div>
+        <p class="nasty-intro__role">Agent d’accueil et de renseignement</p>
+        <h2 class="nasty-intro__title">Bonjour, je suis NASTY</h2>
+        <p>
+          Jeune Gabonaise de 25 ans, je mets mon expertise en communication événementielle au
+          service des visiteurs du site de la Convention CRN 2026. Mon rôle : vous accueillir, vous
+          orienter et répondre à vos questions — sur le programme, la billetterie, les orateurs ou
+          tout autre sujet lié à la Convention.
+        </p>
+        <p class="nasty-intro__note">
+          Je suis une assistante virtuelle : je réponds uniquement à partir des informations
+          publiées sur ce site, et je vous oriente vers la hotline ou l’e-mail du CRN pour tout ce
+          qui dépasse mes connaissances.
+        </p>
+        <button type="button" class="button button--primary" id="nasty-open-chat">
+          Discuter avec NASTY <Icon name="chat" size={16} />
+        </button>
+      </div>
+    </div>
+
+    <h2 class="nasty-subjects-title">Ce qu’elle peut vous renseigner</h2>
+    <div class="nasty-subjects" data-reveal-group>
+      {sujets.map((s) => (
+        <InfoCard>
+          <span class="nasty-subject__icon"><Icon name={s.icone} size={22} /></span>
+          <h3 class="nasty-subject__title">{s.titre}</h3>
+          <p class="nasty-subject__text">{s.texte}</p>
+        </InfoCard>
+      ))}
+    </div>
+  </Section>
+
+  <script>
+    document.getElementById('nasty-open-chat')?.addEventListener('click', () => {
+      const toggle = document.getElementById('chat-widget-toggle');
+      const panel = document.getElementById('chat-widget-panel');
+      if (toggle && panel?.hidden) toggle.click();
+      panel?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .nasty-intro {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+  }
+
+  .nasty-intro__photo {
+    width: 100%;
+    max-width: 280px;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-card);
+  }
+
+  .nasty-intro__role {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    font-size: var(--text-s);
+    color: var(--crn-or-profond);
+    background: var(--crn-creme);
+    border: 1px solid var(--crn-or-lumiere);
+    border-radius: var(--radius-pill);
+    padding: 4px 14px;
+    margin-bottom: var(--space-1);
+  }
+
+  .nasty-intro__title {
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .nasty-intro__note {
+    color: var(--color-text-muted);
+    font-size: var(--text-s);
+  }
+
+  .nasty-intro .button {
+    margin-top: var(--space-2);
+  }
+
+  .nasty-subjects-title {
+    margin-bottom: var(--space-2);
+  }
+
+  .nasty-subjects {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .nasty-subject__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    border: 1.5px solid var(--crn-or);
+    color: var(--crn-or);
+    margin-bottom: var(--space-1);
+  }
+
+  .nasty-subject__title {
+    font-size: var(--text-h4-mobile);
+    margin: 0 0 4px 0;
+  }
+
+  .nasty-subject__text {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 640px) {
+    .nasty-intro {
+      grid-template-columns: 220px 1fr;
+      align-items: start;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .nasty-subjects {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .nasty-subjects {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

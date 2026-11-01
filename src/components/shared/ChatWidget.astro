@@ -1,0 +1,484 @@
+---
+import Icon from './Icon.astro';
+
+const CHAT_API_URL = import.meta.env.PUBLIC_CHAT_API_URL ?? 'http://localhost:3001/api/chat';
+
+const liensRapides = [
+  { label: 'Programme', href: '/programme' },
+  { label: 'Billetterie', href: '/billetterie' },
+  { label: 'Orateurs', href: '/orateurs' },
+  { label: 'Contact', href: '/contact' },
+];
+---
+
+<div class="chat-widget" id="chat-widget" data-chat-api={CHAT_API_URL}>
+  <button type="button" class="chat-widget__toggle" id="chat-widget-toggle" aria-expanded="false" aria-controls="chat-widget-panel">
+    <img src="/images/nasty/nasty-avatar.webp" alt="" class="chat-widget__toggle-photo" width="60" height="60" />
+    <span class="chat-widget__toggle-badge chat-widget__toggle-badge--open" aria-hidden="true"><Icon name="chat" size={14} /></span>
+    <span class="chat-widget__toggle-badge chat-widget__toggle-badge--close" aria-hidden="true"><Icon name="x" size={14} /></span>
+    <span class="chat-widget__pulse" aria-hidden="true"></span>
+    <span class="sr-only">Ouvrir le chat avec NASTY, assistante de la Convention CRN 2026</span>
+  </button>
+
+  <div class="chat-widget__panel" id="chat-widget-panel" role="dialog" aria-label="Discussion avec NASTY" hidden>
+    <header class="chat-widget__header">
+      <img src="/images/nasty/nasty-avatar.webp" alt="NASTY, assistante d’accueil de la Convention CRN 2026" class="chat-widget__avatar" width="40" height="40" />
+      <div class="chat-widget__header-text">
+        <p class="chat-widget__name"><a href="/nasty">NASTY</a></p>
+        <p class="chat-widget__status"><span class="chat-widget__status-dot" aria-hidden="true"></span>En ligne 24h/24, 7j/7</p>
+      </div>
+      <button type="button" class="chat-widget__close" id="chat-widget-close" aria-label="Fermer le chat">
+        <Icon name="x" size={18} />
+      </button>
+    </header>
+
+    <div class="chat-widget__messages" id="chat-widget-messages" aria-live="polite">
+      <div class="chat-widget__message chat-widget__message--bot">
+        Bonjour, je suis NASTY&nbsp;! Je vous accueille sur le site de la Convention CRN 2026. Posez-moi vos questions sur le programme, la billetterie, les orateurs ou tout le reste — je suis là pour vous renseigner.
+      </div>
+    </div>
+
+    <div class="chat-widget__quicklinks" aria-label="Accès rapide">
+      {liensRapides.map((l) => (
+        <a href={l.href} class="chat-widget__quicklink">{l.label}</a>
+      ))}
+    </div>
+
+    <form class="chat-widget__form" id="chat-widget-form">
+      <label class="sr-only" for="chat-widget-input">Votre message</label>
+      <input type="text" id="chat-widget-input" placeholder="Écrivez votre message…" autocomplete="off" />
+      <button type="submit" class="chat-widget__send" aria-label="Envoyer">
+        <Icon name="send" size={18} />
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const widget = document.getElementById('chat-widget');
+  const toggle = document.getElementById('chat-widget-toggle');
+  const closeBtn = document.getElementById('chat-widget-close');
+  const panel = document.getElementById('chat-widget-panel');
+  const messagesEl = document.getElementById('chat-widget-messages');
+  const form = document.getElementById('chat-widget-form') as HTMLFormElement | null;
+  const input = document.getElementById('chat-widget-input') as HTMLInputElement | null;
+
+  if (widget && toggle && closeBtn && panel && messagesEl && form && input) {
+    const apiUrl = widget.dataset.chatApi as string;
+    const STORAGE_KEY = 'crn-nasty-history';
+
+    type Role = 'user' | 'assistant';
+    interface HistoryItem {
+      role: Role;
+      content: string;
+    }
+
+    const loadHistory = (): HistoryItem[] => {
+      try {
+        const raw = sessionStorage.getItem(STORAGE_KEY);
+        return raw ? (JSON.parse(raw) as HistoryItem[]) : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const saveHistory = (history: HistoryItem[]) => {
+      try {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-20)));
+      } catch {
+        /* stockage indisponible (navigation privée…) : la conversation reste en mémoire pour cette page seulement */
+      }
+    };
+
+    let history = loadHistory();
+
+    const renderMessage = (role: Role, text: string) => {
+      const el = document.createElement('div');
+      el.className = `chat-widget__message chat-widget__message--${role === 'user' ? 'user' : 'bot'}`;
+      el.textContent = text;
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    };
+
+    // Reprend la conversation de la session en cours (même visite, navigation entre pages).
+    history.forEach((item) => renderMessage(item.role, item.content));
+
+    const setOpen = (open: boolean) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      widget.classList.toggle('is-open', open);
+      if (open) input.focus();
+    };
+
+    toggle.addEventListener('click', () => setOpen(Boolean(panel.hidden)));
+    closeBtn.addEventListener('click', () => setOpen(false));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) setOpen(false);
+    });
+
+    let pending = false;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text || pending) return;
+
+      renderMessage('user', text);
+      history.push({ role: 'user', content: text });
+      saveHistory(history);
+      input.value = '';
+      pending = true;
+
+      const typingEl = document.createElement('div');
+      typingEl.className = 'chat-widget__message chat-widget__message--bot chat-widget__message--typing';
+      typingEl.textContent = 'NASTY écrit…';
+      messagesEl.appendChild(typingEl);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      try {
+        const res = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ messages: history }),
+        });
+        const data = (await res.json()) as { reply?: string; error?: string };
+        typingEl.remove();
+        const reply = data.reply ?? "Désolée, je n'ai pas pu répondre. Réessayez dans un instant.";
+        renderMessage('assistant', reply);
+        history.push({ role: 'assistant', content: reply });
+        saveHistory(history);
+      } catch {
+        typingEl.remove();
+        renderMessage('assistant', 'Désolée, une erreur de connexion est survenue. Réessayez dans un instant.');
+      } finally {
+        pending = false;
+      }
+    });
+  }
+</script>
+
+<style>
+  .chat-widget {
+    position: fixed;
+    right: var(--gutter-mobile);
+    bottom: var(--space-2);
+    z-index: 200;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .chat-widget__toggle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--crn-bleu-nuit);
+    border: 2px solid var(--crn-or);
+    box-shadow: 0 14px 28px -12px rgba(16, 16, 16, 0.55);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .chat-widget__toggle:hover,
+  .chat-widget__toggle:focus-visible {
+    transform: translateY(-2px) scale(1.05);
+    border-color: var(--crn-or-lumiere);
+    box-shadow: 0 18px 34px -12px rgba(16, 16, 16, 0.65);
+  }
+
+  .chat-widget__toggle-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .chat-widget.is-open .chat-widget__toggle-photo {
+    opacity: 0.25;
+  }
+
+  /* Badge d'état (bulle de chat / croix de fermeture) superposé en bas à droite de la photo. */
+  .chat-widget__toggle-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--crn-or);
+    color: var(--crn-bleu-nuit-profond);
+    border: 2px solid var(--crn-blanc);
+  }
+
+  .chat-widget__toggle-badge--close {
+    display: none;
+    position: absolute;
+    inset: 0;
+    bottom: auto;
+    right: auto;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: var(--crn-blanc);
+  }
+
+  .chat-widget.is-open .chat-widget__toggle-badge--open {
+    display: none;
+  }
+
+  .chat-widget.is-open .chat-widget__toggle-badge--close {
+    display: flex;
+  }
+
+  .chat-widget__pulse {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--crn-or);
+    border: 2px solid var(--crn-blanc);
+    animation: chat-widget-pulse 2.4s ease-in-out infinite;
+  }
+
+  .chat-widget.is-open .chat-widget__pulse {
+    display: none;
+  }
+
+  @keyframes chat-widget-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(184, 150, 62, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 0 6px rgba(184, 150, 62, 0);
+    }
+  }
+
+  /* [hidden] doit rester prioritaire sur le display:flex ci-dessous, sans quoi l'attribut natif
+     "hidden" du panneau n'a plus aucun effet et il reste visible au chargement de la page. */
+  .chat-widget__panel[hidden] {
+    display: none;
+  }
+
+  .chat-widget__panel {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + var(--space-2));
+    width: min(380px, calc(100vw - 2 * var(--gutter-mobile)));
+    max-height: min(560px, 75vh);
+    display: flex;
+    flex-direction: column;
+    background: var(--crn-blanc);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lift);
+    overflow: hidden;
+  }
+
+  .chat-widget__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-blanc);
+  }
+
+  .chat-widget__avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--crn-or-lumiere);
+  }
+
+  .chat-widget__header-text {
+    flex: 1;
+  }
+
+  .chat-widget__name {
+    margin: 0;
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-s);
+  }
+
+  .chat-widget__name a {
+    color: var(--crn-blanc);
+    text-decoration: none;
+  }
+
+  .chat-widget__name a:hover {
+    text-decoration: underline;
+  }
+
+  .chat-widget__status {
+    margin: 2px 0 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .chat-widget__status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    flex-shrink: 0;
+  }
+
+  .chat-widget__close {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--crn-blanc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--transition-standard);
+  }
+
+  .chat-widget__close:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  .chat-widget__messages {
+    flex: 1;
+    min-height: 160px;
+    overflow-y: auto;
+    padding: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--crn-creme);
+  }
+
+  .chat-widget__message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: var(--radius-card-sm);
+    font-size: var(--text-s);
+    line-height: 1.45;
+  }
+
+  .chat-widget__message--bot {
+    align-self: flex-start;
+    background: var(--crn-blanc);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    border-bottom-left-radius: 4px;
+  }
+
+  .chat-widget__message--user {
+    align-self: flex-end;
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+    border-bottom-right-radius: 4px;
+  }
+
+  .chat-widget__message--typing {
+    opacity: 0.7;
+    font-style: italic;
+  }
+
+  .chat-widget__quicklinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: var(--space-1) var(--space-2);
+    border-top: 1px solid var(--color-border);
+    background: var(--crn-blanc);
+  }
+
+  .chat-widget__quicklink {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border);
+    transition: background-color var(--transition-standard), border-color var(--transition-standard), color var(--transition-standard);
+  }
+
+  .chat-widget__quicklink:hover {
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  .chat-widget__form {
+    display: flex;
+    gap: 8px;
+    padding: var(--space-2);
+    border-top: 1px solid var(--color-border);
+    background: var(--crn-blanc);
+  }
+
+  .chat-widget__form input {
+    flex: 1;
+    min-height: var(--tap-target-min);
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    font-family: var(--font-labeur);
+    font-size: var(--text-s);
+    color: var(--color-text);
+  }
+
+  .chat-widget__form input:focus {
+    outline: none;
+    border-color: var(--crn-bleu-nuit);
+  }
+
+  .chat-widget__send {
+    flex-shrink: 0;
+    width: var(--tap-target-min);
+    height: var(--tap-target-min);
+    border-radius: 50%;
+    border: none;
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--transition-standard), transform var(--transition-standard);
+  }
+
+  .chat-widget__send:hover {
+    background: var(--crn-bleu-nuit-profond);
+    transform: scale(1.05);
+  }
+
+  @media (min-width: 768px) {
+    .chat-widget {
+      right: var(--gutter-desktop);
+      bottom: var(--space-3);
+    }
+  }
+</style>

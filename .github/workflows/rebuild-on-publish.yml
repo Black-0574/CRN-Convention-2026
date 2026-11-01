@@ -1,0 +1,39 @@
+name: Reconstruction à la publication (Payload)
+
+# Déclenché par un webhook Payload (afterChange/afterDelete sur une collection ou un global) via
+# l'API GitHub repository_dispatch — voir backend/README.md et le plan (section « Lot L3 »,
+# « Flux de publication »). Construit le site statique avec le contenu à jour.
+# Écart signalé : l'étape de déploiement final (copie vers l'hébergeur) reste à ajouter une fois
+# l'hébergement du site choisi — ce workflow s'arrête au build et publie le résultat en artefact.
+on:
+  repository_dispatch:
+    types: [payload-content-published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build du site statique (contenu lu depuis l'API Payload)
+        run: npm run build
+        env:
+          PAYLOAD_API_URL: ${{ secrets.PAYLOAD_API_URL }}
+
+      - name: Publier le build en artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: dist/
+          retention-days: 7
+
+      # TODO (une fois l'hébergement arbitré) : étape de déploiement (ex. rsync/SFTP vers le
+      # serveur, ou action dédiée à l'hébergeur retenu).

@@ -3,15 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import Icon from '../components/shared/Icon.astro';
-
-const reseaux: { name: 'facebook' | 'youtube' | 'linkedin' | 'instagram' | 'tiktok' | 'x'; label: string }[] = [
-  { name: 'facebook', label: 'Facebook' },
-  { name: 'youtube', label: 'YouTube' },
-  { name: 'linkedin', label: 'LinkedIn' },
-  { name: 'instagram', label: 'Instagram' },
-  { name: 'tiktok', label: 'TikTok' },
-  { name: 'x', label: 'X' },
-];
+import { reseauxSociaux } from '../lib/social';
 ---
 
 <BaseLayout
@@ -93,9 +85,9 @@ const reseaux: { name: 'facebook' | 'youtube' | 'linkedin' | 'instagram' | 'tikt
 
         <p class="contact-aside__social-title">Nous suivre</p>
         <ul class="contact-aside__social">
-          {reseaux.map((r) => (
+          {reseauxSociaux.map((r) => (
             <li>
-              <a href="#" aria-label={r.label}>
+              <a href={r.href} target="_blank" rel="noopener noreferrer" aria-label={r.label}>
                 <Icon name={r.name} size={18} />
               </a>
             </li>
