@@ -281,7 +281,7 @@ Nouvelle page `/contact` (mise en page inspirée d'un modèle fourni par le Comm
 son code, ses images ou sa marque, même principe qu'ailleurs sur le site) : formulaire (prénom,
 nom, e-mail, téléphone facultatif, message) et volet coordonnées. **Aucune donnée inventée** :
 hotline (+241 70 10 10 10) et e-mail repris tels qu'établis dans `TopBar.astro` (e-mail remplacé
-le 1er novembre 2026 par `contact@convention2026.events`, à la demande du Commanditaire) ; aucun numéro SMS/WhatsApp affiché (non arrêté, et un lien `wa.me` serait de toute
+le 1er novembre 2026 par `contact@crn-convention2026.events`, à la demande du Commanditaire) ; aucun numéro SMS/WhatsApp affiché (non arrêté, et un lien `wa.me` serait de toute
 façon un domaine interdit — NF-CNV-001). Réseaux sociaux : mêmes icônes/liens placeholder `#` que
 la barre utilitaire, à renseigner par l'équipe digitale.
 
