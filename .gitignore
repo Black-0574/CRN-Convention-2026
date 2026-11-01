@@ -1,6 +1,8 @@
 # build
 dist/
 .astro/
+# photos copiées depuis le back-office au build (src/lib/cms-content.ts)
+public/images/cms/
 
 # deps
 node_modules/

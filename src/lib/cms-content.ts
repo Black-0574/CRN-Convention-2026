@@ -58,11 +58,30 @@ function compact<T extends Obj>(obj: T): T {
 
 const obj = (v: unknown): Obj => (v && typeof v === 'object' ? (v as Obj) : {});
 
-function photoUrl(photo: unknown): string | undefined {
+// Photos copiées dans le site au build (public/images/cms/, non versionné) et servies depuis le
+// même domaine que les pages : le visiteur ne dépend jamais du domaine du back-office (une
+// résolution DNS de moins en 3G, photos visibles même si l'admin est injoignable ou mal résolu).
+const PHOTOS_DIR = 'public/images/cms';
+const photoCache = new Map<string, Promise<string>>();
+
+async function downloadPhoto(url: string): Promise<string> {
+  const name = decodeURIComponent(new URL(url).pathname.split('/').pop() ?? '').replace(/[^\w.-]+/g, '-');
+  const res = await fetch(url);
+  if (!res.ok || !name) throw new Error(`Back-office : photo ${url} introuvable (HTTP ${res.status})`);
+  const { mkdir, writeFile } = await import('node:fs/promises');
+  await mkdir(PHOTOS_DIR, { recursive: true });
+  await writeFile(`${PHOTOS_DIR}/${name}`, Buffer.from(await res.arrayBuffer()));
+  return `/images/cms/${name}`;
+}
+
+async function photoUrl(photo: unknown): Promise<string | undefined> {
   const media = obj(photo);
   const card = obj(obj(media.sizes).card);
   const path = (typeof card.url === 'string' && card.url) || (typeof media.url === 'string' && media.url);
-  return path ? new URL(path, `${API_URL}/`).toString() : undefined;
+  if (!path) return undefined;
+  const url = new URL(path, `${API_URL}/`).toString();
+  if (!photoCache.has(url)) photoCache.set(url, downloadPhoto(url));
+  return photoCache.get(url);
 }
 
 export async function loadSettings(): Promise<Entry[]> {
@@ -93,21 +112,25 @@ export async function loadVenues(): Promise<Entry[]> {
 }
 
 export async function loadSpeakers(): Promise<Entry[]> {
-  return (await list('speakers')).map((d) =>
-    compact({
-      id: String(d.slug ?? d.id),
-      nom: d.nom,
-      categorie: d.categorie,
-      bio: d.bio,
-      photo: photoUrl(d.photo),
-      videoInvitation: d.videoInvitation,
-      datePublication: librevilleDay(d.datePublication),
-    }),
+  return Promise.all(
+    (await list('speakers')).map(async (d) =>
+      compact({
+        id: String(d.slug ?? d.id),
+        nom: d.nom,
+        categorie: d.categorie,
+        bio: d.bio,
+        photo: await photoUrl(d.photo),
+        videoInvitation: d.videoInvitation,
+        datePublication: librevilleDay(d.datePublication),
+      }),
+    ),
   );
 }
 
 export async function loadArtists(): Promise<Entry[]> {
-  return (await list('artists')).map((d) => compact({ id: String(d.id), nom: d.nom, photo: photoUrl(d.photo) }));
+  return Promise.all(
+    (await list('artists')).map(async (d) => compact({ id: String(d.id), nom: d.nom, photo: await photoUrl(d.photo) })),
+  );
 }
 
 export async function loadProgram(): Promise<Entry[]> {

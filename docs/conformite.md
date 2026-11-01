@@ -102,6 +102,18 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Correctif — photos des orateurs copiées dans le site (NF-CNV-002/003, 1er novembre 2026)
+
+Constat du Commanditaire : photos des orateurs disparues (cadres vides). Cause : les pages
+pointaient vers les photos du back-office (`admin.crn-convention2026.events`), dont le DNS n'a
+plus d'adresse IPv4 (seulement IPv6) — invisibles pour tout visiteur sans IPv6. Correctif
+(`src/lib/cms-content.ts`) : au build, chaque photo est téléchargée depuis l'API et publiée avec le
+site (`/images/cms/…`, même domaine que les pages). Le visiteur ne dépend plus jamais du domaine
+du back-office ; une résolution DNS de moins en 3G. Preuve : build depuis l'API de production →
+10 photos copiées, 20/20 images chargées sur l'accueil, aucune page ne référence plus
+`admin.…/api/media` ; tests unitaires et e2e OK. Reste à rétablir l'enregistrement A (IPv4) du
+sous-domaine `admin` dans la zone DNS Hostinger (accès à l'admin depuis un réseau IPv4).
+
 ## Correctif — affichage mobile « décalé » (NF-CNV-002, NF-CNV-008, 1er novembre 2026)
 
 Constat du Commanditaire (capture sur téléphone Android) : page décalée, bord gauche coupé, bande
