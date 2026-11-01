@@ -49,7 +49,8 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
           href="#film"
           aria-label="Voir le film de la Convention"
           data-video-modal-trigger
-          data-video-src="/videos/film-convention-crn-2026.mp4"
+          data-video-src="/videos/film-convention-crn-2026-720p.mp4"
+          data-video-poster="/videos/film-convention-crn-2026-affiche.jpg"
         >
           <Icon name="play" size={18} />
           <span class="hero__video-label">Voir le film</span>
@@ -182,9 +183,9 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
     filter: drop-shadow(0 16px 28px rgba(16, 16, 16, 0.35));
   }
 
-  /* CTA « blob » (forme organique à un coin plat, modèle de référence) : renvoie vers la section
-     « Le film de la Convention » plus bas sur la page — pas de lecteur vidéo ici, puisqu'aucun
-     film n'existe encore (voir FilmTeaser.astro, état « à venir »).
+  /* CTA « blob » (forme organique à un coin plat, modèle de référence) : ouvre le film de la
+     Convention (14 s, 720p, ~1 Mo) dans le lecteur partagé (VideoModal.astro), comme le bouton de
+     la section « Le film de la Convention » (FilmTeaser.astro) ; sans JS, renvoie à cette section.
      Écart signalé — or en aplat de bouton : ce médaillon est la SEULE exception sur tout le site à
      la règle GBIS « jamais l'or en aplat de bouton », décidée à la demande explicite de
      l'utilisateur (confirmée après qu'il a vu le fond bleu nuit se fondre dans le veston de

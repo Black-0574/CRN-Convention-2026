@@ -1,7 +1,8 @@
 ---
 /*
   Modal vidéo partagé, unique sur la page, déclenché par tout élément portant
-  [data-video-modal-trigger] + [data-video-src="/chemin/vers/video.mp4"] (le bouton « Voir le
+  [data-video-modal-trigger] + [data-video-src="/chemin/vers/video.mp4"] (+ facultatif
+  [data-video-poster="/chemin/vers/affiche.jpg"]) (le bouton « Voir le
   film » du héros, celui de la section Film…). La vidéo n'est chargée qu'à l'ouverture — rien
   n'est ajouté au poids de la page tant que personne ne clique (NF-CNV-001/budget de performance).
   Fermeture : bouton dédié, clic sur le fond, touche Échap ; le focus revient au déclencheur.
@@ -31,6 +32,10 @@ import Icon from './Icon.astro';
   function openModal(src: string, trigger: HTMLElement) {
     if (!modal || !video) return;
     lastFocused = trigger;
+    // Affiche montrée pendant le chargement (au lieu d'un cadre noir), surtout en 3G.
+    const poster = trigger.getAttribute('data-video-poster');
+    if (poster) video.poster = poster;
+    else video.removeAttribute('poster');
     video.src = src;
     modal.hidden = false;
     document.body.style.overflow = 'hidden';

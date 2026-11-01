@@ -102,6 +102,17 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Correctif — film de la Convention lisible au clic en 3G (NF-CNV-002/003, 1er novembre 2026)
+
+Constat : la vidéo de 14 s derrière les deux boutons « Voir le film » (héros, section Film)
+restait sur un cadre noir. Cause : fichier de 12,6 Mo (1080p, ~7 Mbit/s) avec l'index MP4
+(`moov`) en fin de fichier — après 12 s, 0,3 s seulement en mémoire tampon. Correctif : ré-encodage
+H.264 720p (~570 kbit/s, AAC 96 kbit/s), index en tête (`+faststart`) → **1,0 Mo**, lecture qui
+démarre aussitôt ; affiche (`data-video-poster`) à la place du cadre noir pendant le chargement ;
+nouveau nom de fichier pour qu'aucun cache ne serve l'ancien. Toujours chargé uniquement au clic
+(aucun poids ajouté à l'accueil). Preuve : les deux boutons ouvrent le lecteur et la vidéo est à
+2,8 s après 3 s, entièrement chargée.
+
 ## Correctif — photos des orateurs copiées dans le site (NF-CNV-002/003, 1er novembre 2026)
 
 Constat du Commanditaire : photos des orateurs disparues (cadres vides). Cause : les pages
