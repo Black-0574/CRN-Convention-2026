@@ -51,7 +51,7 @@ const annee = new Date().getFullYear();
     </a>
   </div>
 
-  <p class="site-footer__ghost" aria-hidden="true">CONVENTION CRN 2026</p>
+  <p class="site-footer__ghost" aria-hidden="true" data-text="CONVENTION CRN 2026"></p>
 </footer>
 
 <style>
@@ -196,5 +196,12 @@ const annee = new Date().getFullYear();
     overflow: hidden;
     pointer-events: none;
     user-select: none;
+  }
+
+  /* Filigrane purement décoratif (WCAG 1.4.3 : aucune exigence de contraste pour la décoration) :
+     le texte est généré en CSS plutôt que placé dans le DOM, où les outils d'audit le traiteraient
+     comme du contenu à contraster. */
+  .site-footer__ghost::before {
+    content: attr(data-text);
   }
 </style>

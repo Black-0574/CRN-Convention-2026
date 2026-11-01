@@ -20,7 +20,7 @@ const logos = [
       <button type="button" class="ecosystem-band__nav ecosystem-band__nav--prev" data-action="ecosystem-prev" aria-label="Plateformes précédentes">
         <Icon name="arrow-left" size={16} />
       </button>
-      <ul class="ecosystem-band__track" id="ecosystem-track">
+      <ul class="ecosystem-band__track" id="ecosystem-track" tabindex="0" aria-label="Plateformes de l'écosystème CRN (défilement avec les flèches du clavier)">
         {logos.map((l) => (
           <li class="ecosystem-band__item">
             <img src={`/images/ecosystem/${l.slug}.webp`} alt={l.nom} loading="lazy" />

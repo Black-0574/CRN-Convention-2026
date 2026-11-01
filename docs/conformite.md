@@ -69,9 +69,16 @@ applications Node.js — le plan « Premium » ne les inclut pas) :
 
 **Statut : Couvert** pour la mise en ligne. Restent ouverts, hors de ce point : clé
 `ANTHROPIC_API_KEY` à fournir pour que NASTY réponde au-delà de son message d'attente ; pages du
-site encore alimentées par `src/content/**` (pas encore rebranchées sur le back-office) ; la CI
-GitHub échoue sur deux violations d'accessibilité antérieures (texte décoratif du pied de page,
-bande « Écosystème » non focalisable au clavier).
+site encore alimentées par `src/content/**` (pas encore rebranchées sur le back-office).
+
+**Accessibilité (NF-CNV-008) — CI rétablie le 1er novembre 2026.** Deux violations axe « serious »
+faisaient échouer la CI depuis plusieurs commits, sur l'accueil, `/programme`, `/billetterie` et
+`/faq` : (1) le filigrane « CONVENTION CRN 2026 » du pied de page, purement décoratif (WCAG 1.4.3
+exempte la décoration), était un vrai nœud texte que l'audit mesurait — désormais généré en CSS
+(`::before`, `Footer.astro`), rendu identique ; (2) la liste défilante de la bande « Écosystème »
+ne contenait que des images et n'était donc pas atteignable au clavier — désormais focalisable
+(`tabindex="0"`, nom accessible), défilement aux flèches, contour de focus or du GBIS
+(`EcosystemBand.astro`). Preuve : `npx playwright test` (CI) — 11/11.
 
 ## Écart assumé par le Commanditaire — images à visages générés par IA pour les cartes Trône/Autel/Cité (1er novembre 2026)
 
