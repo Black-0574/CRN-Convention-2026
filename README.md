@@ -27,9 +27,38 @@ npm run dev
 
 Lot **L2** (version minimale de l'état 1) livré : accueil, programme, orateurs, billetterie,
 académie, action sociale, infos pratiques, diaspora, FAQ, mentions légales, confidentialité,
-contact. Lot **L3** (back-office) en cours — voir [`backend/README.md`](backend/README.md). Voir
+contact. Lot **L3** (back-office) en ligne, le site n'y est pas encore rebranché — voir
+[`backend/README.md`](backend/README.md). Voir
 [`docs/conformite.md`](docs/conformite.md) pour le détail des exigences couvertes et les limites
 assumées à ce stade.
+
+## Mise en ligne
+
+En ligne sur Hostinger (plan « Unlimited ») :
+
+| | Adresse | Dépôt suivi par Hostinger (déploiement automatique à chaque push) |
+| --- | --- | --- |
+| Site public | `https://www.crn-convention2026.events` | `Black-0574/CRN-Convention-2026-Site-Hostinger` |
+| Back-office | `https://admin.crn-convention2026.events/admin` | `Black-0574/CRN-Convention-2026-Backend-Hostinger` |
+
+Ces deux dépôts sont des copies créées par Hostinger ; ce dépôt-ci reste la seule source de
+vérité. Pour publier une modification (depuis la racine, après le push habituel sur `origin`) :
+
+```bash
+# site public
+git push https://github.com/Black-0574/CRN-Convention-2026-Site-Hostinger.git main --force
+
+# back-office (seulement si backend/ a changé)
+git subtree split --prefix=backend -b backend-export
+git push https://github.com/Black-0574/CRN-Convention-2026-Backend.git backend-export:main --force
+git push https://github.com/Black-0574/CRN-Convention-2026-Backend-Hostinger.git backend-export:main --force
+git branch -D backend-export
+```
+
+Le site est statique : un changement de contenu fait dans le back-office n'apparaît sur le site
+qu'après un nouveau build. Variables de build du site (hPanel → site → *Variables
+d'environnement*) : `PUBLIC_CHAT_API_URL`, `PAYLOAD_API_URL` (voir `.env.example`). Réglages du
+back-office : `backend/README.md`.
 
 ## Architecture
 

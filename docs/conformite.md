@@ -40,19 +40,38 @@ Décisions prises avec le Commanditaire avant la mise en ligne :
   routes `/api/...` (REST/GraphQL Payload, `/api/chat` pour NASTY) dont le site public et l'admin
   lui-même dépendent ; un montage par chemin, documenté nulle part côté Hostinger, aurait laissé ces
   routes hors de portée. Le Commanditaire a choisi le sous-domaine, solution robuste recommandée.
-- **Dépôt GitHub dédié au déploiement** : `https://github.com/Black-0574/CRN-Convention-2026-Backend`
-  (privé). Hostinger clone le dépôt Git connecté sans réglage de sous-dossier documenté ; `backend/`
-  n'étant qu'un sous-dossier du dépôt principal `CRN-Convention-2026`, un second dépôt a été créé
-  via `git subtree split --prefix=backend` (racine = contenu de `backend/`, historique conservé).
-  Le dépôt principal reste la seule source de vérité pour le développement ; la procédure de
-  resynchronisation est documentée dans `backend/README.md`.
-- Étapes précises de création de l'application Node.js, variables d'environnement et mise à jour
-  du site public (`PAYLOAD_API_URL`, `PUBLIC_CHAT_API_URL`) une fois l'admin en ligne : voir
-  `backend/README.md` (section « Déploiement sur hébergement mutualisé »).
+- **Dépôts de déploiement** : Hostinger clone un dépôt tel quel, sans réglage de sous-dossier, et
+  ne voit pas les dépôts privés hors de son application GitHub. `backend/` a donc été extrait
+  (`git subtree split --prefix=backend`) dans le dépôt public `Black-0574/CRN-Convention-2026-Backend`,
+  dont Hostinger a créé sa propre copie privée `CRN-Convention-2026-Backend-Hostinger` ; le site
+  public est déployé depuis `CRN-Convention-2026-Site-Hostinger`, copie créée par Hostinger du dépôt
+  principal. Le dépôt principal reste la seule source de vérité ; les copies Hostinger se
+  redéploient automatiquement à chaque push (procédure : `README.md`, section « Mise en ligne »).
 
-**Statut : Partiel.** Architecture de déploiement et dépôt prêts ; la création effective de
-l'application dans hPanel (authentification au compte Hostinger du Commanditaire) reste à faire
-par le Commanditaire lui-même.
+**Mise en ligne effectuée le 1er novembre 2026** (plan Hostinger « Unlimited », qui inclut les
+applications Node.js — le plan « Premium » ne les inclut pas) :
+
+- **Site public** — `https://www.crn-convention2026.events` et `https://crn-convention2026.events` :
+  application Node.js, préréglage Astro, Node 22, `npm run build`, sortie `dist` (site statique).
+  Variables de build : `PUBLIC_CHAT_API_URL=https://admin.crn-convention2026.events/api/chat`,
+  `PAYLOAD_API_URL=https://admin.crn-convention2026.events/api`. Le site « Bientôt disponible »
+  (PHP/HTML vide) qui occupait le domaine a été supprimé par le Commanditaire au préalable.
+- **Back-office** — `https://admin.crn-convention2026.events/admin` : préréglage Next.js, Node 20.
+  Trois défauts trouvés et corrigés pendant la mise en ligne : migrations de schéma impossibles à
+  lancer sans terminal (désormais appliquées par `prodMigrations` à la connexion), base SQLite et
+  photos stockées dans le dossier de build recréé à chaque déploiement (désormais en chemins
+  absolus hors de ce dossier, `DATABASE_URI`/`MEDIA_DIR`), CORS limité à `www` (la variante sans
+  `www` est maintenant autorisée).
+- **Vérifié en ligne** : pages principales en 200 sur les deux domaines avec certificat valide ;
+  e-mail `contact@crn-convention2026.events` affiché ; widget NASTY → `/api/chat` du back-office en
+  inter-origine, réponse reçue ; aucune ressource chargée depuis un domaine interdit (NF-CNV-001 —
+  seuls des liens sortants vers les profils sociaux, déjà validés).
+
+**Statut : Couvert** pour la mise en ligne. Restent ouverts, hors de ce point : clé
+`ANTHROPIC_API_KEY` à fournir pour que NASTY réponde au-delà de son message d'attente ; pages du
+site encore alimentées par `src/content/**` (pas encore rebranchées sur le back-office) ; la CI
+GitHub échoue sur deux violations d'accessibilité antérieures (texte décoratif du pied de page,
+bande « Écosystème » non focalisable au clavier).
 
 ## Écart assumé par le Commanditaire — images à visages générés par IA pour les cartes Trône/Autel/Cité (1er novembre 2026)
 
