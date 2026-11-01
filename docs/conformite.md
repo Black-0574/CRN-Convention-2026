@@ -4,6 +4,33 @@ Tableau de traçabilité exigence → lot → statut → preuve. Statuts : **Cou
 périmètre du lot indiqué), **Partiel** (couvert en partie, limite documentée), **Hors scope L2**
 (prévu à un lot ultérieur, non traité ici). Mis à jour à chaque lot livré.
 
+## Lot L3 — habillage du back-office (1er novembre 2026) — français, charte GBIS v2.1
+
+Demande du Commanditaire : back-office en français, design et ergonomie plus soignés, alignés sur
+la charte graphique du site. Réalisé sans toucher aux données ni à la structure des collections :
+
+- **Français** : `payload.config.ts` (`i18n.fallbackLanguage: 'fr'`, `supportedLanguages: { fr }`
+  via `@payloadcms/translations`) — interface entièrement en français, pas de sélecteur de langue.
+  Un intitulé resté non traduit dans le pack officiel de Payload (« Globals(es) ») corrigé via
+  `i18n.translations.fr` (« Réglages généraux »). `labels` français ajoutés à chaque collection et
+  au global `Settings` (`backend/src/collections/*.ts`, `backend/src/globals/Settings.ts`), ainsi
+  qu'aux champs dont le nom technique ne donnait pas un intitulé français correct une fois
+  auto-généré par Payload (accents manquants, mots composés).
+- **Charte GBIS v2.1** : polices Source Serif 4 / Source Sans 3 auto-hébergées via `@fontsource`
+  (même mécanisme que le site public — aucune requête externe, NF-CNV-001) ; accent doré de
+  l'admin (anneau de focus clavier, badges, éléments actifs) recalculé à partir de `--crn-or
+  #B8963E` en respectant exactement cette valeur de palette (contrastes vérifiés ≥ 4,5:1 pour le
+  texte concerné) ; en-tête de marque bleu nuit sur toutes les pages, logo de la page de connexion
+  et icône de navigation réutilisant l'emblème officiel déjà approuvé du site
+  (`src/assets/images/emblem-convention-2026.png`, recadré et optimisé en webp) — aucune nouvelle
+  image générée. Fichiers : `backend/src/app/(payload)/crn-admin-theme.css`,
+  `backend/src/components/admin/{Logo,Icon,Header}.tsx`, `backend/public/brand/`.
+- **Vérification** : testée dans une base SQLite jetable distincte du compte réel du Commanditaire
+  (déjà créé dans `crn-convention.db` — non touché), avec un utilisateur de test temporaire
+  supprimé ensuite ; `npm run typecheck` et `npm run build` passés après coup.
+
+**Statut : Couvert.**
+
 ## Écart assumé par le Commanditaire — images à visages générés par IA pour les cartes Trône/Autel/Cité (1er novembre 2026)
 
 L'utilisateur a fourni 3 images (foule en adoration, fidèles en prière à l'autel, famille marchant
