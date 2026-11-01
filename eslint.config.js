@@ -34,6 +34,15 @@ export default [
     },
   },
   {
+    // Scripts d'outillage exécutés par Node (ex. scripts/export-seed-content.mjs).
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
     // backend/ est un projet Next.js/Payload séparé (lot L3), avec son propre outillage — voir
     // backend/package.json (son propre `npm run lint` y est à prévoir si besoin).
     ignores: ['dist/', '.astro/', 'node_modules/', 'playwright-report/', 'test-results/', 'backend/'],

@@ -27,8 +27,8 @@ npm run dev
 
 Lot **L2** (version minimale de l'état 1) livré : accueil, programme, orateurs, billetterie,
 académie, action sociale, infos pratiques, diaspora, FAQ, mentions légales, confidentialité,
-contact. Lot **L3** (back-office) en ligne, le site n'y est pas encore rebranché — voir
-[`backend/README.md`](backend/README.md). Voir
+contact. Lot **L3** (back-office) en ligne : il est la source du contenu du site en production —
+voir [`backend/README.md`](backend/README.md) et « Contenu » ci-dessous. Voir
 [`docs/conformite.md`](docs/conformite.md) pour le détail des exigences couvertes et les limites
 assumées à ce stade.
 
@@ -55,10 +55,31 @@ git push https://github.com/Black-0574/CRN-Convention-2026-Backend-Hostinger.git
 git branch -D backend-export
 ```
 
-Le site est statique : un changement de contenu fait dans le back-office n'apparaît sur le site
-qu'après un nouveau build. Variables de build du site (hPanel → site → *Variables
-d'environnement*) : `PUBLIC_CHAT_API_URL`, `PAYLOAD_API_URL` (voir `.env.example`). Réglages du
-back-office : `backend/README.md`.
+Variables de build du site (hPanel → site → *Variables d'environnement*) : `PUBLIC_CHAT_API_URL`,
+`PAYLOAD_API_URL` (voir `.env.example`). Réglages du back-office : `backend/README.md`.
+
+## Contenu
+
+En production, **le back-office est la source du contenu** : orateurs, programme, billetterie,
+FAQ, annonces, artistes, lieux et réglages s'ajoutent, se modifient, se suppriment ou
+s'activent/désactivent dans l'admin. Le site reste statique (léger, sans requête du visiteur
+vers l'API) :
+
+1. une modification enregistrée dans l'admin déclenche, ~20 s plus tard (une seule fois pour
+   une rafale de modifications), un commit vide sur `CRN-Convention-2026-Site-Hostinger` —
+   à condition que `SITE_REBUILD_GITHUB_TOKEN` et `SITE_REBUILD_GITHUB_REPO` soient renseignés
+   côté back-office (voir `backend/README.md`) ;
+2. Hostinger reconstruit le site, qui lit alors le contenu via l'API (`src/lib/cms-content.ts`) ;
+3. la nouvelle version est en ligne environ 2 minutes après l'enregistrement.
+
+Si le back-office est injoignable pendant le build, le build échoue et la version en ligne reste
+en place (jamais de site vide).
+
+Sans `PAYLOAD_API_URL` dans l'environnement (développement, CI, tests), le site lit les fichiers de
+`src/content/`, qui ne sont plus mis à jour depuis l'admin : ils servent de jeu de données de
+référence et d'import initial d'une base vide (`node scripts/export-seed-content.mjs`, puis
+démarrage du back-office). Pour construire localement depuis un back-office :
+`PAYLOAD_API_URL=http://localhost:3001/api npm run build`.
 
 ## Architecture
 

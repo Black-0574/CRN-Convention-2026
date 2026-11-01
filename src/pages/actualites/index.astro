@@ -12,7 +12,7 @@ const annonces = (await getCollection('announcements')).sort((a, b) => a.data.or
 const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
 
-const items = annonces.map((a) => ({ ...a, meta: getAnnonceMeta(a.id) }));
+const items = annonces.map((a) => ({ ...a, meta: getAnnonceMeta(a.id, a.data) }));
 const categories = [...new Set(items.map((a) => a.meta.categorie))];
 ---
 

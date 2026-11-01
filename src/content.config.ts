@@ -1,15 +1,21 @@
 import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
 
+import * as cms from './lib/cms-content';
+
 /*
-  Schémas de contenu — forme alignée 1:1 avec le futur schéma Payload CMS (lot L3),
-  pour que la migration vers l'outil d'administration ne demande pas de re-modélisation.
+  Schémas de contenu — forme alignée 1:1 avec le schéma Payload CMS du back-office (lot L3).
   Réf. docs/CONV-PAGE.md §12 (exigences fonctionnelles) et §Modèle de contenu du prompt maître.
-  API Content Layer (Astro v6+) : chaque collection a un loader explicite.
+  Source : le back-office quand PAYLOAD_API_URL est définie dans l'environnement (build de
+  production, voir src/lib/cms-content.ts), sinon les fichiers de src/content (développement,
+  CI, tests). Les pages ne voient aucune différence.
 */
 
+const source = (dossier: string, chargerDepuisCms: () => Promise<{ id: string }[]>) =>
+  cms.useCms ? chargerDepuisCms : glob({ pattern: '**/*.json', base: `./src/content/${dossier}` });
+
 const settings = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/settings' }),
+  loader: source('settings', cms.loadSettings),
   schema: z.object({
     etatActuel: z.enum(['campagne', 'evenement', 'prolongement']),
     forcageManuel: z.boolean().default(false),
@@ -28,7 +34,7 @@ const settings = defineCollection({
 });
 
 const venues = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/venues' }),
+  loader: source('venues', cms.loadVenues),
   schema: z.object({
     nom: z.string(),
     adresse: z.string(),
@@ -38,7 +44,7 @@ const venues = defineCollection({
 
 // Un document "program" par jour ; les séances sont la source unique affichée partout (règle R5).
 const program = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/program' }),
+  loader: source('program', cms.loadProgram),
   schema: z.object({
     date: z.string(), // AAAA-MM-JJ, Africa/Libreville
     label: z.string(), // ex. "Lundi 7 décembre"
@@ -59,7 +65,7 @@ const program = defineCollection({
 });
 
 const speakers = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/speakers' }),
+  loader: source('speakers', cms.loadSpeakers),
   schema: z.object({
     nom: z.string(),
     categorie: z.enum(['hote', 'international', 'national', 'prophetique', 'plateforme']),
@@ -71,7 +77,7 @@ const speakers = defineCollection({
 });
 
 const artists = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/artists' }),
+  loader: source('artists', cms.loadArtists),
   schema: z.object({
     nom: z.string(),
     photo: z.string().optional(),
@@ -79,7 +85,7 @@ const artists = defineCollection({
 });
 
 const products = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/products' }),
+  loader: source('products', cms.loadProducts),
   schema: z.object({
     nom: z.string(),
     categorie: z.enum(['academie', 'plateforme', 'concert', 'boutique', 'pass']),
@@ -92,7 +98,7 @@ const products = defineCollection({
 });
 
 const faq = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/faq' }),
+  loader: source('faq', cms.loadFaq),
   schema: z.object({
     question: z.string(),
     reponse: z.string(),
@@ -103,12 +109,17 @@ const faq = defineCollection({
 
 // Annonces factuelles (État 1) ; distinctes du futur Journal de la Convention (État 2, L4).
 const announcements = defineCollection({
-  loader: glob({ pattern: '**/*.json', base: './src/content/announcements' }),
+  loader: source('announcements', cms.loadAnnouncements),
   schema: z.object({
     titre: z.string(),
     texte: z.string(),
     date: z.string(), // AAAA-MM-JJ
     ordre: z.number(),
+    // Gérés dans le back-office ; absents des fichiers locaux (repli : src/lib/announcements.ts).
+    categorie: z.string().optional(),
+    icone: z.string().optional(),
+    lienHref: z.string().optional(),
+    lienLabel: z.string().optional(),
   }),
 });
 

@@ -68,8 +68,39 @@ applications Node.js — le plan « Premium » ne les inclut pas) :
   seuls des liens sortants vers les profils sociaux, déjà validés).
 
 **Statut : Couvert** pour la mise en ligne. Restent ouverts, hors de ce point : clé
-`ANTHROPIC_API_KEY` à fournir pour que NASTY réponde au-delà de son message d'attente ; pages du
-site encore alimentées par `src/content/**` (pas encore rebranchées sur le back-office).
+`ANTHROPIC_API_KEY` à fournir pour que NASTY réponde au-delà de son message d'attente. (Le
+rebranchement du site sur le back-office est traité dans l'entrée suivante.)
+
+## Lot L3 — le back-office devient la source du contenu du site (1er novembre 2026)
+
+Demande du Commanditaire : le contenu affiché sur le site doit se trouver dans le back-office
+(base vide jusque-là) et pouvoir y être ajouté, modifié, supprimé, activé ou désactivé.
+
+- **Import initial** (`backend/src/seed/`) : au premier démarrage, le back-office importe le
+  contenu actuel du site — 53 entrées et 10 photos, **aucune donnée inventée** (regroupement exact
+  de `src/content/**`). Une seule fois (marqueur caché), reprise sans doublon après interruption.
+- **Lecture par le site** (`src/lib/cms-content.ts`, `src/content.config.ts`) : en production,
+  les collections Astro sont alimentées par l'API du back-office au moment du build, dans la
+  forme exacte des fichiers d'origine — **pages inchangées**. Contenus désactivés exclus ; dates en
+  heure de Libreville ; identifiants d'adresse des orateurs conservés (nouveau champ « Identifiant
+  d'adresse », déduit du nom s'il est vide). Le site reste statique : aucune requête du visiteur
+  vers l'API (NF-CNV-001, budget de poids inchangé).
+- **Republication** (`backend/src/lib/site-rebuild.ts`) : toute modification déclenche, après 20 s
+  de calme, un commit vide sur le dépôt suivi par Hostinger, qui reconstruit le site (~2 min).
+  Nécessite un jeton GitHub limité à ce dépôt, à créer et saisir par le Commanditaire
+  (procédure : `backend/README.md`, « Republication du site ») — **écart signalé** : Hostinger ne
+  propose pas d'URL de déclenchement, d'où ce passage par Git.
+- **Sécurité de publication** : back-office injoignable ou import initial pas encore fait → le
+  build échoue volontairement et la version en ligne reste en place, jamais de site vide.
+
+Vérifications (base jetable locale, back-office en mode production) : migrations puis import
+automatiques au démarrage ; site construit depuis l'API **identique octet pour octet** au site
+construit depuis les fichiers sur les 27 pages (hors adresse des photos) ; trois modifications
+faites dans l'admin (FAQ désactivée, annonce renommée, orateur désactivé) visibles après
+reconstruction ; build refusé quand l'API est injoignable ; 53 enregistrements → une seule
+demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF-CNV-001/008) OK.
+
+**Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
 **Accessibilité (NF-CNV-008) — CI rétablie le 1er novembre 2026.** Deux violations axe « serious »
 faisaient échouer la CI depuis plusieurs commits, sur l'accueil, `/programme`, `/billetterie` et

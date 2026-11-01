@@ -218,7 +218,7 @@ const billetterieOuverture = settings?.data.bascules.campagneDebut;
         <SectionHeading eyebrow="Actualités" title="Dernières nouvelles" lienLabel="Voir toutes les actualités" lienHref="/actualites" inverse />
         <div class="announcements-list" data-reveal-group>
           {annoncesPreview.map((a) => {
-            const meta = getAnnonceMeta(a.id);
+            const meta = getAnnonceMeta(a.id, a.data);
             return (
               <AnnouncementCard
                 categorie={meta.categorie}
