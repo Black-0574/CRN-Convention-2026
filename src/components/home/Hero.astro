@@ -37,7 +37,24 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
         génération.
       </p>
 
-      <Countdown cibleISO={cibleISO} />
+      <!-- Rangée « compte à rebours + film » : sur mobile, le bouton du film se range au bout de la
+           rangée du compte à rebours (jamais par-dessus « SEC », quelle que soit la largeur) ; à
+           partir de 1024 px la rangée s'efface (display: contents) et le bouton reprend sa
+           composition flottante, repérée sur .hero__inner. -->
+      <div class="hero__countdown-row">
+        <Countdown cibleISO={cibleISO} />
+
+        <a
+          class="hero__video-cta"
+          href="#film"
+          aria-label="Voir le film de la Convention"
+          data-video-modal-trigger
+          data-video-src="/videos/film-convention-crn-2026.mp4"
+        >
+          <Icon name="play" size={18} />
+          <span class="hero__video-label">Voir le film</span>
+        </a>
+      </div>
 
       <div class="hero__actions">
         <Button href="/billetterie" variant="secondary">Prendre mon pass <Icon name="arrow-right" size={16} /></Button>
@@ -45,23 +62,6 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
         <p class="hero__badge"><Icon name="pin" size={14} /> Libreville, Gabon</p>
       </div>
     </div>
-
-    <!-- Dans .hero__inner (pas directement dans .hero) : .hero__inner EST le conteneur centré et
-         plafonné en largeur (classe "container") qui porte aussi le compte à rebours. En étant
-         positionné directement dans .hero, le bouton restait ancré aux bords bruts du héros, qui
-         ne bougent pas avec l'écran, alors que le conteneur du texte se recentre et se décale sur
-         les écrans larges (> 1384 px) — les deux finissaient par se chevaucher. Partager le même
-         repère règle le problème à toutes les largeurs. -->
-    <a
-      class="hero__video-cta"
-      href="#film"
-      aria-label="Voir le film de la Convention"
-      data-video-modal-trigger
-      data-video-src="/videos/film-convention-crn-2026.mp4"
-    >
-      <Icon name="play" size={18} />
-      <span class="hero__video-label">Voir le film</span>
-    </a>
   </div>
 
   <Image
@@ -191,17 +191,39 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
      l'orateur) : le contraste or sur fond sombre fait ressortir le bouton au lieu de s'y
      camoufler. Tous les autres CTA du site restent en bleu nuit. Voir docs/conformite.md.
      Sur mobile, le héros n'a aucune colonne libre (tout le texte occupe toute la largeur) : pas
-     de place pour la faire flotter dans un coin sans chevaucher un libellé. Épinglée au niveau du
-     compte à rebours (aligné avec « SEC »), juste à droite — devant l'orateur sans être sur lui
-     ni derrière lui (demande explicite) — plutôt que dans la rangée de boutons ; à partir de
-     1024 px, assez d'espace libère la pleine composition flottante avec son libellé, plus haut
-     dans le héros. */
+     de place pour la faire flotter dans un coin sans chevaucher un libellé. Placée au niveau du
+     compte à rebours, juste à droite — devant l'orateur sans être sur lui ni derrière lui
+     (demande explicite) — plutôt que dans la rangée de boutons : elle fait partie de la même
+     rangée flex que le compte à rebours (une position fixe en pixels finissait sur « SEC » dès
+     que le texte au-dessus passait sur une ligne de plus), et passe à la ligne, alignée à
+     droite, sur les tout petits écrans. À partir de 1024 px, assez d'espace libère la pleine
+     composition flottante avec son libellé, plus haut dans le héros. */
+  .hero__countdown-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+  }
+
+  /* Compte à rebours resserré (mobile seulement) pour laisser la place au bouton du film sur la
+     même ligne dès 360 px de large. */
+  @media (max-width: 1023px) {
+    .hero__countdown-row > :global(.countdown) {
+      flex: 0 1 auto;
+      min-width: 0;
+      gap: 10px;
+    }
+
+    .hero__countdown-row :global(.countdown__unit) {
+      min-width: 44px;
+    }
+  }
+
   .hero__video-cta {
-    position: absolute;
+    position: relative;
     z-index: 3;
-    top: 534px;
-    bottom: auto;
-    right: 0;
+    flex-shrink: 0;
+    margin-left: auto;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -367,7 +389,21 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
        médaillon plein format, qui chevaucherait alors l'orateur. Taille intermédiaire ici ; la
        version pleine grandeur reprend au-delà de 1224 px (voir media query suivante), quand le
        conteneur se plafonne et que l'espace redevient large et stable à toute largeur d'écran. */
+    /* La rangée mobile s'efface : le compte à rebours redevient un enfant direct du contenu (il
+       reprend son entrée en cascade et son espacement d'origine) et le bouton du film flotte,
+       repéré sur .hero__inner (.hero__content n'est pas positionné). */
+    .hero__countdown-row {
+      display: contents;
+    }
+
+    .hero__countdown-row > :global(.countdown) {
+      gap: var(--space-3);
+      animation: hero-fade-up 700ms cubic-bezier(0.22, 1, 0.36, 1) 300ms both;
+    }
+
     .hero__video-cta {
+      position: absolute;
+      margin-left: 0;
       top: 513px;
       bottom: auto;
       left: 413px;

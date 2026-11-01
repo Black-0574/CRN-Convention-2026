@@ -120,10 +120,34 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
 <script>
   const toggle = document.getElementById('nav-toggle');
   const nav = document.getElementById('site-nav');
+  const siteHeader = document.getElementById('site-header');
+  const toggleLabel = toggle?.querySelector('.visually-hidden');
+  const setNavOpen = (open: boolean) => {
+    toggle?.setAttribute('aria-expanded', String(open));
+    if (toggleLabel) toggleLabel.textContent = open ? 'Fermer le menu' : 'Ouvrir le menu';
+    nav?.classList.toggle('is-open', open);
+    siteHeader?.classList.toggle('has-open-nav', open);
+    // Hauteur maximale d'après la position réelle du menu (barre du haut visible ou non) : le
+    // menu tient toujours dans l'écran et défile en interne au besoin.
+    if (open && nav) nav.style.maxHeight = `${Math.max(200, window.innerHeight - nav.getBoundingClientRect().top - 12)}px`;
+  };
   toggle?.addEventListener('click', () => {
-    const expanded = toggle.getAttribute('aria-expanded') === 'true';
-    toggle.setAttribute('aria-expanded', String(!expanded));
-    nav?.classList.toggle('is-open', !expanded);
+    setNavOpen(toggle.getAttribute('aria-expanded') !== 'true');
+  });
+  // Menu mobile : se referme au toucher hors du menu, avec Échap (focus rendu au bouton) et en
+  // repassant en largeur bureau (rotation de l'écran).
+  document.addEventListener('click', (event) => {
+    if (toggle?.getAttribute('aria-expanded') !== 'true' || !(event.target instanceof Node)) return;
+    if (!nav?.contains(event.target) && !toggle.contains(event.target)) setNavOpen(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+      setNavOpen(false);
+      toggle.focus();
+    }
+  });
+  window.matchMedia('(min-width: 1024px)').addEventListener('change', (event) => {
+    if (event.matches) setNavOpen(false);
   });
 
   // Sous-menu « Multimédia » : ouverture au clic/tap (accessible au clavier et au tactile,
@@ -217,12 +241,16 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     background: var(--color-text);
   }
 
+  /* Mobile d'abord : logo, pilule « Mon pass » et bouton de menu doivent tenir sur une seule
+     ligne dès 320 px de large, sans jamais élargir la page (un en-tête trop large rendait tout le
+     site défilable de côté sur téléphone). Les tailles « confort » reviennent à partir de 640 px. */
   .site-header__inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-2);
-    padding-block: var(--space-2);
+    gap: var(--space-1);
+    padding-block: 10px;
+    padding-inline: 16px;
   }
 
   /* Logo posé sur un pavé blanc, légèrement en surplomb du bandeau (référence maquette) :
@@ -230,25 +258,29 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   .site-header__brand {
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
     background: var(--crn-blanc);
     border-radius: var(--radius-card-sm);
-    padding: 10px 18px;
-    margin-bottom: -22px;
+    padding: 6px 12px;
+    margin-bottom: -12px;
     box-shadow: var(--shadow-card);
     position: relative;
     z-index: 3;
   }
 
   .site-header__brand :global(img) {
-    height: 60px;
+    height: 40px;
     width: auto;
+    max-width: 100%;
+    object-fit: contain;
   }
 
   .site-header__actions {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    flex-shrink: 0;
+    gap: var(--space-1);
   }
 
   /* Pilule à avatar rond (modèle de référence) : seul élément primaire de l'écran (règle « un
@@ -259,9 +291,9 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 14px;
-    height: 70px;
-    padding: 8px 24px 8px 8px;
+    gap: 10px;
+    height: 52px;
+    padding: 5px 16px 5px 5px;
     border-radius: var(--radius-pill);
     background: linear-gradient(135deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
     border: 1.5px solid var(--crn-or-lumiere);
@@ -276,8 +308,8 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 54px;
-    height: 54px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background: var(--crn-or);
     color: var(--crn-bleu-nuit-profond);
@@ -290,10 +322,18 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     text-align: left;
   }
 
+  /* « Prendre » : masqué visuellement sur téléphone (place comptée, et rien sous 16 px), mais
+     toujours lu par les lecteurs d'écran — le lien s'annonce « Prendre Mon pass » partout. */
   .site-header__badge-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
     font-family: var(--font-labeur);
     font-weight: 700;
-    font-size: 13px;
+    font-size: 16px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--crn-or-lumiere);
@@ -302,8 +342,70 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   .site-header__badge-value {
     font-family: var(--font-labeur);
     font-weight: 700;
-    font-size: 19px;
+    font-size: 17px;
     white-space: nowrap;
+  }
+
+  /* Très petits écrans (< 360 px) : pilule réduite à son pictogramme, le texte reste lu. */
+  @media (max-width: 359px) {
+    .site-header__badge {
+      padding: 4px;
+      height: 50px;
+    }
+
+    .site-header__badge-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .site-header__inner {
+      gap: var(--space-2);
+      padding-block: var(--space-2);
+      padding-inline: var(--gutter-mobile);
+    }
+
+    .site-header__brand {
+      flex-shrink: 0;
+      padding: 10px 18px;
+      margin-bottom: -22px;
+    }
+
+    .site-header__brand :global(img) {
+      height: 60px;
+    }
+
+    .site-header__actions {
+      gap: var(--space-2);
+    }
+
+    .site-header__badge {
+      gap: 14px;
+      height: 70px;
+      padding: 8px 24px 8px 8px;
+    }
+
+    .site-header__badge-icon {
+      width: 54px;
+      height: 54px;
+    }
+
+    .site-header__badge-label {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip: auto;
+    }
+
+    .site-header__badge-value {
+      font-size: 19px;
+    }
   }
 
   .site-header__badge:hover {
@@ -347,6 +449,42 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     top: 6px;
   }
 
+  .site-header__toggle-bar,
+  .site-header__toggle-bar::before,
+  .site-header__toggle-bar::after {
+    transition: transform var(--transition-standard), background-color var(--transition-standard);
+  }
+
+  /* Menu ouvert : les trois traits deviennent une croix (fermer). */
+  .site-header__toggle[aria-expanded='true'] .site-header__toggle-bar {
+    background: transparent;
+  }
+
+  .site-header__toggle[aria-expanded='true'] .site-header__toggle-bar::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .site-header__toggle[aria-expanded='true'] .site-header__toggle-bar::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  /* L'en-tête posé sur le héros redevient opaque dès que le menu est ouvert : menu et croix
+     restent lisibles quelle que soit l'image dessous. */
+  .site-header--overlay.has-open-nav {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 1px 0 rgba(16, 16, 16, 0.06);
+  }
+
+  .site-header--overlay.has-open-nav .site-header__toggle {
+    border-color: var(--color-border);
+    background: none;
+  }
+
+  .site-header--overlay.has-open-nav .site-header__toggle-bar::before,
+  .site-header--overlay.has-open-nav .site-header__toggle-bar::after {
+    background: var(--color-text);
+  }
+
   /* Menu déroulant mobile : carte relevée (bord fin, ombre marquée, coin généreux), légère
      entrée animée (respecte prefers-reduced-motion via la règle globale). */
   .site-header__nav {
@@ -360,7 +498,13 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-lift);
     padding: var(--space-1) var(--space-2);
-    overflow: hidden;
+    /* Toujours dans l'écran : défilement interne si le menu (sous-menu ouvert compris) est plus
+       haut que l'espace restant sous l'en-tête. */
+    max-height: calc(100vh - var(--site-header-h, 72px) - 24px);
+    max-height: calc(100dvh - var(--site-header-h, 72px) - 24px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .site-header__nav.is-open {
@@ -497,6 +641,13 @@ const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
   .site-header__nav-item.is-open .site-header__submenu {
     display: flex;
     flex-direction: column;
+  }
+
+  /* Fermé tant que « Multimédia » n'est pas touché : sans ce sélecteur plus spécifique, la règle
+     générique `.site-header__nav ul { display: flex }` l'emportait et le sous-menu restait
+     toujours déplié sur mobile. */
+  .site-header__nav-item:not(.is-open) .site-header__submenu {
+    display: none;
   }
 
   .site-header__submenu a {

@@ -129,9 +129,11 @@ import { reseauxSociaux } from '../lib/social';
 </BaseLayout>
 
 <style>
+  /* minmax(0, …) : une colonne ne s'élargit jamais au-delà de l'écran pour un mot insécable
+     (adresse e-mail longue sur un téléphone de 320 px). */
   .contact-layout {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
     margin: var(--space-3) 0 var(--space-6) 0;
   }
@@ -265,6 +267,8 @@ import { reseauxSociaux } from '../lib/social';
   .contact-aside__item > span:last-child {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .contact-aside__label {
@@ -332,7 +336,7 @@ import { reseauxSociaux } from '../lib/social';
 
   @media (min-width: 1024px) {
     .contact-layout {
-      grid-template-columns: 1.3fr 1fr;
+      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
       align-items: start;
     }
   }

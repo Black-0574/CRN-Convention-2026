@@ -18,6 +18,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Filet de sécurité mobile : un élément trop large ne doit jamais rendre toute la page
+   défilable de côté (effet « page décalée » sur téléphone). `clip` et non `hidden` : ne crée pas
+   de conteneur de défilement, donc l'en-tête « sticky » continue de fonctionner. Les rangées
+   défilantes voulues (onglets, cartes) gardent leur propre défilement horizontal. */
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   margin: 0;
   background: var(--color-bg);

@@ -102,6 +102,33 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Correctif — affichage mobile « décalé » (NF-CNV-002, NF-CNV-008, 1er novembre 2026)
+
+Constat du Commanditaire (capture sur téléphone Android) : page décalée, bord gauche coupé, bande
+vide à droite, menu tronqué. Cause : l'en-tête (logo + pilule « Prendre mon pass » + bouton de
+menu) mesurait 461 px pour un écran de 375 px, rendant **toute la page** défilable de côté.
+
+- **En-tête mobile compact** (`Header.astro`) : logo 40 px, pilule « Mon pass » réduite
+  (« Prendre » masqué visuellement mais lu par les lecteurs d'écran, plus aucun texte sous 16 px),
+  pictogramme seul sous 360 px ; tailles d'origine à partir de 640 px, bureau inchangé.
+- **Menu mobile** : croix de fermeture, libellé « Ouvrir/Fermer le menu », fermeture par Échap
+  (focus rendu au bouton) et par toucher hors du menu, en-tête opaque quand il est ouvert,
+  hauteur limitée à l'écran avec défilement interne ; sous-menu « Multimédia » enfin replié par
+  défaut (un sélecteur plus spécifique le gardait toujours déplié).
+- **Héros** (`Hero.astro`) : le bouton « Voir le film », positionné à 534 px fixes, recouvrait
+  « SEC » du compte à rebours selon la largeur ; il est désormais dans la même rangée que le
+  compte à rebours (même emplacement voulu, sans chevauchement possible), bureau inchangé.
+- **Contact** : colonne `minmax(0, 1fr)` et adresse e-mail sécable (débordait à 320 px).
+- **Filet de sécurité** (`global.css`) : `overflow-x: clip` sur `html, body`.
+
+Preuve : mesure automatique de toutes les pages (accueil, programme, billetterie, académie,
+action sociale, infos pratiques, diaspora, FAQ, contact, actualités, galeries, mentions,
+confidentialité, 3 pages orateurs) à 320, 360 et 375 px, **filet de sécurité désactivé** : aucune
+page plus large que l'écran ; bouton du film sans chevauchement de 320 à 1440 px ; menu ouvert
+contenu dans l'écran à 360 × 600 px. Lint, types, tests unitaires et e2e (axe-core inclus) OK.
+
+**Statut : Couvert.**
+
 **Accessibilité (NF-CNV-008) — CI rétablie le 1er novembre 2026.** Deux violations axe « serious »
 faisaient échouer la CI depuis plusieurs commits, sur l'accueil, `/programme`, `/billetterie` et
 `/faq` : (1) le filigrane « CONVENTION CRN 2026 » du pied de page, purement décoratif (WCAG 1.4.3
