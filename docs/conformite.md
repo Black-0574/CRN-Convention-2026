@@ -31,6 +31,29 @@ la charte graphique du site. Réalisé sans toucher aux données ni à la struct
 
 **Statut : Couvert.**
 
+## Lot L3 — déploiement Hostinger : sous-domaine dédié et dépôt Git séparé (1er novembre 2026)
+
+Décisions prises avec le Commanditaire avant la mise en ligne :
+
+- **Sous-domaine `admin.crn-convention2026.events`**, pas un chemin sur le domaine principal (ex.
+  `crn-convention2026.events/admin`). **Écart signalé avant modification** : l'admin sert aussi des
+  routes `/api/...` (REST/GraphQL Payload, `/api/chat` pour NASTY) dont le site public et l'admin
+  lui-même dépendent ; un montage par chemin, documenté nulle part côté Hostinger, aurait laissé ces
+  routes hors de portée. Le Commanditaire a choisi le sous-domaine, solution robuste recommandée.
+- **Dépôt GitHub dédié au déploiement** : `https://github.com/Black-0574/CRN-Convention-2026-Backend`
+  (privé). Hostinger clone le dépôt Git connecté sans réglage de sous-dossier documenté ; `backend/`
+  n'étant qu'un sous-dossier du dépôt principal `CRN-Convention-2026`, un second dépôt a été créé
+  via `git subtree split --prefix=backend` (racine = contenu de `backend/`, historique conservé).
+  Le dépôt principal reste la seule source de vérité pour le développement ; la procédure de
+  resynchronisation est documentée dans `backend/README.md`.
+- Étapes précises de création de l'application Node.js, variables d'environnement et mise à jour
+  du site public (`PAYLOAD_API_URL`, `PUBLIC_CHAT_API_URL`) une fois l'admin en ligne : voir
+  `backend/README.md` (section « Déploiement sur hébergement mutualisé »).
+
+**Statut : Partiel.** Architecture de déploiement et dépôt prêts ; la création effective de
+l'application dans hPanel (authentification au compte Hostinger du Commanditaire) reste à faire
+par le Commanditaire lui-même.
+
 ## Écart assumé par le Commanditaire — images à visages générés par IA pour les cartes Trône/Autel/Cité (1er novembre 2026)
 
 L'utilisateur a fourni 3 images (foule en adoration, fidèles en prière à l'autel, famille marchant
