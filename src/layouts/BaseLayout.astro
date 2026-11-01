@@ -1,0 +1,93 @@
+---
+import { getEntry } from 'astro:content';
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import EcosystemBand from '../components/layout/EcosystemBand.astro';
+import InfoBanner from '../components/layout/InfoBanner.astro';
+import TopBar from '../components/layout/TopBar.astro';
+import VideoModal from '../components/shared/VideoModal.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  transparentHeader?: boolean;
+}
+const { title, description, transparentHeader = false } = Astro.props;
+
+const settings = await getEntry('settings', 'etat-convention');
+const bandeau = settings?.data.bandeau;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · Convention CRN 2026</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="theme-color" content="#1A2C5B" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:title" content={`${title} · Convention CRN 2026`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- Aucune police ni script tiers : tout est auto-hébergé (NF-CNV-001). -->
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu-principal">Aller au contenu principal</a>
+
+    <TopBar />
+    {bandeau?.actif && <InfoBanner texte={bandeau.texte} lien={bandeau.lien} />}
+    <Header transparent={transparentHeader} />
+
+    <main id="contenu-principal">
+      <slot />
+    </main>
+
+    <EcosystemBand />
+    <Footer />
+    <VideoModal />
+
+    <script>
+      // Révélation au défilement, sitewide — une seule apparition par élément, jamais de boucle
+      // (différent d'un carrousel : pas de contenu qui tourne/se répète). data-reveal-group pose
+      // --reveal-i sur ses enfants directs pour un effet de cascade ; prefers-reduced-motion
+      // affiche tout immédiatement, sans observer.
+      const groups = document.querySelectorAll('[data-reveal-group]');
+      groups.forEach((group) => {
+        [...group.children].forEach((child, i) => {
+          if (!(child instanceof HTMLElement)) return;
+          child.setAttribute('data-reveal', '');
+          child.style.setProperty('--reveal-i', String(i));
+        });
+      });
+
+      const revealEls = document.querySelectorAll('[data-reveal]');
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+        revealEls.forEach((el) => el.classList.add('is-revealed'));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+        );
+        revealEls.forEach((el) => observer.observe(el));
+      }
+    </script>
+  </body>
+</html>

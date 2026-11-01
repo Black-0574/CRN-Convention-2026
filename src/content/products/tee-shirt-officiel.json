@@ -1,0 +1,9 @@
+{
+  "nom": "Tee-shirt officiel",
+  "categorie": "boutique",
+  "prixFCFA": 10000,
+  "description": "Tee-shirt officiel de la Convention CRN 2026.",
+  "lienAchat": "#billetterie-a-configurer",
+  "statut": "disponible",
+  "ordre": 9
+}

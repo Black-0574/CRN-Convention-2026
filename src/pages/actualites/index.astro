@@ -1,0 +1,276 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/shared/Section.astro';
+import PageHero from '../../components/shared/PageHero.astro';
+import AnnouncementCard from '../../components/shared/AnnouncementCard.astro';
+import Icon from '../../components/shared/Icon.astro';
+import { getAnnonceMeta } from '../../lib/announcements';
+
+const annonces = (await getCollection('announcements')).sort((a, b) => a.data.ordre - b.data.ordre);
+
+const formatDate = (iso: string) =>
+  new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
+
+const items = annonces.map((a) => ({ ...a, meta: getAnnonceMeta(a.id) }));
+const categories = [...new Set(items.map((a) => a.meta.categorie))];
+---
+
+<BaseLayout
+  title="Actualités"
+  description="Toutes les actualités de la Convention CRN 2026 : billetterie, orateurs, action sociale et informations pratiques."
+>
+  <PageHero
+    eyebrow="Dernières nouvelles"
+    title="Actualités"
+    intro="Les dernières nouvelles de la Convention CRN 2026."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Actualités' }]}
+  />
+
+  <Section tone="default" ariaLabel="Actualités">
+    {items.length === 0 ? (
+      <p class="actualites-empty">Aucune actualité pour le moment.</p>
+    ) : (
+      <>
+        <div class="actualites-toolbar">
+          <label class="actualites-search">
+            <Icon name="search" size={18} />
+            <span class="sr-only">Rechercher dans les actualités</span>
+            <input type="search" id="actualites-search" placeholder="Rechercher une actualité…" />
+          </label>
+
+          <div class="actualites-filters" role="group" aria-label="Filtrer par rubrique" id="actualites-filters">
+            <button type="button" class="actualites-filter is-active" data-filter="toutes">Toutes</button>
+            {categories.map((c) => (
+              <button type="button" class="actualites-filter" data-filter={c}>{c}</button>
+            ))}
+          </div>
+        </div>
+
+        <div class="actualites-grid" data-reveal-group id="actualites-grid">
+          {items.map((a) => (
+            <AnnouncementCard
+              categorie={a.meta.categorie}
+              icone={a.meta.icone}
+              date={formatDate(a.data.date)}
+              dateISO={a.data.date}
+              titre={a.data.titre}
+              texte={a.data.texte}
+              lienHref={a.meta.lienHref}
+              lienLabel={a.meta.lienLabel}
+            />
+          ))}
+        </div>
+
+        <p class="actualites-no-result" id="actualites-no-result" hidden>
+          Aucune actualité ne correspond à votre recherche.
+        </p>
+      </>
+    )}
+  </Section>
+
+  <Section tone="feature" ariaLabel="Rester informé">
+    <div class="stay-informed">
+      <div>
+        <p class="stay-informed__title">Restez informés</p>
+        <p class="stay-informed__text">
+          Les annonces importantes (billetterie, programme, orateurs) sont publiées sur cette page
+          et relayées sur nos réseaux. Pour toute question, l'équipe vous répond directement.
+        </p>
+      </div>
+      <div class="stay-informed__actions">
+        <a class="button button--secondary" href="/contact">Nous contacter <Icon name="arrow-right" size={16} /></a>
+      </div>
+    </div>
+  </Section>
+
+  <script>
+    const searchInput = document.getElementById('actualites-search') as HTMLInputElement | null;
+    const filterGroup = document.getElementById('actualites-filters');
+    const grid = document.getElementById('actualites-grid');
+    const noResult = document.getElementById('actualites-no-result');
+
+    if (searchInput && filterGroup && grid && noResult) {
+      const cards = [...grid.querySelectorAll<HTMLElement>('.announcement-card')];
+      let activeFilter = 'toutes';
+
+      const applyFilters = () => {
+        const term = searchInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          const matchesCategory = activeFilter === 'toutes' || card.dataset.categorie === activeFilter;
+          const matchesSearch = term.length === 0 || card.textContent?.toLowerCase().includes(term);
+          const visible = matchesCategory && matchesSearch;
+          card.style.display = visible ? '' : 'none';
+          if (visible) visibleCount += 1;
+        });
+        noResult.hidden = visibleCount > 0;
+      };
+
+      searchInput.addEventListener('input', applyFilters);
+
+      filterGroup.addEventListener('click', (event) => {
+        const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-filter]');
+        if (!button) return;
+        filterGroup.querySelectorAll('[data-filter]').forEach((b) => b.classList.remove('is-active'));
+        button.classList.add('is-active');
+        activeFilter = button.dataset.filter ?? 'toutes';
+        applyFilters();
+      });
+    }
+  </script>
+</BaseLayout>
+
+<style>
+  .actualites-empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .actualites-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .actualites-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    min-height: var(--tap-target-min);
+    background: var(--color-bg-alt);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-muted);
+    transition: border-color var(--transition-standard);
+  }
+
+  .actualites-search:focus-within {
+    border-color: var(--crn-bleu-nuit);
+  }
+
+  .actualites-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font-labeur);
+    font-size: var(--text-s);
+    color: var(--color-text);
+    min-height: var(--tap-target-min);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .actualites-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .actualites-filter {
+    min-height: var(--tap-target-min);
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--color-border);
+    background: var(--color-bg-alt);
+    color: var(--crn-bleu-nuit);
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    cursor: pointer;
+    transition: background-color var(--transition-standard), color var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .actualites-filter:hover {
+    border-color: var(--crn-or);
+  }
+
+  .actualites-filter.is-active {
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  .actualites-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .actualites-no-result {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .stay-informed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .stay-informed__title {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h3-mobile);
+    color: var(--crn-blanc);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .stay-informed__text {
+    max-width: 65ch;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+  }
+
+  .stay-informed__actions :global(.button--secondary) {
+    color: var(--crn-blanc);
+    border-color: var(--crn-blanc);
+  }
+
+  .stay-informed__actions :global(.button--secondary:hover) {
+    background: rgba(217, 196, 138, 0.14);
+    color: var(--crn-or-lumiere);
+    border-color: var(--crn-or-lumiere);
+  }
+
+  @media (min-width: 640px) {
+    .actualites-toolbar {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .actualites-search {
+      max-width: 320px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .actualites-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .actualites-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .stay-informed {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+</style>

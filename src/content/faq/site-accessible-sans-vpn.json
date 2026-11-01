@@ -1,0 +1,6 @@
+{
+  "question": "Ai-je besoin d’un VPN pour accéder à ce site ou suivre le direct ?",
+  "reponse": "Non. Cette page est hébergée sur un domaine propre du CRN, sans dépendance à Facebook, YouTube, Instagram, TikTok ou WhatsApp. Elle s’affiche intégralement, et le direct se lit sans VPN, depuis le Gabon.",
+  "etats": ["campagne", "evenement", "prolongement"],
+  "ordre": 4
+}

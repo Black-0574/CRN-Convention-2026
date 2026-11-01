@@ -1,0 +1,129 @@
+---
+import { Image } from 'astro:assets';
+import Icon from '../shared/Icon.astro';
+import SectionHeading from '../shared/SectionHeading.astro';
+import filmAffiche from '../../assets/images/film-affiche.webp';
+---
+
+<div class="film">
+  <div class="film__text">
+    <SectionHeading eyebrow="Le film de la Convention" title="Revivez l'essence du CRN" inverse />
+    <p>
+      Un film retraçant l'esprit et l'appel de la Convention CRN 2026.
+    </p>
+  </div>
+  <button
+    type="button"
+    class="film__frame"
+    aria-label="Voir le film de la Convention"
+    data-video-modal-trigger
+    data-video-src="/videos/film-convention-crn-2026.mp4"
+  >
+    <Image src={filmAffiche} alt="" width={960} height={540} class="film__poster" />
+    <span class="film__play"><Icon name="play" size={28} /></span>
+    <span class="film__note">Voir le film</span>
+  </button>
+</div>
+
+<style>
+  .film {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+    align-items: center;
+  }
+
+  /* Même taille que l'étiquette de la bande « chiffres clés » (déjà même couleur via la règle
+     --inverse globale de SectionHeading). */
+  .film__text :global(.section-heading__eyebrow) {
+    font-size: 32px;
+  }
+
+  .film__text p {
+    color: rgba(255, 255, 255, 0.85);
+    max-width: 48ch;
+  }
+
+  /* Miniature : affiche officielle de la Convention en fond de cadre (fournie par le
+     Commanditaire), avec un voile sombre pour garder le bouton lecture et le libellé lisibles
+     quelle que soit la zone de l'affiche derrière eux. */
+  .film__frame {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-card);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    overflow: hidden;
+    width: 100%;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard);
+  }
+
+  .film__frame:hover,
+  .film__frame:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .film__frame:hover .film__play,
+  .film__frame:focus-visible .film__play {
+    background: var(--crn-or-lumiere);
+    color: var(--crn-bleu-nuit-profond);
+  }
+
+  .film__poster {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .film__frame::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(180deg, rgba(16, 16, 16, 0.55) 0%, rgba(16, 16, 16, 0.3) 45%, rgba(16, 16, 16, 0.65) 100%);
+  }
+
+  .film__play {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 1.5px solid var(--crn-or-lumiere);
+    color: var(--crn-or-lumiere);
+    background: rgba(16, 16, 16, 0.35);
+    transition: background-color var(--transition-standard), color var(--transition-standard);
+  }
+
+  .film__note {
+    position: relative;
+    z-index: 2;
+    color: var(--crn-blanc);
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  }
+
+  @media (min-width: 768px) {
+    .film {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

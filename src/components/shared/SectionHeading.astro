@@ -1,0 +1,67 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  lienLabel?: string;
+  lienHref?: string;
+  inverse?: boolean;
+}
+const { eyebrow, title, lienLabel, lienHref, inverse = false } = Astro.props;
+---
+
+<div class={`section-heading ${inverse ? 'section-heading--inverse' : ''}`} data-reveal>
+  <div>
+    <p class="section-heading__eyebrow">{eyebrow}</p>
+    <h2 class="section-heading__title">{title}</h2>
+  </div>
+  {lienLabel && lienHref && (
+    <a class="section-heading__link" href={lienHref}>{lienLabel} →</a>
+  )}
+</div>
+
+<style>
+  .section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  /* Sur fond clair, l'or ne porte jamais de texte (règle absolue GBIS) : l'étiquette reste bleu nuit. */
+  .section-heading__eyebrow {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--crn-bleu-nuit);
+    margin: 0 0 4px 0;
+  }
+
+  .section-heading--inverse .section-heading__eyebrow {
+    color: var(--crn-or);
+  }
+
+  .section-heading__title {
+    margin: 0;
+  }
+
+  .section-heading__link {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .section-heading--inverse .section-heading__link {
+    color: var(--crn-blanc);
+  }
+
+  .section-heading__link:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -1,0 +1,36 @@
+{
+  "date": "2026-12-13",
+  "label": "Dimanche 13 décembre — Nomad",
+  "ordre": 9,
+  "sessions": [
+    {
+      "heureDebut": "09:00",
+      "heureFin": "12:00",
+      "titre": "Culte unique de toutes les églises",
+      "lieu": "Nomad",
+      "intervenants": [],
+      "noteIntervenant": "Orateur à annoncer",
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "13:00",
+      "heureFin": "14:30",
+      "titre": "Cérémonie d’ordination",
+      "lieu": "Nomad",
+      "intervenants": [],
+      "noteIntervenant": "Responsables : Alphonsine Ambouroué, Marie-Paule Asseh",
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "17:00",
+      "heureFin": "20:00",
+      "titre": "Concert pour la vie",
+      "lieu": "Nomad",
+      "intervenants": [],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    }
+  ]
+}

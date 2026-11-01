@@ -1,0 +1,72 @@
+---
+---
+<div class="theme-banner">
+  <p class="theme-banner__ghost" aria-hidden="true">2026</p>
+  <p class="theme-banner__eyebrow">Le thème de la Convention</p>
+  <p class="theme-banner__text">Du Trône à l'autel, de l'autel à la cité.</p>
+</div>
+
+<style>
+  /* Le fond (dégradé bleu nuit/or, lueur, particules) vient maintenant du ton « feature » du
+     Section englobant (index.astro) — identique à la section « Le film de la Convention ».
+     Ce bloc ne garde que ses propres écritures. */
+  .theme-banner {
+    position: relative;
+    text-align: center;
+  }
+
+  .theme-banner__ghost {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: clamp(90px, 28vw, 260px);
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(217, 196, 138, 0.18);
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Même couleur et taille que l'étiquette de la bande « chiffres clés ». */
+  .theme-banner__eyebrow {
+    position: relative;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--crn-or);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .theme-banner__text {
+    position: relative;
+    font-family: var(--font-titrage);
+    font-style: italic;
+    color: var(--crn-blanc);
+    font-size: var(--text-h2-mobile);
+    max-width: 24ch;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 768px) {
+    .theme-banner__text {
+      font-size: var(--text-h1);
+      max-width: 30ch;
+    }
+  }
+
+  /* Sur un conteneur assez large, la phrase tient sur une seule ligne : on lève le retour à la
+     ligne forcé par max-width/wrap plutôt que de la laisser casser alors qu'il reste de la place. */
+  @media (min-width: 1024px) {
+    .theme-banner__text {
+      max-width: none;
+      white-space: nowrap;
+    }
+  }
+</style>

@@ -1,0 +1,16 @@
+{
+  "date": "2026-12-06",
+  "label": "Dimanche 6 décembre",
+  "ordre": 2,
+  "sessions": [
+    {
+      "heureDebut": "09:00",
+      "heureFin": "12:00",
+      "titre": "Culte unique",
+      "lieu": "Église Centrale",
+      "intervenants": ["robert-ondoa"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    }
+  ]
+}

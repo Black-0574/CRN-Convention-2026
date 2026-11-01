@@ -1,0 +1,199 @@
+---
+import Icon from '../shared/Icon.astro';
+const annee = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <a class="site-footer__top" href="#contenu-principal" aria-label="Retour en haut de page">
+    <Icon name="arrow-up" size={18} />
+  </a>
+  <div class="container site-footer__grid">
+    <div>
+      <h2 class="site-footer__title">Convention CRN 2026</h2>
+      <p class="text-s">Du Trône à l'autel, de l'autel à la cité<br />6 – 13 décembre 2026 · Libreville, Gabon</p>
+    </div>
+
+    <nav aria-label="Liens du pied de page">
+      <h3 class="site-footer__heading">Navigation</h3>
+      <ul class="site-footer__list">
+        <li><a href="/programme">Programme</a></li>
+        <li><a href="/billetterie">Billetterie</a></li>
+        <li><a href="/infos-pratiques">Infos pratiques</a></li>
+        <li><a href="/faq">FAQ</a></li>
+      </ul>
+    </nav>
+
+    <div>
+      <h3 class="site-footer__heading">Contact</h3>
+      <ul class="site-footer__list">
+        <li><a href="/contact">Nous contacter</a></li>
+        <li class="site-footer__placeholder">CRN International <span class="text-s">(lien à renseigner)</span></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="site-footer__heading">Mentions</h3>
+      <ul class="site-footer__list">
+        <li><a href="/mentions-legales">Mentions légales</a></li>
+        <li><a href="/confidentialite">Confidentialité</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container site-footer__bottom text-s">
+    <div class="site-footer__bottom-text">
+      <p>© {annee} Ministères Christ Révélé aux Nations (CRN). Tous droits réservés.</p>
+      <p>Site officiel de la Convention CRN 2026 · Libreville, Gabon</p>
+    </div>
+    <a class="site-footer__credit" href="https://axxion.consulting/" target="_blank" rel="noopener noreferrer">
+      Powered by <span>AXXION CONSULTING</span>
+    </a>
+  </div>
+
+  <p class="site-footer__ghost" aria-hidden="true">CONVENTION CRN 2026</p>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    background: var(--crn-bleu-nuit-profond);
+    color: rgba(255, 255, 255, 0.78);
+    padding-block: var(--space-6);
+    overflow: hidden;
+  }
+
+  /* Repositionné à l'intérieur du pied de page (auparavant à moitié flottant au-dessus, dans la
+     marge vide qui précédait le footer — désormais occupée par la bande « Écosystème digital
+     CRN » ; flottant plus haut, il se faisait couper par l'overflow:hidden du footer). */
+  .site-footer__top {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--gutter-mobile);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+    box-shadow: 0 10px 22px -8px rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--crn-bleu-nuit-profond);
+  }
+
+  .site-footer__top:hover {
+    background: var(--crn-or);
+    color: var(--crn-noir);
+  }
+
+  @media (min-width: 1024px) {
+    .site-footer__top {
+      right: var(--gutter-desktop);
+    }
+  }
+
+  .site-footer__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .site-footer__grid {
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    }
+  }
+
+  .site-footer__title {
+    font-size: var(--text-h4);
+    color: var(--crn-blanc);
+  }
+
+  .site-footer__heading {
+    font-family: var(--font-labeur);
+    font-size: var(--text-s);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--crn-or-lumiere);
+    margin-bottom: var(--space-1);
+  }
+
+  .site-footer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .site-footer__list a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+  }
+
+  .site-footer__list a:hover {
+    text-decoration: underline;
+  }
+
+  .site-footer__placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .site-footer__bottom {
+    position: relative;
+    z-index: 1;
+    margin-top: var(--space-6);
+    padding-top: var(--space-2);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.55);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+
+  .site-footer__bottom-text p {
+    margin: 0;
+  }
+
+  .site-footer__credit {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--transition-standard);
+  }
+
+  .site-footer__credit span {
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.78);
+    transition: color var(--transition-standard);
+  }
+
+  .site-footer__credit:hover,
+  .site-footer__credit:hover span {
+    color: var(--crn-or-lumiere);
+  }
+
+  .site-footer__ghost {
+    position: relative;
+    z-index: 0;
+    margin: var(--space-3) 0 calc(-1 * var(--space-6)) 0;
+    text-align: center;
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: clamp(28px, 6vw, 62px);
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(217, 196, 138, 0.12);
+    white-space: nowrap;
+    overflow: hidden;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>

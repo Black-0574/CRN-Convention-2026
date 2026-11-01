@@ -1,0 +1,20 @@
+---
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary' | 'text' | 'badge';
+  external?: boolean;
+}
+const { href, variant = 'primary', external = false } = Astro.props;
+---
+
+<a
+  class={`button button--${variant}`}
+  href={href}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+>
+  <slot />
+</a>
+
+<!-- Styles globaux : voir src/styles/global.css (.button, .button--primary, etc.) pour que
+     ces classes soient réutilisables depuis n'importe quel composant, pas seulement ici. -->

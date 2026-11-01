@@ -1,0 +1,512 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import Button from '../components/shared/Button.astro';
+import SectionHeading from '../components/shared/SectionHeading.astro';
+import IconCallout from '../components/shared/IconCallout.astro';
+import Icon from '../components/shared/Icon.astro';
+import Hero from '../components/home/Hero.astro';
+import ThreeMovements from '../components/home/ThreeMovements.astro';
+import StatsBand from '../components/home/StatsBand.astro';
+import FilmTeaser from '../components/home/FilmTeaser.astro';
+import ThemeBanner from '../components/home/ThemeBanner.astro';
+import PlatformCard from '../components/home/PlatformCard.astro';
+import SpeakerCard from '../components/speakers/SpeakerCard.astro';
+import ProgramPreview from '../components/program/ProgramPreview.astro';
+import FaqAccordion from '../components/shared/FaqAccordion.astro';
+import AnnouncementCard from '../components/shared/AnnouncementCard.astro';
+import { isPublished } from '../lib/state';
+import { getAnnonceMeta } from '../lib/announcements';
+
+const formatAnnonceDate = (iso: string) =>
+  new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
+
+const now = new Date();
+
+const speakersAll = await getCollection('speakers');
+const speakersPublished = speakersAll.filter((s) => isPublished(now, s.data.datePublication));
+
+const plateformes = [
+  { titre: 'Académie des Sciences Divines', date: '8 – 10 décembre', lieu: 'Église Centrale', href: '/academie', icone: 'book' as const },
+  { titre: 'Femme de Foi — Live', date: '12 décembre', lieu: 'Église Centrale', href: '/billetterie', icone: 'heart' as const },
+  { titre: "J'ai soif", date: '12 décembre', lieu: 'Église Centrale', href: '/billetterie', icone: 'heart' as const },
+  { titre: 'Concert pour la vie', date: '13 décembre', lieu: 'Nomad', href: '/billetterie', icone: 'music' as const },
+  { titre: 'Culte unique & ordination', date: '13 décembre', lieu: 'Nomad', href: '/programme', icone: 'crown' as const },
+  { titre: 'Dîner des Élites', date: '12 décembre', lieu: 'Lieu à annoncer', href: '/billetterie', icone: 'building' as const },
+];
+
+const joursProgramme = (await getCollection('program')).sort((a, b) => a.data.ordre - b.data.ordre);
+const speakerName = (slug: string) => speakersAll.find((s) => s.id === slug)?.data.nom ?? slug;
+const joursPreview = joursProgramme.map((j) => ({
+  date: j.data.date,
+  labelCourt: j.data.label.replace(/^\w+\s/, '').replace(/\s—.*$/, ''),
+  sessions: j.data.sessions
+    .filter((s) => s.visible)
+    .map((s) => ({
+      heureDebut: s.heureDebut,
+      heureFin: s.heureFin,
+      titre: s.titre,
+      lieu: s.lieu,
+      intervenantsNoms: s.intervenants.map(speakerName),
+      noteIntervenant: s.noteIntervenant,
+    })),
+}));
+
+const faqsPreview = (await getCollection('faq')).sort((a, b) => a.data.ordre - b.data.ordre).slice(0, 3);
+const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.data.ordre - b.data.ordre);
+
+const settings = await getEntry('settings', 'etat-convention');
+const billetterieOuverture = settings?.data.bascules.campagneDebut;
+---
+
+<BaseLayout
+  title="Accueil"
+  description="Convention CRN 2026, du 6 au 13 décembre à Libreville. Programme, billetterie, direct et infos pratiques, accessibles sans VPN."
+  transparentHeader
+>
+  <Hero />
+
+  <Section tone="feature" ariaLabel="La Convention">
+    <ThreeMovements />
+  </Section>
+
+  <Section tone="inverse" ariaLabel="Chiffres clés">
+    <StatsBand />
+  </Section>
+
+  <Section id="film" tone="feature" ariaLabel="Le film de la Convention">
+    <FilmTeaser />
+  </Section>
+
+  <Section id="programme-apercu" tone="alt" ariaLabel="Programme">
+    <SectionHeading eyebrow="Programme" title="Huit jours pour grandir et impacter" lienLabel="Voir le programme complet" lienHref="/programme" inverse />
+    <ProgramPreview jours={joursPreview} />
+  </Section>
+
+  <Section tone="feature" ariaLabel="Le thème de la Convention">
+    <ThemeBanner />
+  </Section>
+
+  <Section id="orateurs-apercu" tone="feature" ariaLabel="Orateurs">
+    <SectionHeading eyebrow="Les orateurs" title="Des serviteurs au service d'une génération" lienLabel="Voir tous les orateurs" lienHref="/orateurs" inverse />
+    <div class="speakers-row">
+      <button type="button" class="speakers-row__nav speakers-row__nav--prev" data-action="speakers-prev" aria-label="Orateurs précédents">
+        <Icon name="arrow-left" size={18} />
+      </button>
+      <div class="home-speakers-grid" id="home-speakers-grid">
+        {speakersPublished.map((s) => (
+          <SpeakerCard nom={s.data.nom} categorie={s.data.categorie} photo={s.data.photo} href={`/orateurs/${s.id}`} />
+        ))}
+        {speakersPublished.length > 0 && (
+          <div class="home-speakers-grid__loop" aria-hidden="true" inert>
+            {speakersPublished.map((s) => (
+              <SpeakerCard nom={s.data.nom} categorie={s.data.categorie} photo={s.data.photo} />
+            ))}
+          </div>
+        )}
+      </div>
+      <button type="button" class="speakers-row__nav speakers-row__nav--next" data-action="speakers-next" aria-label="Orateurs suivants">
+        <Icon name="arrow-right" size={18} />
+      </button>
+    </div>
+    {speakersPublished.length === 0 && (
+      <p class="home-speakers-empty">Les fiches des orateurs seront révélées progressivement à partir du 2 novembre 2026.</p>
+    )}
+  </Section>
+
+  <script>
+    // Défilement autonome — DÉROGATION DOCUMENTÉE à la règle GBIS « Aucun carrousel ni
+    // défilement automatique » (voir docs/conformite.md). Même mécanique que la bande
+    // « Écosystème digital CRN » : boucle continue (second jeu de cartes dupliqué et masqué),
+    // pause au survol/focus, flèches manuelles, et prefers-reduced-motion désactive entièrement
+    // le défilement automatique (défilement manuel aux flèches seul alors disponible).
+    const speakersGrid = document.getElementById('home-speakers-grid');
+    if (speakersGrid) {
+      const scrollByAmount = () => speakersGrid.clientWidth * 0.8;
+      let autoPaused = false;
+      const pauseAuto = () => { autoPaused = true; };
+      const resumeAuto = () => { autoPaused = false; };
+
+      document.querySelector('[data-action="speakers-prev"]')?.addEventListener('click', () => {
+        pauseAuto();
+        speakersGrid.scrollBy({ left: -scrollByAmount(), behavior: 'smooth' });
+        window.setTimeout(resumeAuto, 1200);
+      });
+      document.querySelector('[data-action="speakers-next"]')?.addEventListener('click', () => {
+        pauseAuto();
+        speakersGrid.scrollBy({ left: scrollByAmount(), behavior: 'smooth' });
+        window.setTimeout(resumeAuto, 1200);
+      });
+
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const hasLoop = speakersGrid.querySelector('.home-speakers-grid__loop');
+
+      if (!prefersReducedMotion && hasLoop) {
+        speakersGrid.addEventListener('mouseenter', pauseAuto);
+        speakersGrid.addEventListener('mouseleave', resumeAuto);
+        speakersGrid.addEventListener('focusin', pauseAuto);
+        speakersGrid.addEventListener('focusout', resumeAuto);
+
+        const speedPxPerSecond = 22;
+        let last = performance.now();
+
+        const tick = (now: number) => {
+          const dt = (now - last) / 1000;
+          last = now;
+          if (!autoPaused) {
+            const half = speakersGrid.scrollWidth / 2;
+            speakersGrid.scrollLeft += speedPxPerSecond * dt;
+            if (speakersGrid.scrollLeft >= half) {
+              speakersGrid.scrollLeft -= half;
+            }
+          }
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }
+  </script>
+
+  <Section id="plateformes-phares" tone="alt" ariaLabel="Plateformes phares">
+    <SectionHeading eyebrow="Plateformes phares" title="Des temps forts pour tous" lienLabel="Voir la billetterie" lienHref="/billetterie" inverse />
+    <div class="platform-grid" data-reveal-group>
+      {plateformes.map((p) => (
+        <PlatformCard titre={p.titre} date={p.date} lieu={p.lieu} href={p.href} icone={p.icone} />
+      ))}
+    </div>
+  </Section>
+
+  <Section id="billetterie-apercu" tone="feature" ariaLabel="Billetterie">
+    {billetterieOuverture && (
+      <p class="ticketing-badge">Ouverture le 25 octobre 2026</p>
+    )}
+    <SectionHeading eyebrow="Billetterie" title="Choisissez votre pass" lienLabel="Voir la grille complète" lienHref="/billetterie" inverse />
+    <p class="ticketing-intro">
+      Académie, plateformes, Concert pour la vie, pass et boutique : la grille tarifaire complète et
+      les règles d'accès par QR code sont sur la page Billetterie.
+    </p>
+    <Button href="/billetterie" variant="secondary">Voir la billetterie</Button>
+  </Section>
+
+  <Section id="action-sociale-apercu" tone="alt" ariaLabel="Action sociale et diaspora">
+    <div class="callout-grid" data-reveal-group>
+      <IconCallout
+        icone="heart"
+        titre="Action sociale"
+        texte="Collecte de vivres et de vêtements du 9 au 27 novembre, distribution le 5 décembre."
+        lienLabel="En savoir plus"
+        lienHref="/action-sociale"
+      />
+      <IconCallout
+        icone="wifi"
+        titre="Suivre à distance"
+        texte="Donnez en ligne et rejoignez la session diaspora du 19 décembre, où que vous soyez."
+        lienLabel="En savoir plus"
+        lienHref="/diaspora"
+      />
+    </div>
+  </Section>
+
+  <Section id="faq-actualites-apercu" tone="feature" ariaLabel="Questions fréquentes et actualités">
+    <div class="split-grid">
+      <div>
+        <SectionHeading eyebrow="Questions fréquentes" title="Vos questions, nos réponses" lienLabel="Voir toute la FAQ" lienHref="/faq" inverse />
+        <FaqAccordion items={faqsPreview.map((f) => f.data)} />
+      </div>
+      <div>
+        <SectionHeading eyebrow="Actualités" title="Dernières nouvelles" lienLabel="Voir toutes les actualités" lienHref="/actualites" inverse />
+        <div class="announcements-list" data-reveal-group>
+          {annoncesPreview.map((a) => {
+            const meta = getAnnonceMeta(a.id);
+            return (
+              <AnnouncementCard
+                categorie={meta.categorie}
+                icone={meta.icone}
+                date={formatAnnonceDate(a.data.date)}
+                dateISO={a.data.date}
+                titre={a.data.titre}
+                texte={a.data.texte}
+                lienHref={meta.lienHref}
+                lienLabel={meta.lienLabel}
+              />
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  /* Fond de la section « Programme » : même bleu nuit uni que la bande « chiffres clés »
+     (demande explicite), avec adaptation des écritures et du contraste de l'onglet actif, qui se
+     fondait sinon dans ce même bleu. Les onglets inactifs et la carte de séance gardent leur fond
+     blanc propre (flottent sur le fond sombre), aucun changement nécessaire pour eux. */
+  :global(#programme-apercu) {
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  :global(#programme-apercu .section-heading__title) {
+    color: var(--crn-blanc);
+  }
+
+  /* Même taille que l'étiquette de la bande « chiffres clés » (couleur déjà identique via la
+     règle --inverse globale de SectionHeading). */
+  :global(#programme-apercu .section-heading__eyebrow) {
+    font-size: 32px;
+  }
+
+  :global(#programme-apercu .program-preview__tab[aria-selected='true']) {
+    background: var(--crn-or);
+    border-color: var(--crn-or);
+    color: var(--crn-noir);
+  }
+
+  /* Même fond bleu nuit uni que « Programme » (demande explicite) ; les pavés gardent leur fond
+     clair propre et flottent dessus, comme les cartes de séance de la section Programme. */
+  :global(#plateformes-phares) {
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  :global(#plateformes-phares .section-heading__title) {
+    color: var(--crn-blanc);
+  }
+
+  :global(#plateformes-phares .section-heading__eyebrow) {
+    font-size: 32px;
+  }
+
+  /* Même couleur (déjà identique via --inverse) et même taille que l'étiquette « Plateformes
+     phares ». */
+  :global(#orateurs-apercu .section-heading__eyebrow) {
+    font-size: 32px;
+  }
+
+  /* Même fond (toile sombre « feature ») que « Le thème de la Convention » ; adaptation des
+     écritures et du bouton, clairs sur fond clair à l'origine. */
+  :global(#billetterie-apercu .section-heading__eyebrow) {
+    font-size: 32px;
+  }
+
+  :global(#billetterie-apercu .ticketing-badge) {
+    color: var(--crn-blanc);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  :global(#billetterie-apercu .ticketing-intro) {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  :global(#billetterie-apercu .button--secondary) {
+    color: var(--crn-blanc);
+    border-color: var(--crn-blanc);
+  }
+
+  :global(#billetterie-apercu .button--secondary:hover) {
+    background: rgba(217, 196, 138, 0.14);
+    color: var(--crn-or-lumiere);
+    border-color: var(--crn-or-lumiere);
+  }
+
+  /* Même fond bleu nuit uni que « Plateformes phares » ; les pavés gardent leur fond clair et
+     flottent dessus. */
+  :global(#action-sociale-apercu) {
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  /* Même fond (toile sombre « feature ») que « Les orateurs ». Les questions et les actualités
+     gardent le même langage de pavé clair flottant qu'ailleurs sur la page : rebords or en
+     haut/droite, écritures bleu nuit gras ; l'état ouvert de la FAQ garde ce même fond clair
+     (plutôt que le bleu nuit plein d'origine, qui se fondrait dans une section déjà sombre), avec
+     un halo or plus marqué pour signaler l'ouverture. */
+  :global(#faq-actualites-apercu .section-heading__eyebrow) {
+    font-size: 32px;
+  }
+
+  :global(#faq-actualites-apercu .faq-item) {
+    background: linear-gradient(165deg, var(--crn-blanc) 0%, var(--crn-creme) 100%);
+    border-style: solid;
+    border-width: 3px 3px 1px 1px;
+    border-color: var(--crn-or) var(--crn-or) var(--color-border) var(--color-border);
+    box-shadow: var(--shadow-card);
+  }
+
+  :global(#faq-actualites-apercu .faq-item[open]) {
+    background: linear-gradient(165deg, var(--crn-blanc) 0%, var(--crn-creme) 100%);
+    border-color: var(--crn-or-lumiere) var(--crn-or-lumiere) var(--crn-or) var(--crn-or);
+    box-shadow: var(--shadow-lift), 0 0 0 1px rgba(184, 150, 62, 0.3);
+  }
+
+  :global(#faq-actualites-apercu .faq-item__question),
+  :global(#faq-actualites-apercu .faq-item[open] .faq-item__question) {
+    color: var(--crn-bleu-nuit);
+  }
+
+  :global(#faq-actualites-apercu .faq-item__icon) {
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    border: 2px solid var(--crn-or);
+    color: var(--crn-or);
+  }
+
+  :global(#faq-actualites-apercu .faq-item[open] .faq-item__icon) {
+    color: var(--crn-or-lumiere);
+    border-color: var(--crn-or-lumiere);
+  }
+
+  :global(#faq-actualites-apercu .faq-item__answer),
+  :global(#faq-actualites-apercu .faq-item[open] .faq-item__answer) {
+    color: var(--crn-bleu-nuit-profond);
+    font-weight: 700;
+  }
+
+  /* Fond « feature » : étiquette/note des cartes orateur repassées en clair (elles restent en
+     gris muted sur la fiche orateur individuelle, fond clair, inchangée). */
+  :global(#orateurs-apercu .speaker-card__role),
+  :global(#orateurs-apercu .speaker-card__note) {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  /* Ligne horizontale — défilement autonome (DÉROGATION DOCUMENTÉE à la règle GBIS « Aucun
+     carrousel ni défilement automatique », voir docs/conformite.md, même principe que la bande
+     « Écosystème digital CRN »), avec flèches prev/next manuelles, pause au survol/focus et zoom
+     sur la photo survolée. */
+  .speakers-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .speakers-row__nav {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(16, 16, 16, 0.25);
+    color: var(--crn-blanc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .speakers-row__nav:hover {
+    background: var(--crn-or);
+    border-color: var(--crn-or);
+    color: var(--crn-noir);
+  }
+
+  /* Chaque carte garde une largeur fixe. Pas de scroll-snap : la boucle est continue (voir le
+     script), un alignement forcé créerait des à-coups. Barre de défilement native masquée : les
+     flèches la remplacent (le glissement tactile/molette reste possible). */
+  .home-speakers-grid {
+    flex: 1;
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 4px var(--space-2) 4px;
+    scrollbar-width: none;
+  }
+
+  .home-speakers-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-speakers-grid :global(.speaker-card) {
+    flex: 0 0 148px;
+  }
+
+  /* Second jeu de cartes, identique mais masqué aux lecteurs d'écran/clavier (aria-hidden +
+     inert) : sert uniquement à boucler le défilement sans saut visible. display:contents pour
+     que ses cartes participent directement au flex de la rangée, comme si elles étaient à plat. */
+  .home-speakers-grid__loop {
+    display: contents;
+  }
+
+  /* « Zoom avant » sur la photo survolée, au-dessus de ses voisines. */
+  .home-speakers-grid :global(.speaker-card__frame) {
+    overflow: hidden;
+  }
+
+  .home-speakers-grid :global(.speaker-card__frame img) {
+    transition: transform var(--transition-standard);
+  }
+
+  .home-speakers-grid :global(.speaker-card:hover .speaker-card__frame img) {
+    transform: scale(1.12);
+  }
+
+  .home-speakers-grid :global(.speaker-card:hover) {
+    z-index: 1;
+  }
+
+  .home-speakers-empty {
+    color: rgba(255, 255, 255, 0.85);
+    font-style: italic;
+  }
+
+  .platform-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .ticketing-badge {
+    display: inline-block;
+    font-size: var(--text-s);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    border: 1px solid var(--crn-bleu-nuit);
+    border-radius: var(--radius-control);
+    padding: 2px 10px;
+    margin-bottom: var(--space-1);
+  }
+
+  .callout-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .split-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .announcements-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  @media (min-width: 768px) {
+    .home-speakers-grid :global(.speaker-card) {
+      flex-basis: 190px;
+    }
+
+    .platform-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .callout-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .home-speakers-grid :global(.speaker-card) {
+      flex-basis: 210px;
+    }
+
+    .split-grid {
+      grid-template-columns: 1.3fr 1fr;
+    }
+  }
+</style>

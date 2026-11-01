@@ -1,0 +1,112 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/shared/Section.astro';
+import Breadcrumb from '../../components/shared/Breadcrumb.astro';
+import SpeakerCard from '../../components/speakers/SpeakerCard.astro';
+import { isPublished } from '../../lib/state';
+
+export async function getStaticPaths() {
+  const speakers = await getCollection('speakers');
+  return speakers.map((s) => ({ params: { slug: s.id }, props: { speaker: s } }));
+}
+
+const { speaker } = Astro.props;
+const now = new Date();
+const publie = isPublished(now, speaker.data.datePublication);
+
+const categorieLabels: Record<string, string> = {
+  hote: 'Hôte',
+  international: 'Orateur international',
+  national: 'Orateur national',
+  prophetique: 'Ministère prophétique',
+  plateforme: 'Intervenante de plateforme',
+};
+---
+
+<BaseLayout
+  title={speaker.data.nom}
+  description={`Fiche orateur — ${speaker.data.nom}, Convention CRN 2026.`}
+>
+  <Section tone="default" ariaLabel="Fiche orateur">
+    <Breadcrumb
+      items={[
+        { label: 'Accueil', href: '/' },
+        { label: 'Orateurs', href: '/orateurs' },
+        { label: speaker.data.nom },
+      ]}
+    />
+    {publie ? (
+      <div class="speaker-detail" data-reveal>
+        <div class="speaker-detail__photo">
+          <SpeakerCard nom={speaker.data.nom} categorie={speaker.data.categorie} photo={speaker.data.photo} hideCaption />
+        </div>
+        <div>
+          <p class="speaker-detail__category">{categorieLabels[speaker.data.categorie]}</p>
+          <h1>{speaker.data.nom}</h1>
+          {speaker.data.bio ? (
+            <p>{speaker.data.bio}</p>
+          ) : (
+            <p class="speaker-detail__placeholder">Biographie à paraître.</p>
+          )}
+          <a class="speaker-detail__back" href="/orateurs">← Tous les orateurs</a>
+        </div>
+      </div>
+    ) : (
+      <div class="speaker-detail__hidden">
+        <h1>Fiche à venir</h1>
+        <p>Cette fiche sera révélée prochainement.</p>
+      </div>
+    )}
+  </Section>
+</BaseLayout>
+
+<style>
+  .speaker-detail {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+
+  .speaker-detail__photo {
+    max-width: 220px;
+  }
+
+  .speaker-detail__category {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    font-size: var(--text-s);
+    color: var(--crn-or-profond);
+    background: var(--crn-creme);
+    border: 1px solid var(--crn-or-lumiere);
+    border-radius: var(--radius-pill);
+    padding: 4px 14px;
+    margin-bottom: var(--space-1);
+  }
+
+  .speaker-detail__placeholder {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .speaker-detail__back {
+    display: inline-block;
+    margin-top: var(--space-2);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+  }
+
+  .speaker-detail__back:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 768px) {
+    .speaker-detail {
+      grid-template-columns: 220px 1fr;
+      align-items: start;
+    }
+  }
+</style>

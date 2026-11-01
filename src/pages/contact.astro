@@ -1,0 +1,347 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import PageHero from '../components/shared/PageHero.astro';
+import Icon from '../components/shared/Icon.astro';
+
+const reseaux: { name: 'facebook' | 'youtube' | 'linkedin' | 'instagram' | 'tiktok' | 'x'; label: string }[] = [
+  { name: 'facebook', label: 'Facebook' },
+  { name: 'youtube', label: 'YouTube' },
+  { name: 'linkedin', label: 'LinkedIn' },
+  { name: 'instagram', label: 'Instagram' },
+  { name: 'tiktok', label: 'TikTok' },
+  { name: 'x', label: 'X' },
+];
+---
+
+<BaseLayout
+  title="Contact"
+  description="Contacter l’équipe de la Convention CRN 2026 : formulaire, hotline, e-mail et réseaux sociaux."
+>
+  <PageHero
+    eyebrow="Nous écrire"
+    title="Contact"
+    intro="Une question sur la Convention, la billetterie ou le programme ? Écrivez-nous, l’équipe vous répond au plus vite."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Contact' }]}
+  />
+
+  <Section tone="default" ariaLabel="Contact">
+    <div class="contact-layout">
+      <div class="contact-card" data-reveal>
+        <h2 class="contact-card__title">Envoyez-nous un message</h2>
+        <p class="contact-card__subtitle">
+          Remplissez le formulaire ci-dessous : votre messagerie s’ouvre avec le message prérempli,
+          prêt à envoyer.
+        </p>
+
+        <form class="contact-form" id="contact-form">
+          <div class="contact-form__row">
+            <div class="contact-field">
+              <label for="contact-prenom">Prénom</label>
+              <input type="text" id="contact-prenom" name="prenom" autocomplete="given-name" required />
+            </div>
+            <div class="contact-field">
+              <label for="contact-nom">Nom</label>
+              <input type="text" id="contact-nom" name="nom" autocomplete="family-name" />
+            </div>
+          </div>
+
+          <div class="contact-field">
+            <label for="contact-email">E-mail</label>
+            <input type="email" id="contact-email" name="email" autocomplete="email" required />
+          </div>
+
+          <div class="contact-field">
+            <label for="contact-telephone">Téléphone <span class="contact-field__optional">(facultatif)</span></label>
+            <input type="tel" id="contact-telephone" name="telephone" autocomplete="tel" placeholder="+241 00 00 00 00" />
+          </div>
+
+          <div class="contact-field">
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" rows={5} required></textarea>
+          </div>
+
+          <button type="submit" class="button button--primary contact-form__submit">
+            Envoyer le message <Icon name="arrow-right" size={16} />
+          </button>
+        </form>
+      </div>
+
+      <aside class="contact-aside" data-reveal>
+        <p class="contact-aside__title">Nous sommes à votre écoute.</p>
+        <p class="contact-aside__text">
+          Pour toute urgence pendant la Convention, privilégiez la hotline — réponse plus rapide
+          que par e-mail.
+        </p>
+
+        <ul class="contact-aside__list">
+          <li class="contact-aside__item">
+            <span class="contact-aside__icon"><Icon name="phone" size={20} /></span>
+            <span>
+              <span class="contact-aside__label">Hotline</span>
+              <a href="tel:+24170101010">+241 70 10 10 10</a>
+            </span>
+          </li>
+          <li class="contact-aside__item">
+            <span class="contact-aside__icon"><Icon name="mail" size={20} /></span>
+            <span>
+              <span class="contact-aside__label">E-mail</span>
+              <a href="mailto:contact@crn-convention.events">contact@crn-convention.events</a>
+            </span>
+          </li>
+        </ul>
+
+        <p class="contact-aside__social-title">Nous suivre</p>
+        <ul class="contact-aside__social">
+          {reseaux.map((r) => (
+            <li>
+              <a href="#" aria-label={r.label}>
+                <Icon name={r.name} size={18} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    </div>
+  </Section>
+
+  <script>
+    // Pas de back-end de formulaire à ce lot (L2) : le message s'envoie via mailto, pré-rempli à
+    // partir des champs. Une vraie passerelle d'envoi (file d'attente, accusé de réception) reste
+    // à arbitrer pour un lot ultérieur — voir docs/conformite.md.
+    const form = document.getElementById('contact-form');
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(form as HTMLFormElement);
+      const prenom = String(data.get('prenom') ?? '').trim();
+      const nom = String(data.get('nom') ?? '').trim();
+      const email = String(data.get('email') ?? '').trim();
+      const telephone = String(data.get('telephone') ?? '').trim();
+      const message = String(data.get('message') ?? '').trim();
+
+      const sujet = `Contact Convention CRN 2026 — ${prenom} ${nom}`.trim();
+      const corps = [
+        `Nom : ${prenom} ${nom}`.trim(),
+        `E-mail : ${email}`,
+        telephone && `Téléphone : ${telephone}`,
+        '',
+        message,
+      ]
+        .filter(Boolean)
+        .join('\n');
+
+      const lien = `mailto:contact@crn-convention.events?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+      window.location.href = lien;
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    margin: var(--space-3) 0 var(--space-6) 0;
+  }
+
+  .contact-card {
+    padding: var(--space-3);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .contact-card__title {
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .contact-card__subtitle {
+    margin: 0 0 var(--space-3) 0;
+    color: var(--color-text-muted);
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .contact-form__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .contact-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .contact-field label {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .contact-field__optional {
+    font-weight: 400;
+    color: var(--color-text-muted);
+  }
+
+  .contact-field input,
+  .contact-field textarea {
+    font-family: var(--font-labeur);
+    font-size: var(--text-s);
+    min-height: var(--tap-target-min);
+    padding: 10px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--crn-blanc);
+    color: var(--color-text);
+    transition: border-color var(--transition-standard), box-shadow var(--transition-standard);
+  }
+
+  .contact-field textarea {
+    min-height: 120px;
+    padding-top: 10px;
+    resize: vertical;
+  }
+
+  .contact-field input:focus,
+  .contact-field textarea:focus {
+    border-color: var(--crn-bleu-nuit);
+  }
+
+  .contact-form__submit {
+    align-self: flex-start;
+    margin-top: var(--space-1);
+  }
+
+  /* Volet sombre (bleu nuit) : seule zone de la page en accent fort, pour faire ressortir les
+     coordonnées de contact comme dans le modèle de référence. */
+  .contact-aside {
+    padding: var(--space-3);
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-blanc);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .contact-aside__title {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h4-mobile);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .contact-aside__text {
+    margin: 0 0 var(--space-3) 0;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .contact-aside__list {
+    list-style: none;
+    margin: 0 0 var(--space-3) 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .contact-aside__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .contact-aside__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(217, 196, 138, 0.14);
+    border: 1.5px solid var(--crn-or-lumiere);
+    color: var(--crn-or);
+  }
+
+  .contact-aside__item > span:last-child {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .contact-aside__label {
+    font-size: var(--text-s);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--crn-or-lumiere);
+  }
+
+  .contact-aside__item a {
+    color: var(--crn-blanc);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .contact-aside__item a:hover {
+    color: var(--crn-or-lumiere);
+    text-decoration: underline;
+  }
+
+  .contact-aside__social-title {
+    font-size: var(--text-s);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--crn-or-lumiere);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .contact-aside__social {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: var(--space-1);
+  }
+
+  .contact-aside__social a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    color: var(--crn-blanc);
+    transition: background-color var(--transition-standard), border-color var(--transition-standard), color var(--transition-standard), transform var(--transition-standard);
+  }
+
+  .contact-aside__social a:hover,
+  .contact-aside__social a:focus-visible {
+    background: var(--crn-or);
+    border-color: var(--crn-or);
+    color: var(--crn-noir);
+    transform: translateY(-2px);
+  }
+
+  @media (min-width: 560px) {
+    .contact-form__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .contact-layout {
+      grid-template-columns: 1.3fr 1fr;
+      align-items: start;
+    }
+  }
+</style>

@@ -1,0 +1,16 @@
+{
+  "date": "2026-12-05",
+  "label": "Samedi 5 décembre — Pré-convention",
+  "ordre": 1,
+  "sessions": [
+    {
+      "heureDebut": "09:00",
+      "heureFin": "12:00",
+      "titre": "Action sociale",
+      "lieu": "Église Centrale",
+      "intervenants": [],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    }
+  ]
+}

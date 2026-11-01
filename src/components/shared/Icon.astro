@@ -1,0 +1,154 @@
+---
+/*
+  Iconographie GBIS §07 : grille 24 px, trait 1,5 px d'épaisseur constante,
+  angles droits ou rayon 2 px, jamais de pictogramme plein, jamais de couleur multiple.
+  Un pictogramme n'accompagne un libellé que pour l'illustrer, il ne le remplace jamais.
+*/
+export type IconName =
+  | 'crown'
+  | 'flame'
+  | 'building'
+  | 'calendar'
+  | 'people'
+  | 'book'
+  | 'music'
+  | 'clock'
+  | 'pin'
+  | 'play'
+  | 'ticket'
+  | 'camera'
+  | 'newspaper'
+  | 'arrow-left'
+  | 'arrow-right'
+  | 'arrow-up'
+  | 'chevron-down'
+  | 'heart'
+  | 'wifi'
+  | 'mail'
+  | 'phone'
+  | 'facebook'
+  | 'youtube'
+  | 'linkedin'
+  | 'instagram'
+  | 'tiktok'
+  | 'x'
+  | 'search';
+
+interface Props {
+  name: IconName;
+  size?: number;
+}
+const { name, size = 24 } = Astro.props;
+---
+
+<svg
+  class="icon"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.5"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  {name === 'crown' && (
+    <path d="M3 18h18M4 18l-1-9 5 4 4-7 4 7 5-4-1 9" />
+  )}
+  {name === 'flame' && (
+    <path d="M12 3c2 3-1 4-1 7a3 3 0 1 0 6 0c0-1-.5-2-1-3 2 1 3 4 3 6a6 6 0 1 1-12 0c0-3 2-5 5-10Z" />
+  )}
+  {name === 'building' && (
+    <path d="M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 10h.01M15 10h.01M9 14h.01M15 14h.01" />
+  )}
+  {name === 'calendar' && (
+    <path d="M4 10h16M7 3v4M17 3v4M5 6h14a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Z" />
+  )}
+  {name === 'people' && (
+    <path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 11a3 3 0 1 0 0-6M15 14c2.8.3 5 2.8 5 6" />
+  )}
+  {name === 'book' && (
+    <path d="M4 5a2 2 0 0 1 2-2h5v18H6a2 2 0 0 0-2 2V5ZM20 5a2 2 0 0 0-2-2h-5v18h5a2 2 0 0 0 2-2V5Z" />
+  )}
+  {name === 'music' && (
+    <path d="M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+  )}
+  {name === 'clock' && (
+    <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7v5l3 3" />
+  )}
+  {name === 'pin' && (
+    <path d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12ZM12 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+  )}
+  {name === 'play' && <path d="M8 5v14l12-7Z" />}
+  {name === 'camera' && (
+    <>
+      <path d="M4 8a2 2 0 0 1 2-2h2l1.2-1.6A2 2 0 0 1 10.8 3.6h2.4a2 2 0 0 1 1.6.8L16 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </>
+  )}
+  {name === 'newspaper' && (
+    <path d="M4 5h12a2 2 0 0 1 2 2v12a1 1 0 0 0 1 1 1 1 0 0 0 1-1V9h-1M4 5v14a1 1 0 0 0 1 1h13M7 9h7M7 13h7M7 17h4" />
+  )}
+  {name === 'ticket' && (
+    <path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 1 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 1 0 0-4ZM12 6v2M12 11v2M12 16v2" />
+  )}
+  {name === 'arrow-left' && <path d="M19 12H5M11 6l-6 6 6 6" />}
+  {name === 'arrow-right' && <path d="M5 12h14M13 6l6 6-6 6" />}
+  {name === 'arrow-up' && <path d="M12 19V5M6 11l6-6 6 6" />}
+  {name === 'chevron-down' && <path d="M6 9l6 6 6-6" />}
+  {name === 'heart' && (
+    <path d="M12 20s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 5c-2.5 4.5-9.5 9-9.5 9Z" />
+  )}
+  {name === 'wifi' && (
+    <path d="M2 9a16 16 0 0 1 20 0M5.5 13a11 11 0 0 1 13 0M9 17a5.5 5.5 0 0 1 6 0M12 21h.01" />
+  )}
+  {name === 'mail' && (
+    <path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM3 7l9 6 9-6" />
+  )}
+  {name === 'phone' && (
+    <path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 5 5L14 13l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z" />
+  )}
+  {/* Icônes de réseaux sociaux : silhouettes au trait, génériques (GBIS §07) — jamais le logo
+      de marque en couleur, jamais d'intégration/widget, simples liens de sortie uniquement. */}
+  {name === 'facebook' && (
+    <path d="M14 21v-7h2.5l.5-3H14V9a1.5 1.5 0 0 1 1.5-1.5H17V4.5c-.4-.05-1.3-.15-2.3-.15A3.7 3.7 0 0 0 11 8.4V11H8.5v3H11v7Z" />
+  )}
+  {name === 'youtube' && (
+    <>
+      <rect x="2.5" y="6" width="19" height="12" rx="4" />
+      <path d="M10 9.5l5 2.5-5 2.5Z" stroke-linejoin="round" />
+    </>
+  )}
+  {name === 'linkedin' && (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M7.5 10.5V17M7.5 7.5v.01" />
+      <path d="M11 17v-4.5a2 2 0 0 1 4 0V17M11 12.5V17" />
+    </>
+  )}
+  {name === 'instagram' && (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.5 6.5h.01" />
+    </>
+  )}
+  {name === 'tiktok' && (
+    <path d="M13.5 3.5v11a3.3 3.3 0 1 1-3.3-3.3M13.5 3.5c.3 2.4 2.1 4.2 4.5 4.5" />
+  )}
+  {name === 'x' && <path d="M5 5l14 14M19 5 5 19" />}
+  {name === 'search' && (
+    <>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M20 20l-4.8-4.8" />
+    </>
+  )}
+</svg>
+
+<style>
+  .icon {
+    display: inline-block;
+    flex-shrink: 0;
+  }
+</style>

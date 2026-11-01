@@ -1,0 +1,148 @@
+---
+interface Props {
+  nom: string;
+  prixFCFA: number | null;
+  description: string;
+  lienAchat?: string;
+  statut: 'disponible' | 'complet' | 'a_annoncer';
+  featured?: boolean;
+}
+const { nom, prixFCFA, description, lienAchat, statut, featured = false } = Astro.props;
+
+const prixAffiche = prixFCFA === null ? 'À annoncer' : `${prixFCFA.toLocaleString('fr-FR')} F CFA`;
+---
+
+<article class={`price-card ${featured ? 'price-card--featured' : ''}`}>
+  {featured && <span class="price-card__flag">Recommandé</span>}
+  <div class="price-card__head">
+    <h3 class="price-card__name">{nom}</h3>
+    {statut === 'complet' && <span class="price-card__badge">Complet</span>}
+  </div>
+  <p class="price-card__price">{prixAffiche}</p>
+  {statut !== 'a_annoncer' && <p class="price-card__description">{description}</p>}
+  {statut === 'disponible' && lienAchat && (
+    <a class={`button price-card__cta ${featured ? 'price-card__cta--on-dark' : 'button--secondary'}`} href={lienAchat}>Prendre ce pass</a>
+  )}
+  {statut === 'complet' && <p class="price-card__note">Ce produit est actuellement complet.</p>}
+  {statut === 'a_annoncer' && <p class="price-card__note">Contenu et tarif à annoncer.</p>}
+</article>
+
+<style>
+  .price-card {
+    position: relative;
+    border: var(--border-width-rest) solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: var(--space-3);
+    background: var(--color-bg-alt);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    height: 100%;
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard);
+  }
+
+  .price-card:hover {
+    box-shadow: var(--shadow-card);
+    transform: translateY(-2px);
+  }
+
+  /* Carte recommandée : fond bleu nuit, filet or ; jamais l'or en aplat (règle absolue GBIS). */
+  .price-card--featured {
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .price-card__flag {
+    position: absolute;
+    top: -12px;
+    left: var(--space-3);
+    background: var(--crn-or);
+    color: var(--crn-noir);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+  }
+
+  .price-card__head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: var(--space-1);
+  }
+
+  .price-card__name {
+    font-size: var(--text-h4-mobile);
+    margin: 0;
+  }
+
+  .price-card--featured .price-card__name {
+    color: var(--crn-blanc);
+  }
+
+  .price-card__badge {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    padding: 2px 10px;
+  }
+
+  .price-card__price {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h3-mobile);
+    /* Jamais de texte or sur fond clair (règle absolue GBIS). Sur la carte recommandée (fond
+       bleu nuit), l'or lumière passe le seuil de contraste en grand corps. */
+    color: var(--crn-bleu-nuit);
+    margin: 0;
+  }
+
+  .price-card--featured .price-card__price {
+    color: var(--crn-or-lumiere);
+  }
+
+  .price-card__description {
+    color: var(--color-text-muted);
+    margin: 0;
+    flex-grow: 1;
+  }
+
+  .price-card--featured .price-card__description {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .price-card__cta {
+    margin-top: var(--space-1);
+    align-self: flex-start;
+  }
+
+  .price-card__cta--on-dark {
+    background: var(--crn-blanc);
+    color: var(--crn-bleu-nuit);
+  }
+
+  /* Jamais l'or en aplat de bouton (règle absolue GBIS), y compris au survol. */
+  .price-card__cta--on-dark:hover {
+    background: var(--crn-creme);
+  }
+
+  .price-card__note {
+    font-size: var(--text-s);
+    color: var(--color-text-muted);
+    font-style: italic;
+    margin: var(--space-1) 0 0 0;
+  }
+
+  .price-card--featured .price-card__note {
+    color: rgba(255, 255, 255, 0.7);
+  }
+</style>

@@ -1,0 +1,91 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import PageHero from '../components/shared/PageHero.astro';
+import PriceCard from '../components/ticketing/PriceCard.astro';
+import AccessRules from '../components/ticketing/AccessRules.astro';
+
+const produits = (await getCollection('products')).sort((a, b) => a.data.ordre - b.data.ordre);
+
+const categories: { key: typeof produits[number]['data']['categorie']; label: string }[] = [
+  { key: 'academie', label: "Académie des Sciences Divines" },
+  { key: 'plateforme', label: 'Plateformes' },
+  { key: 'concert', label: 'Concert pour la vie' },
+  { key: 'pass', label: 'Pass' },
+  { key: 'boutique', label: 'Boutique' },
+];
+---
+
+<BaseLayout
+  title="Billetterie"
+  description="Grille tarifaire officielle de la Convention CRN 2026 : Académie, plateformes, Concert pour la vie, pass et boutique."
+>
+  <PageHero
+    eyebrow="Ouverte depuis le 25 octobre"
+    title="Billetterie"
+    intro="Chaque pass est nominatif et intransférable, lié à un QR code unique — voir les règles d’accès ci-dessous."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Billetterie' }]}
+  />
+
+  <Section tone="default" ariaLabel="Billetterie">
+    {categories.map((cat) => {
+      const items = produits.filter((p) => p.data.categorie === cat.key);
+      if (items.length === 0) return null;
+      return (
+        <div class="price-group" id={cat.key}>
+          <h2>{cat.label}</h2>
+          <div class="price-grid" data-reveal-group>
+            {items.map((p) => (
+              <PriceCard
+                nom={p.data.nom}
+                prixFCFA={p.data.prixFCFA}
+                description={p.data.description}
+                lienAchat={p.data.lienAchat}
+                statut={p.data.statut}
+                featured={p.data.nom === 'Pass Académie Intégral'}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    })}
+
+    <div class="access-rules-wrap">
+      <AccessRules />
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .price-group {
+    margin-top: var(--space-6);
+  }
+
+  .price-group h2 {
+    font-size: var(--text-h4-mobile);
+  }
+
+  .price-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .access-rules-wrap {
+    margin-top: var(--space-6);
+  }
+
+  @media (min-width: 768px) {
+    .price-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .price-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

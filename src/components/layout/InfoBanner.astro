@@ -1,0 +1,74 @@
+---
+interface Props {
+  texte: string;
+  lien?: string;
+}
+const { texte, lien } = Astro.props;
+---
+
+<div class="info-banner" id="info-banner" role="region" aria-label="Annonce">
+  <div class="container info-banner__inner">
+    <p class="info-banner__text">
+      {lien ? <a href={lien}>{texte}</a> : texte}
+    </p>
+    <button class="info-banner__close" type="button" id="info-banner-close" aria-label="Fermer cette annonce">
+      ×
+    </button>
+  </div>
+</div>
+
+<script>
+  const banner = document.getElementById('info-banner');
+  const closeBtn = document.getElementById('info-banner-close');
+  const KEY = 'crn-convention-bandeau-ferme';
+
+  if (banner && sessionStorage.getItem(KEY) === '1') {
+    banner.remove();
+  }
+
+  closeBtn?.addEventListener('click', () => {
+    banner?.remove();
+    try {
+      sessionStorage.setItem(KEY, '1');
+    } catch {
+      /* stockage indisponible : fermeture non mémorisée, sans conséquence */
+    }
+  });
+</script>
+
+<style>
+  .info-banner {
+    background: var(--color-bg-inverse);
+    color: var(--color-text-inverse);
+  }
+
+  .info-banner__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-block: var(--space-1);
+    font-size: var(--text-s);
+  }
+
+  .info-banner__text {
+    margin: 0;
+  }
+
+  .info-banner__text a {
+    color: var(--color-text-inverse);
+    text-decoration: underline;
+  }
+
+  .info-banner__close {
+    background: none;
+    border: none;
+    color: var(--color-text-inverse);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    min-width: var(--tap-target-min);
+    min-height: var(--tap-target-min);
+    flex-shrink: 0;
+  }
+</style>

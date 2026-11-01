@@ -1,0 +1,35 @@
+---
+interface Props {
+  accent?: boolean;
+}
+const { accent = true } = Astro.props;
+---
+
+<article class={`info-card ${accent ? 'info-card--accent' : ''}`}>
+  <slot />
+</article>
+
+<style>
+  /* Carte élevée réutilisable (infos pratiques, diaspora, académie, placeholders multimédia…) :
+     même langage visuel partout sur les pages internes — fond clair, ombre douce, liseré or en
+     tête, légère élévation au survol. */
+  .info-card {
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: var(--space-3);
+    height: 100%;
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .info-card--accent {
+    border-top: 3px solid var(--crn-or);
+  }
+
+  .info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+    border-color: var(--crn-or-lumiere);
+  }
+</style>

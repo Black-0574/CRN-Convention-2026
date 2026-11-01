@@ -1,0 +1,164 @@
+---
+import Icon from '../shared/Icon.astro';
+
+const chiffres = [
+  { valeur: '8', label: 'jours', icone: 'calendar' as const },
+  { valeur: '8', label: 'orateurs', icone: 'people' as const },
+  { valeur: '3', label: "classes de l'Académie", icone: 'book' as const },
+  { valeur: '10', label: 'artistes', icone: 'music' as const },
+];
+---
+
+<p class="stats-band__eyebrow" data-reveal>La Convention en quelques chiffres</p>
+<ul class="stats-band" data-reveal-group>
+  {chiffres.map((c) => (
+    <li class="stats-band__item">
+      <span class="stats-band__icon"><Icon name={c.icone} size={32} /></span>
+      <span class="stats-band__value" data-count={c.valeur}>{c.valeur}</span>
+      <span class="stats-band__label">{c.label}</span>
+    </li>
+  ))}
+</ul>
+
+<script>
+  // Petit compteur « qui monte » au premier passage à l'écran — purement décoratif, la valeur
+  // réelle est déjà dans le HTML (secours sans JS / lecteurs d'écran), jamais reproduit en boucle.
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const values = document.querySelectorAll('.stats-band__value[data-count]');
+
+  const animateCount = (el: Element) => {
+    const target = Number(el.getAttribute('data-count'));
+    if (!Number.isFinite(target)) return;
+    const duration = 900;
+    const start = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = String(Math.round(target * eased));
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = String(target);
+    };
+    el.textContent = '0';
+    requestAnimationFrame(step);
+  };
+
+  if (!prefersReducedMotion && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    values.forEach((el) => observer.observe(el));
+  }
+</script>
+
+<style>
+  .stats-band__eyebrow {
+    text-align: left;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--crn-or);
+    margin: 0 0 var(--space-3) 0;
+  }
+
+  .stats-band {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  .stats-band__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Médaillon à double cerclage (anneau fin extérieur + liseré intérieur) avec halo doré discret,
+     pour une présence plus marquée qu'un simple contour fin. Icône en or vieilli (#B8963E) sur
+     cerclage or lumière, pour un contraste de teintes à l'intérieur de la même famille. Animation
+     au survol de la carte entière (voir .stats-band__item:hover) ; respecte prefers-reduced-motion
+     via la règle globale (transition-duration neutralisée). */
+  .stats-band__icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(217, 196, 138, 0.14) 0%, rgba(217, 196, 138, 0.03) 70%);
+    border: 1.5px solid var(--crn-or-lumiere);
+    box-shadow: 0 0 0 5px rgba(217, 196, 138, 0.08), 0 14px 28px -16px rgba(0, 0, 0, 0.6);
+    color: var(--crn-or);
+    margin-bottom: 4px;
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .stats-band__icon::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    border: 1px solid rgba(184, 150, 62, 0.35);
+  }
+
+  .stats-band__value {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h1-mobile);
+    color: var(--crn-blanc);
+    line-height: 1;
+    transition: color var(--transition-standard);
+  }
+
+  .stats-band__label {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-p);
+    color: var(--crn-or);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* Survol : l'icône se soulève et tourne légèrement, le halo s'intensifie, le chiffre passe à
+     l'or lumière — une seule zone interactive (l'item), pas de dépendance au pointeur fin
+     (comportement purement décoratif, aucune perte d'info au clavier/tactile). */
+  .stats-band__item:hover .stats-band__icon {
+    transform: translateY(-4px) rotate(-6deg) scale(1.06);
+    border-color: var(--crn-or);
+    box-shadow: 0 0 0 8px rgba(217, 196, 138, 0.14), 0 20px 32px -16px rgba(0, 0, 0, 0.7);
+  }
+
+  .stats-band__item:hover .stats-band__value {
+    color: var(--crn-or-lumiere);
+  }
+
+  @media (min-width: 768px) {
+    .stats-band {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .stats-band__icon {
+      width: 92px;
+      height: 92px;
+    }
+
+    .stats-band__value {
+      font-size: var(--text-h1);
+    }
+  }
+</style>

@@ -1,0 +1,26 @@
+{
+  "date": "2026-12-11",
+  "label": "Vendredi 11 décembre",
+  "ordre": 7,
+  "sessions": [
+    {
+      "heureDebut": "06:00",
+      "heureFin": "07:30",
+      "titre": "Matin de gloire spécial — Sainte Cène et prière pour les familles",
+      "lieu": "Église Centrale",
+      "intervenants": ["mike-jocktane"],
+      "noteIntervenant": "Avec la participation de tous les orateurs",
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "17:00",
+      "heureFin": "21:00",
+      "titre": "Soirée africaine et prophétique",
+      "lieu": "Église Centrale",
+      "intervenants": ["nadia-jocktane", "wilson-ndi", "jek-kalombo"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    }
+  ]
+}

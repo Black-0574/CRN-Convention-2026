@@ -1,0 +1,171 @@
+---
+import Icon from '../shared/Icon.astro';
+
+/*
+  Barre utilitaire permanente (hotline + réseaux sociaux), distincte du bandeau d'information
+  (F-CNV-004, piloté par src/content/settings). Les icônes sociales sont de simples liens de
+  sortie, jamais des intégrations/scripts tiers (NF-CNV-001 ; cf. docs/CONV-BENCH-01.md §2.3).
+  URL des comptes à renseigner par l'équipe digitale du CRN — voir docs/conformite.md.
+*/
+const reseaux: { name: 'facebook' | 'youtube' | 'linkedin' | 'instagram' | 'tiktok' | 'x'; label: string }[] = [
+  { name: 'facebook', label: 'Facebook' },
+  { name: 'youtube', label: 'YouTube' },
+  { name: 'linkedin', label: 'LinkedIn' },
+  { name: 'instagram', label: 'Instagram' },
+  { name: 'tiktok', label: 'TikTok' },
+  { name: 'x', label: 'X' },
+];
+---
+
+<div class="top-bar">
+  <div class="container top-bar__inner">
+    <a class="top-bar__hotline" href="tel:+24170101010" aria-label="Appeler la hotline, +241 70 10 10 10">
+      <Icon name="phone" size={18} />
+      <span aria-hidden="true">Hotline : +241 70 10 10 10</span>
+    </a>
+
+    <a class="top-bar__email" href="mailto:contact@crn-convention.events">
+      <Icon name="mail" size={18} />
+      <span>contact@crn-convention.events</span>
+    </a>
+
+    <ul class="top-bar__social" aria-label="Réseaux sociaux du CRN">
+      {reseaux.map((r) => (
+        <li>
+          <a href="#" aria-label={r.label}>
+            <Icon name={r.name} size={20} />
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<style>
+  /* Ton or de la barre utilitaire : fond or plein avec un léger dégradé (palette GBIS
+     exclusivement), texte et icônes en bleu nuit profond pour le contraste (~4,8:1, conforme
+     WCAG AA) — jamais de texte or sur fond clair, jamais de blanc sur or (règle GBIS). */
+  .top-bar {
+    background: linear-gradient(90deg, var(--crn-or) 0%, var(--crn-or-lumiere) 50%, var(--crn-or) 100%);
+    color: var(--crn-bleu-nuit-profond);
+    box-shadow: 0 2px 14px -6px rgba(16, 16, 16, 0.4);
+  }
+
+  .top-bar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-block: 7px;
+  }
+
+  .top-bar__hotline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--crn-bleu-nuit-profond);
+    text-decoration: none;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.02em;
+    transition: color var(--transition-standard), transform var(--transition-standard);
+  }
+
+  .top-bar__hotline :global(.icon) {
+    color: var(--crn-bleu-nuit-profond);
+    transition: transform var(--transition-standard);
+  }
+
+  .top-bar__hotline:hover,
+  .top-bar__hotline:focus-visible {
+    color: var(--crn-noir);
+  }
+
+  .top-bar__hotline:hover :global(.icon),
+  .top-bar__hotline:focus-visible :global(.icon) {
+    transform: rotate(-8deg) scale(1.1);
+  }
+
+  .top-bar__hotline span {
+    white-space: nowrap;
+  }
+
+  /* Adresse mail officielle, entre la hotline et les réseaux sociaux — masquée en dessous de
+     768 px faute de place (la hotline reste le contact prioritaire visible partout). */
+  .top-bar__email {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    color: var(--crn-bleu-nuit-profond);
+    text-decoration: none;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    transition: color var(--transition-standard), transform var(--transition-standard);
+  }
+
+  .top-bar__email :global(.icon) {
+    color: var(--crn-bleu-nuit-profond);
+    transition: transform var(--transition-standard);
+  }
+
+  .top-bar__email:hover,
+  .top-bar__email:focus-visible {
+    color: var(--crn-noir);
+  }
+
+  .top-bar__email:hover :global(.icon),
+  .top-bar__email:focus-visible :global(.icon) {
+    transform: rotate(-8deg) scale(1.1);
+  }
+
+  @media (min-width: 768px) {
+    .top-bar__email {
+      display: inline-flex;
+    }
+  }
+
+  .top-bar__social {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Badge rond plein, liseré et glyphe en bleu nuit sur fond crème — même composition que la
+     référence (cercle à liseré + icône pleine), toujours dans la palette GBIS : jamais les
+     couleurs de marque (Facebook/Twitter/LinkedIn…), uniquement crème/bleu nuit/or. */
+  .top-bar__social a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--crn-creme);
+    border: 1.5px solid var(--crn-blanc);
+    color: var(--crn-bleu-nuit-profond);
+    box-shadow: 0 3px 8px -3px rgba(16, 16, 16, 0.35);
+    transition: background-color var(--transition-standard), color var(--transition-standard), transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .top-bar__social a:hover,
+  .top-bar__social a:focus-visible {
+    background: var(--crn-bleu-nuit-profond);
+    border-color: var(--crn-or-lumiere);
+    color: var(--crn-or-lumiere);
+    transform: translateY(-2px) scale(1.08);
+    box-shadow: 0 8px 16px -6px rgba(16, 16, 16, 0.5);
+  }
+
+  @media (max-width: 480px) {
+    .top-bar__hotline span {
+      display: none;
+    }
+  }
+</style>

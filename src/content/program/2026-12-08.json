@@ -1,0 +1,62 @@
+{
+  "date": "2026-12-08",
+  "label": "Mardi 8 décembre",
+  "ordre": 4,
+  "sessions": [
+    {
+      "heureDebut": "06:00",
+      "heureFin": "07:30",
+      "titre": "Matin de gloire",
+      "lieu": "Église Centrale",
+      "intervenants": [],
+      "noteIntervenant": "Équipe pastorale CRN",
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "09:00",
+      "heureFin": "10:00",
+      "titre": "Académie — Bâtisseurs d’Autels",
+      "lieu": "Église Centrale",
+      "intervenants": ["robert-ondoa", "nadia-jocktane"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "10:15",
+      "heureFin": "11:15",
+      "titre": "Académie — Le Mystère des Trônes",
+      "lieu": "Église Centrale",
+      "intervenants": ["mike-jocktane", "francois-rabenkogo"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "11:30",
+      "heureFin": "12:30",
+      "titre": "Académie — Architectes de la Cité",
+      "lieu": "Église Centrale",
+      "intervenants": ["silas-makangu", "michel-ambouroue"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "14:00",
+      "heureFin": "16:00",
+      "titre": "Atmosphère prophétique",
+      "lieu": "Église Centrale",
+      "intervenants": ["jek-kalombo"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "17:00",
+      "heureFin": "21:00",
+      "titre": "Plénière",
+      "lieu": "Église Centrale",
+      "intervenants": ["robert-ondoa", "michel-ambouroue"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "etatActuel": "campagne",
+  "forcageManuel": false,
+  "bascules": {
+    "campagneDebut": "2026-10-31T00:00:00+01:00",
+    "evenementDebut": "2026-12-06T00:00:00+01:00",
+    "prolongementDebut": "2026-12-14T00:00:00+01:00",
+    "ecosystemeVisibleDes": "2026-12-13T12:00:00+01:00"
+  },
+  "bandeau": {
+    "actif": false,
+    "texte": "Billetterie ouverte — prenez votre pass pour la Convention CRN 2026, du 6 au 13 décembre à Libreville.",
+    "lien": "/billetterie"
+  }
+}

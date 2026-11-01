@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import PageHero from '../components/shared/PageHero.astro';
+import DayNav from '../components/program/DayNav.astro';
+import SessionCard from '../components/program/SessionCard.astro';
+
+const jours = (await getCollection('program')).sort((a, b) => a.data.ordre - b.data.ordre);
+const speakers = await getCollection('speakers');
+const speakerName = (slug: string) => speakers.find((s) => s.id === slug)?.data.nom ?? slug;
+
+const joursNav = jours.map((j) => ({ date: j.data.date, label: j.data.label }));
+---
+
+<BaseLayout
+  title="Programme"
+  description="Programme complet de la Convention CRN 2026, jour par jour, du 5 au 13 décembre à Libreville."
+>
+  <PageHero
+    eyebrow="Jour par jour"
+    title="Programme"
+    intro="Le programme ci-dessous est la source unique de la Convention : toute mise à jour y apparaît aussitôt. Les modes de diffusion de chaque séance seront confirmés avant l’événement."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Programme' }]}
+  />
+
+  <Section tone="default" ariaLabel="Programme">
+    <DayNav jours={joursNav} />
+
+    {jours.map((jour) => (
+      <div id={`jour-${jour.data.date}`} class="program-day">
+        <h2>{jour.data.label}</h2>
+        <div class="program-day__list" data-reveal-group>
+          {jour.data.sessions
+            .filter((s) => s.visible)
+            .map((s) => (
+              <SessionCard
+                heureDebut={s.heureDebut}
+                heureFin={s.heureFin}
+                titre={s.titre}
+                lieu={s.lieu}
+                intervenantsNoms={s.intervenants.map(speakerName)}
+                noteIntervenant={s.noteIntervenant}
+              />
+            ))}
+        </div>
+      </div>
+    ))}
+  </Section>
+</BaseLayout>
+
+<style>
+  .program-day {
+    margin-top: var(--space-6);
+    scroll-margin-top: 120px;
+  }
+
+  .program-day h2 {
+    border-bottom: 2px solid var(--crn-or);
+    padding-bottom: var(--space-1);
+  }
+
+  .program-day__list {
+    display: flex;
+    flex-direction: column;
+  }
+</style>

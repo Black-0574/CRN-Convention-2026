@@ -1,0 +1,95 @@
+---
+import Icon from './Icon.astro';
+import Button from './Button.astro';
+
+interface Props {
+  icone: 'heart' | 'wifi' | 'mail' | 'people';
+  titre: string;
+  texte: string;
+  lienLabel: string;
+  lienHref: string;
+}
+const { icone, titre, texte, lienLabel, lienHref } = Astro.props;
+---
+
+<article class="icon-callout">
+  <span class="icon-callout__icon"><Icon name={icone} size={26} /></span>
+  <h3 class="icon-callout__title">{titre}</h3>
+  <p class="icon-callout__text">{texte}</p>
+  <Button href={lienHref} variant="primary">{lienLabel} <Icon name="arrow-right" size={16} /></Button>
+</article>
+
+<style>
+  /* Même traitement « prestance » que les pavés de « Plateformes phares » : fond clair flottant
+     sur une section sombre, rebords haut/droit en or vieilli (perspective), médaillon bleu nuit/or
+     et écritures bleu nuit gras pour plus de présence. */
+  .icon-callout {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    background: linear-gradient(165deg, var(--crn-blanc) 0%, var(--crn-creme) 100%);
+    border-style: solid;
+    border-width: 3px 3px 1px 1px;
+    border-color: var(--crn-or) var(--crn-or) var(--color-border) var(--color-border);
+    border-radius: var(--radius-card);
+    height: 100%;
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .icon-callout:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lift), 0 0 0 1px rgba(184, 150, 62, 0.3);
+    border-color: var(--crn-or-lumiere) var(--crn-or-lumiere) var(--crn-or) var(--crn-or);
+  }
+
+  .icon-callout__icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-or);
+    border: 2px solid var(--crn-or);
+    box-shadow: 0 10px 22px -10px rgba(26, 44, 91, 0.5), 0 0 0 4px rgba(184, 150, 62, 0.16);
+    margin-bottom: 4px;
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .icon-callout__icon::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border: 1px solid rgba(184, 150, 62, 0.45);
+  }
+
+  .icon-callout:hover .icon-callout__icon {
+    transform: translateY(-3px) rotate(-6deg) scale(1.06);
+    color: var(--crn-or-lumiere);
+    border-color: var(--crn-or-lumiere);
+    box-shadow: 0 14px 26px -10px rgba(26, 44, 91, 0.55), 0 0 0 6px rgba(184, 150, 62, 0.22);
+  }
+
+  .icon-callout__title {
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    margin: 0;
+  }
+
+  .icon-callout__text {
+    font-weight: 700;
+    color: var(--crn-bleu-nuit-profond);
+    flex: 1;
+  }
+
+  .icon-callout :global(.button) {
+    width: 100%;
+    margin-top: var(--space-1);
+  }
+</style>

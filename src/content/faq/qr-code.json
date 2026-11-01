@@ -1,0 +1,6 @@
+{
+  "question": "Comment fonctionne le contrôle d’accès par QR code ?",
+  "reponse": "Chaque ticket ou pass est nominatif et intransférable. Il porte un QR code unique, scanné à chaque entrée. Aucun accès verbal n’est accepté : présentez votre QR code, sur votre téléphone ou imprimé, à chaque séance.",
+  "etats": ["campagne", "evenement"],
+  "ordre": 2
+}

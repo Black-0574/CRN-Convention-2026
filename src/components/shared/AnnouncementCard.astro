@@ -1,0 +1,126 @@
+---
+import Icon from './Icon.astro';
+import type { IconName } from './Icon.astro';
+
+interface Props {
+  categorie: string;
+  icone: IconName;
+  date: string;
+  dateISO: string;
+  titre: string;
+  texte: string;
+  lienHref?: string;
+  lienLabel?: string;
+}
+const { categorie, icone, date, dateISO, titre, texte, lienHref, lienLabel } = Astro.props;
+---
+
+<article class="announcement-card" data-categorie={categorie}>
+  <div class="announcement-card__head">
+    <span class="announcement-card__icon"><Icon name={icone} size={22} /></span>
+    <span class="announcement-card__tag">{categorie}</span>
+  </div>
+  <time class="announcement-card__date" datetime={dateISO}>{date}</time>
+  <h3 class="announcement-card__title">{titre}</h3>
+  <p class="announcement-card__text">{texte}</p>
+  {lienHref && (
+    <a class="announcement-card__link" href={lienHref}>
+      {lienLabel ?? 'En savoir plus'} <Icon name="arrow-right" size={14} />
+    </a>
+  )}
+</article>
+
+<style>
+  .announcement-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--space-3);
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    border-top: 3px solid var(--crn-or);
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .announcement-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+    border-color: var(--crn-or-lumiere);
+  }
+
+  .announcement-card__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-bottom: var(--space-2);
+  }
+
+  .announcement-card__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    border: 1.5px solid var(--crn-or);
+    color: var(--crn-or);
+  }
+
+  .announcement-card__tag {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--crn-or-profond);
+    background: var(--crn-creme);
+    border: 1px solid var(--crn-or-lumiere);
+    border-radius: var(--radius-pill);
+    padding: 3px 12px;
+  }
+
+  .announcement-card__date {
+    display: block;
+    font-size: var(--text-s);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+  }
+
+  .announcement-card__title {
+    font-size: var(--text-h4-mobile);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .announcement-card__text {
+    margin: 0;
+    color: var(--color-text-muted);
+    flex: 1;
+  }
+
+  .announcement-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: var(--space-2);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+  }
+
+  .announcement-card__link:hover {
+    text-decoration: underline;
+  }
+
+  .announcement-card__link :global(.icon) {
+    transition: transform var(--transition-standard);
+  }
+
+  .announcement-card__link:hover :global(.icon) {
+    transform: translateX(3px);
+  }
+</style>

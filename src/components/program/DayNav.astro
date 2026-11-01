@@ -1,0 +1,62 @@
+---
+interface Props {
+  jours: { date: string; label: string }[];
+}
+const { jours } = Astro.props;
+---
+
+<nav class="day-nav" aria-label="Aller à un jour du programme">
+  <ul>
+    {jours.map((jour) => (
+      <li>
+        <a href={`#jour-${jour.date}`}>{jour.label.replace(/^\w+\s/, '')}</a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .day-nav {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--space-3);
+    position: sticky;
+    top: 56px;
+    background: var(--color-bg);
+    box-shadow: 0 8px 16px -14px rgba(16, 16, 16, 0.4);
+    z-index: 10;
+  }
+
+  .day-nav ul {
+    list-style: none;
+    display: flex;
+    gap: var(--space-1);
+    margin: 0;
+    padding: var(--space-1) 0;
+    min-width: max-content;
+  }
+
+  .day-nav a {
+    display: block;
+    padding: var(--space-1) var(--space-2);
+    min-height: var(--tap-target-min);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    border-radius: var(--radius-control);
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    border: 1px solid var(--color-border);
+  }
+
+  .day-nav a:hover,
+  .day-nav a:focus-visible {
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+    border-color: var(--crn-bleu-nuit);
+  }
+</style>

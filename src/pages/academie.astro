@@ -1,0 +1,77 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import Button from '../components/shared/Button.astro';
+import PageHero from '../components/shared/PageHero.astro';
+import InfoCard from '../components/shared/InfoCard.astro';
+
+const speakers = await getCollection('speakers');
+const speakerName = (slug: string) => speakers.find((s) => s.id === slug)?.data.nom ?? slug;
+
+// Les trois classes se répètent à l'identique les 8, 9 et 10 décembre (source unique : règle R5).
+const jourReference = await getEntry('program', '2026-12-08');
+const classes = (jourReference?.data.sessions ?? []).filter((s) => s.titre.startsWith('Académie —'));
+---
+
+<BaseLayout
+  title="Académie des Sciences Divines"
+  description="Trois classes, du 8 au 10 décembre, de 9h à 12h30 à l'Église Centrale. Pass Académie Intégral disponible."
+>
+  <PageHero
+    eyebrow="Former, équiper, envoyer"
+    title="Académie des Sciences Divines"
+    intro="Trois classes, mêmes horaires du mardi 8 au jeudi 10 décembre, à l’Église Centrale. Chaque classe peut être suivie séparément, ou dans son ensemble avec le Pass Académie Intégral."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Académie' }]}
+  />
+
+  <Section tone="default" ariaLabel="Académie des Sciences Divines">
+    <div class="classes-grid" data-reveal-group>
+      {classes.map((c) => (
+        <InfoCard>
+          <h2 class="class-card__title">{c.titre.replace('Académie — ', '')}</h2>
+          <p class="class-card__time">{c.heureDebut} – {c.heureFin}</p>
+          <p class="class-card__speakers">{c.intervenants.map(speakerName).join(' · ')}</p>
+        </InfoCard>
+      ))}
+    </div>
+
+    <div class="academie-cta">
+      <Button href="/billetterie#academie" variant="secondary">Voir les tarifs de l'Académie</Button>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .classes-grid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: 1fr;
+  }
+
+  .class-card__title {
+    font-size: var(--text-h4-mobile);
+    margin: 0 0 4px 0;
+  }
+
+  .class-card__time {
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    margin: 0 0 4px 0;
+  }
+
+  .class-card__speakers {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  .academie-cta {
+    margin-top: var(--space-6);
+  }
+
+  @media (min-width: 768px) {
+    .classes-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

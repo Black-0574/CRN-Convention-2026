@@ -1,0 +1,294 @@
+---
+import Icon from '../shared/Icon.astro';
+
+interface SessionLite {
+  heureDebut: string;
+  heureFin: string;
+  titre: string;
+  lieu: string;
+  intervenantsNoms: string[];
+  noteIntervenant?: string;
+}
+interface DayLite {
+  date: string;
+  labelCourt: string;
+  sessions: SessionLite[];
+}
+interface Props {
+  jours: DayLite[];
+}
+const { jours } = Astro.props;
+---
+
+<div class="program-preview" id="program-preview" data-reveal>
+  <div class="program-preview__tabs" role="tablist" aria-label="Jour du programme">
+    {jours.map((j, i) => (
+      <button
+        type="button"
+        class="program-preview__tab"
+        role="tab"
+        aria-selected={i === 0 ? 'true' : 'false'}
+        data-day={i}
+      >
+        {j.labelCourt}
+      </button>
+    ))}
+  </div>
+
+  <div class="program-preview__panel">
+    <button type="button" class="program-preview__nav program-preview__nav--prev" data-action="prev" aria-label="Séance précédente">
+      <Icon name="arrow-left" size={18} />
+    </button>
+
+    <div class="program-preview__card">
+      <div class="program-preview__thumb" aria-hidden="true">
+        <Icon name="calendar" size={32} />
+      </div>
+      <div class="program-preview__body">
+        <p class="program-preview__title" data-field="titre">—</p>
+        <p class="program-preview__meta">
+          <span><Icon name="clock" size={16} /> <span data-field="horaire">—</span></span>
+          <span><Icon name="pin" size={16} /> <span data-field="lieu">—</span></span>
+        </p>
+      </div>
+    </div>
+
+    <button type="button" class="program-preview__nav program-preview__nav--next" data-action="next" aria-label="Séance suivante">
+      <Icon name="arrow-right" size={18} />
+    </button>
+  </div>
+</div>
+
+<script define:vars={{ joursData: jours }}>
+  const root = document.getElementById('program-preview');
+  if (root) {
+    let dayIndex = 0;
+    let sessionIndex = 0;
+
+    const tabs = Array.from(root.querySelectorAll('.program-preview__tab'));
+    const titleEl = root.querySelector('[data-field="titre"]');
+    const horaireEl = root.querySelector('[data-field="horaire"]');
+    const lieuEl = root.querySelector('[data-field="lieu"]');
+    const prevBtn = root.querySelector('[data-action="prev"]');
+    const nextBtn = root.querySelector('[data-action="next"]');
+
+    // Lieu et intervenant(s) sur une seule ligne (« Lieu — intervenant(s) »), même format que la
+    // page /programme (SessionCard.astro).
+    function lieuDetail(session) {
+      const noms = session.intervenantsNoms;
+      const note = session.noteIntervenant;
+      const detail = noms.length > 0
+        ? note
+          ? `${noms.join(' · ')}, ${note.charAt(0).toLowerCase()}${note.slice(1)}`
+          : noms.join(' · ')
+        : note;
+      return detail ? `${session.lieu} — ${detail}` : session.lieu;
+    }
+
+    function render() {
+      const jour = joursData[dayIndex];
+      const session = jour.sessions[sessionIndex];
+      if (titleEl) titleEl.textContent = session ? session.titre : 'Aucune séance publiée';
+      if (horaireEl) horaireEl.textContent = session ? `${session.heureDebut} – ${session.heureFin}` : '—';
+      if (lieuEl) lieuEl.textContent = session ? lieuDetail(session) : '—';
+      tabs.forEach((t, i) => t.setAttribute('aria-selected', String(i === dayIndex)));
+
+      // Anime les flèches pour signaler qu'il y a plusieurs séances à parcourir ce jour-là.
+      const hasMultiple = jour.sessions.length > 1;
+      prevBtn?.classList.toggle('program-preview__nav--hint', hasMultiple);
+      nextBtn?.classList.toggle('program-preview__nav--hint', hasMultiple);
+    }
+
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => {
+        dayIndex = i;
+        sessionIndex = 0;
+        render();
+      });
+    });
+
+    root.querySelector('[data-action="prev"]')?.addEventListener('click', () => {
+      const total = joursData[dayIndex].sessions.length || 1;
+      sessionIndex = (sessionIndex - 1 + total) % total;
+      render();
+    });
+
+    root.querySelector('[data-action="next"]')?.addEventListener('click', () => {
+      const total = joursData[dayIndex].sessions.length || 1;
+      sessionIndex = (sessionIndex + 1) % total;
+      render();
+    });
+
+    render();
+  }
+</script>
+
+<style>
+  .program-preview__tabs {
+    display: flex;
+    gap: var(--space-1);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 4px var(--space-2) 4px;
+    margin-bottom: var(--space-1);
+  }
+
+  .program-preview__tab {
+    flex-shrink: 0;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    padding: 10px var(--space-2);
+    min-height: var(--tap-target-min);
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background-color var(--transition-standard), color var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .program-preview__tab[aria-selected='true'] {
+    color: var(--crn-blanc);
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+  }
+
+  .program-preview__panel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .program-preview__nav {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-alt);
+    color: var(--crn-bleu-nuit);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .program-preview__nav:hover {
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+    border-color: var(--crn-bleu-nuit);
+  }
+
+  /* Invite discrète à parcourir le jour quand il compte plusieurs séances : léger va-et-vient
+     dans le sens du déplacement (gauche pour « précédent », droite pour « suivant »), suspendu au
+     survol/focus. prefers-reduced-motion neutralise déjà transition/animation-duration (règle
+     globale), aucun traitement supplémentaire nécessaire ici. */
+  .program-preview__nav--hint.program-preview__nav--prev {
+    animation: program-preview-nav-hint-left 1.8s ease-in-out infinite;
+  }
+
+  .program-preview__nav--hint.program-preview__nav--next {
+    animation: program-preview-nav-hint-right 1.8s ease-in-out infinite;
+  }
+
+  .program-preview__nav--hint:hover,
+  .program-preview__nav--hint:focus-visible {
+    animation-play-state: paused;
+  }
+
+  @keyframes program-preview-nav-hint-left {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-5px); }
+  }
+
+  @keyframes program-preview-nav-hint-right {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+  }
+
+  .program-preview__card {
+    flex: 1;
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    background: var(--color-bg-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-card);
+  }
+
+  /* Médaillon à double cerclage (même traitement que les icônes de la bande « chiffres clés »),
+     en or vieilli (#B8963E), pour plus de prestance que l'aplat crème d'origine. */
+  .program-preview__thumb {
+    position: relative;
+    flex-shrink: 0;
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(184, 150, 62, 0.14) 0%, rgba(184, 150, 62, 0.03) 70%);
+    border: 1.5px solid var(--crn-or);
+    box-shadow: 0 0 0 4px rgba(184, 150, 62, 0.08);
+    color: var(--crn-or);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .program-preview__thumb::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border: 1px solid rgba(184, 150, 62, 0.3);
+  }
+
+  .program-preview__title {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h3-mobile);
+    color: var(--crn-bleu-nuit);
+    margin: 0 0 6px 0;
+  }
+
+  .program-preview__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-p);
+    color: var(--color-text);
+  }
+
+  .program-preview__meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* En dessous de 600 px, les flèches prev/next laissent trop peu de largeur à la carte pour ce
+     texte agrandi : on empile icône/titre/horaire-lieu plutôt que de les laisser se chevaucher en
+     se cassant au milieu des mots. */
+  @media (max-width: 599px) {
+    .program-preview__card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .program-preview__thumb {
+      width: 56px;
+      height: 56px;
+    }
+
+    .program-preview__title {
+      font-size: var(--text-h4-mobile);
+    }
+
+    .program-preview__meta {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+  }
+</style>

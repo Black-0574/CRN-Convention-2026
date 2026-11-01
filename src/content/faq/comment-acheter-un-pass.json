@@ -1,0 +1,6 @@
+{
+  "question": "Comment acheter un pass ou un billet ?",
+  "reponse": "Rendez-vous sur la page Billetterie et choisissez le produit souhaité. Vous serez redirigé vers la billetterie officielle de la Convention pour finaliser votre achat.",
+  "etats": ["campagne", "evenement"],
+  "ordre": 1
+}

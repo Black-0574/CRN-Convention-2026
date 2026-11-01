@@ -1,0 +1,9 @@
+{
+  "nom": "Pagne officiel mixte",
+  "categorie": "boutique",
+  "prixFCFA": 10000,
+  "description": "Pagne officiel de la Convention CRN 2026, modèle mixte.",
+  "lienAchat": "#billetterie-a-configurer",
+  "statut": "disponible",
+  "ordre": 8
+}

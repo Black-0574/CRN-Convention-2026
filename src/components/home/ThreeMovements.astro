@@ -1,0 +1,225 @@
+---
+import { Image } from 'astro:assets';
+import Icon from '../shared/Icon.astro';
+import SectionHeading from '../shared/SectionHeading.astro';
+import imageTrone from '../../assets/images/mouvement-trone.webp';
+import imageAutel from '../../assets/images/mouvement-autel.webp';
+import imageCite from '../../assets/images/mouvement-cite.webp';
+
+/*
+  Les sous-titres et textes des trois cartes reprennent mot pour mot la copie déjà approuvée
+  (texte d'origine scindé à la ponctuation « : »), rien n'est inventé pour coller au modèle de
+  référence. Images fournies par le Commanditaire le 1er novembre 2026, qui a explicitement
+  assumé la responsabilité de cette décision après signalement écrit du prestataire (ces visuels
+  comportent des visages générés par IA, en écart avec la règle absolue « Aucun visage généré par
+  IA » de CLAUDE.md) — voir docs/conformite.md pour la traçabilité complète de cet écart assumé.
+*/
+const mouvements = [
+  {
+    titre: 'Le Trône',
+    verbe: 'Discerner',
+    icone: 'crown' as const,
+    sousTitre: "L'autorité qui vient d'en haut",
+    texte: 'Discerner le règne de Dieu avant toute entreprise humaine.',
+    image: imageTrone,
+  },
+  {
+    titre: "L'Autel",
+    verbe: 'Se consacrer',
+    icone: 'flame' as const,
+    sousTitre: 'La consécration qui transforme',
+    texte: 'La Convention comme lieu de rencontre et de don de soi.',
+    image: imageAutel,
+  },
+  {
+    titre: 'La Cité',
+    verbe: 'Agir',
+    icone: 'building' as const,
+    sousTitre: 'La vie envoyée',
+    texte: "Porter ce qui est reçu au Trône et à l'Autel jusque dans la cité.",
+    image: imageCite,
+  },
+] as const;
+---
+
+<div class="movements">
+  <div class="movements__header">
+    <SectionHeading eyebrow="La Convention" title="Une vision. Trois mouvements." inverse />
+    <ul class="movements__verbs" aria-hidden="true">
+      {mouvements.map((m) => <li>{m.verbe}.</li>)}
+    </ul>
+  </div>
+
+  <p class="movements__intro">
+    Le thème de la Convention CRN 2026 se déploie en trois mouvements, du Trône à l'autel, de l'autel
+    à la cité.
+  </p>
+
+  <div class="movements__grid" data-reveal-group>
+    {mouvements.map((m) => (
+      <article class="movements__card">
+        <div class="movements__band">
+          <Image src={m.image} alt="" width={640} height={400} class="movements__photo" />
+          <span class="movements__icon"><Icon name={m.icone} size={32} /></span>
+        </div>
+        <div class="movements__body">
+          <h3>{m.titre}</h3>
+          <p class="movements__subtitle">{m.sousTitre}</p>
+          <p class="movements__text">{m.texte}</p>
+        </div>
+      </article>
+    ))}
+  </div>
+</div>
+
+<style>
+  .movements__header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .movements__header :global(.section-heading) {
+    flex: 1;
+    margin-bottom: 0;
+    min-width: 240px;
+  }
+
+  /* Agrandi (+100 %) à la demande du Commanditaire, uniquement ici : le reste du site garde
+     l'étiquette d'en-tête à sa taille d'origine (var(--text-s)). */
+  .movements__header :global(.section-heading__eyebrow) {
+    font-size: 32px;
+  }
+
+  .movements__verbs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+  }
+
+  /* Fond sombre (tonalité « feature ») : l'or est ici en grand corps italique sur bleu nuit, dans
+     le régime de contraste déjà validé ailleurs sur le site (countdown, etc.) — jamais sur fond
+     clair, ce qui reste la règle absolue GBIS. */
+  .movements__verbs li {
+    font-family: var(--font-titrage);
+    font-style: italic;
+    color: var(--crn-or);
+    font-size: var(--text-h4-mobile);
+    line-height: 1.5;
+  }
+
+  .movements__intro {
+    max-width: 65ch;
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-3);
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .movements__grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+
+  /* Carte à bandeau photo : composition reprise du modèle de référence (photo + badge d'icône
+     cerclé d'or à cheval sur la jonction, titre et sous-titre resserrés). Écart signalé et assumé
+     par le Commanditaire — voir docs/conformite.md. */
+  .movements__card {
+    border-radius: var(--radius-card);
+    background: var(--crn-blanc);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard);
+  }
+
+  .movements__card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .movements__band {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: var(--crn-bleu-nuit);
+  }
+
+  .movements__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Voile léger pour assurer un contraste constant au badge, quelle que soit la photo. */
+  .movements__band::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(16, 16, 16, 0) 60%, rgba(16, 16, 16, 0.35) 100%);
+  }
+
+  /* Médaillon à cheval sur la jonction, mais déporté sur la photo : seul un quart de son diamètre
+     (18px sur 72px) mord sur la carte blanche, le reste des trois quarts reste bien visible sur
+     la photo. Plus grand, halo doré et double cerclage pour plus de prestance que le simple
+     contour fin d'origine ; icône en or vieilli (#B8963E) au lieu du bleu nuit. */
+  .movements__icon {
+    position: absolute;
+    z-index: 1;
+    left: var(--space-3);
+    bottom: 0;
+    transform: translateY(18px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--crn-blanc);
+    color: var(--crn-or);
+    box-shadow: var(--shadow-lift), 0 0 0 6px rgba(184, 150, 62, 0.14);
+    border: 2.5px solid var(--crn-or);
+  }
+
+  .movements__icon::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border: 1px solid rgba(184, 150, 62, 0.35);
+  }
+
+  .movements__body {
+    padding: calc(var(--space-2) + 18px) var(--space-3) var(--space-3);
+  }
+
+  .movements__body h3 {
+    margin: 0;
+    text-transform: uppercase;
+    font-size: var(--text-h4-mobile);
+    letter-spacing: 0.03em;
+  }
+
+  .movements__subtitle {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    color: var(--crn-bleu-nuit);
+    margin: 2px 0 var(--space-2) 0;
+  }
+
+  .movements__text {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 768px) {
+    .movements__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

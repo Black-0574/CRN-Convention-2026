@@ -1,0 +1,9 @@
+{
+  "nom": "Une classe de l’Académie",
+  "categorie": "academie",
+  "prixFCFA": 20000,
+  "description": "Classe complète sur trois jours (8, 9, 10 décembre), au choix parmi les trois classes de l’Académie des Sciences Divines.",
+  "lienAchat": "#billetterie-a-configurer",
+  "statut": "disponible",
+  "ordre": 1
+}

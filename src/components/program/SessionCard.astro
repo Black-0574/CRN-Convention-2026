@@ -1,0 +1,82 @@
+---
+interface Props {
+  heureDebut: string;
+  heureFin: string;
+  titre: string;
+  lieu: string;
+  intervenantsNoms: string[];
+  noteIntervenant?: string;
+}
+const { heureDebut, heureFin, titre, lieu, intervenantsNoms, noteIntervenant } = Astro.props;
+
+// Lieu et intervenant(s) sur une seule ligne (« Lieu — intervenant(s) »), au format du tableau
+// consolidé de référence, plutôt que sur des lignes séparées.
+const detail = intervenantsNoms.length > 0
+  ? noteIntervenant
+    ? `${intervenantsNoms.join(' · ')}, ${noteIntervenant.charAt(0).toLowerCase()}${noteIntervenant.slice(1)}`
+    : intervenantsNoms.join(' · ')
+  : noteIntervenant;
+---
+
+<article class="session-card">
+  <div class="session-card__time">
+    <span>{heureDebut}</span>
+    <span class="session-card__time-sep">–</span>
+    <span>{heureFin}</span>
+  </div>
+  <div class="session-card__body">
+    <h3 class="session-card__title">{titre}</h3>
+    <p class="session-card__meta">{lieu}{detail && ` — ${detail}`}</p>
+  </div>
+</article>
+
+<style>
+  /* Rangée élevée au survol (repère gauche or) plutôt qu'un simple séparateur — plus vivant sans
+     devenir une carte pleine, pour garder une liste dense et lisible sur une longue journée. */
+  .session-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-2);
+    margin-left: calc(-1 * var(--space-2));
+    margin-right: calc(-1 * var(--space-2));
+    border-bottom: 1px solid var(--color-border);
+    border-left: 3px solid transparent;
+    border-radius: var(--radius-control);
+    transition: background-color var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .session-card:hover {
+    background: var(--color-bg-alt);
+    border-left-color: var(--crn-or);
+  }
+
+  .session-card__time {
+    flex-shrink: 0;
+    width: 88px;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    display: flex;
+    flex-direction: column;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .session-card__time-sep {
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .session-card__title {
+    font-size: var(--text-h4-mobile);
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    margin: 0 0 4px 0;
+  }
+
+  .session-card__meta {
+    margin: 0;
+    font-size: var(--text-s);
+    color: var(--color-text-muted);
+  }
+</style>

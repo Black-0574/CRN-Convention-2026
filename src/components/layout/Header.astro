@@ -1,0 +1,760 @@
+---
+import { Image } from 'astro:assets';
+import Icon from '../shared/Icon.astro';
+import emblem from '../../assets/images/emblemes-dores-convention-2026.png';
+
+interface Props {
+  transparent?: boolean;
+}
+const { transparent = false } = Astro.props;
+
+interface NavLink {
+  href: string;
+  label: string;
+}
+
+interface NavItem extends Partial<NavLink> {
+  label: string;
+  href?: string;
+  children?: NavLink[];
+}
+
+const navItems: NavItem[] = [
+  { href: '/programme', label: 'Programme' },
+  { href: '/academie', label: 'Académie' },
+  { href: '/action-sociale', label: 'Action sociale' },
+  { href: '/infos-pratiques', label: 'Infos pratiques' },
+  {
+    label: 'Multimédia',
+    children: [
+      { href: '/multimedia/galerie-videos', label: 'Galerie vidéos' },
+      { href: '/multimedia/galerie-photos', label: 'Galerie photos' },
+      { href: '/multimedia/galerie-audios', label: 'Galerie audios' },
+      { href: '/actualites', label: 'Actualités' },
+    ],
+  },
+  { href: '/diaspora', label: 'Diaspora' },
+  { href: '/faq', label: 'FAQ' },
+];
+
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<header class={`site-header ${transparent ? 'site-header--overlay' : ''}`} id="site-header">
+  <div class="container site-header__inner">
+    <a class="site-header__brand" href="/" aria-label="Convention CRN 2026 — accueil">
+      <Image src={emblem} alt="" width={240} height={96} loading="eager" />
+      <span class="visually-hidden">Convention CRN 2026</span>
+    </a>
+
+    <nav class="site-header__nav" id="site-nav" aria-label="Navigation principale">
+      <ul class="site-header__pill">
+        {navItems.map((item) => (
+          item.children ? (
+            <li class="site-header__nav-item">
+              <button type="button" class="site-header__nav-trigger" aria-expanded="false" aria-haspopup="true">
+                <span>{item.label}</span>
+                <Icon name="chevron-down" size={14} />
+              </button>
+              <ul class="site-header__submenu">
+                {item.children.map((child) => (
+                  <li>
+                    <a href={child.href} aria-current={currentPath === child.href ? 'page' : undefined}>
+                      <span>{child.label}</span>
+                      <Icon name="arrow-right" size={16} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ) : (
+            <li>
+              <a href={item.href} aria-current={currentPath === item.href ? 'page' : undefined}>
+                <span>{item.label}</span>
+                <Icon name="arrow-right" size={16} />
+              </a>
+            </li>
+          )
+        ))}
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <a class="site-header__badge" href="/billetterie">
+        <span class="site-header__badge-icon"><Icon name="ticket" size={24} /></span>
+        <span class="site-header__badge-text">
+          <span class="site-header__badge-label">Prendre</span>
+          <span class="site-header__badge-value">Mon pass</span>
+        </span>
+      </a>
+
+      <button
+        class="site-header__toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="site-nav"
+        id="nav-toggle"
+      >
+        <span class="visually-hidden">Ouvrir le menu</span>
+        <span class="site-header__toggle-bar" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('site-nav');
+  toggle?.addEventListener('click', () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    nav?.classList.toggle('is-open', !expanded);
+  });
+
+  // Sous-menu « Multimédia » : ouverture au clic/tap (accessible au clavier et au tactile,
+  // contrairement à un survol CSS seul), un seul sous-menu ouvert à la fois, fermeture à
+  // l'extérieur ou avec Échap.
+  const submenuTriggers = Array.from(document.querySelectorAll<HTMLButtonElement>('.site-header__nav-trigger'));
+  const closeAllSubmenus = (except?: HTMLButtonElement) => {
+    submenuTriggers.forEach((btn) => {
+      if (btn !== except) {
+        btn.setAttribute('aria-expanded', 'false');
+        btn.closest('.site-header__nav-item')?.classList.remove('is-open');
+      }
+    });
+  };
+  submenuTriggers.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      closeAllSubmenus();
+      btn.setAttribute('aria-expanded', String(!expanded));
+      btn.closest('.site-header__nav-item')?.classList.toggle('is-open', !expanded);
+    });
+  });
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Node)) return;
+    const insideSubmenu = submenuTriggers.some((btn) => btn.closest('.site-header__nav-item')?.contains(event.target as Node));
+    if (!insideSubmenu) closeAllSubmenus();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeAllSubmenus();
+  });
+
+  // En-tête transparent « posé » sur le héros : redevient opaque dès qu'on quitte le haut de page.
+  const header = document.getElementById('site-header');
+  if (header?.classList.contains('site-header--overlay')) {
+    const onScroll = () => {
+      header.classList.toggle('is-scrolled', window.scrollY > 48);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+</script>
+
+<style>
+  .site-header {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 rgba(16, 16, 16, 0.06), 0 12px 32px -24px rgba(16, 16, 16, 0.25);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background-color var(--transition-standard), box-shadow var(--transition-standard);
+  }
+
+  /* En-tête transparent « posé » sur le héros (accueil uniquement). Reste "sticky" comme l'en-tête
+     normal (la place est réservée dans le flux ; .hero remonte dessous via margin-top négatif) ;
+     seul le fond devient transparent tant qu'on n'a pas défilé (.is-scrolled, script ci-dessous). */
+  .site-header--overlay {
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .site-header--overlay.is-scrolled {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 rgba(16, 16, 16, 0.06), 0 12px 32px -24px rgba(16, 16, 16, 0.25);
+  }
+
+  .site-header--overlay .site-header__toggle {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(16, 16, 16, 0.2);
+  }
+
+  .site-header--overlay .site-header__toggle-bar,
+  .site-header--overlay .site-header__toggle-bar::before,
+  .site-header--overlay .site-header__toggle-bar::after {
+    background: var(--crn-blanc);
+  }
+
+  .site-header--overlay.is-scrolled .site-header__toggle {
+    border-color: var(--color-border);
+    background: none;
+  }
+
+  .site-header--overlay.is-scrolled .site-header__toggle-bar,
+  .site-header--overlay.is-scrolled .site-header__toggle-bar::before,
+  .site-header--overlay.is-scrolled .site-header__toggle-bar::after {
+    background: var(--color-text);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-block: var(--space-2);
+  }
+
+  /* Logo posé sur un pavé blanc, légèrement en surplomb du bandeau (référence maquette) :
+     reste lisible quel que soit le fond, bleu nuit profond comme sur le héros ou crème ailleurs. */
+  .site-header__brand {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    background: var(--crn-blanc);
+    border-radius: var(--radius-card-sm);
+    padding: 10px 18px;
+    margin-bottom: -22px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    z-index: 3;
+  }
+
+  .site-header__brand :global(img) {
+    height: 60px;
+    width: auto;
+  }
+
+  .site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  /* Pilule à avatar rond (modèle de référence) : seul élément primaire de l'écran (règle « un
+     seul bouton primaire »), fond en dégradé bleu nuit cerclé d'un liseré or pour une colorimétrie
+     plus marquée — jamais l'or en aplat de bouton (règle GBIS absolue), même si le modèle de
+     référence montre un fond or : seul le petit avatar circulaire reprend l'or, pas tout le fond. */
+  .site-header__badge {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 70px;
+    padding: 8px 24px 8px 8px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(135deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    border: 1.5px solid var(--crn-or-lumiere);
+    color: var(--crn-blanc);
+    text-decoration: none;
+    box-shadow: 0 12px 26px -10px rgba(26, 44, 91, 0.65), 0 0 0 4px rgba(217, 196, 138, 0.1);
+    transition: transform var(--transition-standard), background-color var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .site-header__badge-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: var(--crn-or);
+    color: var(--crn-bleu-nuit-profond);
+  }
+
+  .site-header__badge-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .site-header__badge-label {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--crn-or-lumiere);
+  }
+
+  .site-header__badge-value {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 19px;
+    white-space: nowrap;
+  }
+
+  .site-header__badge:hover {
+    background: linear-gradient(135deg, var(--crn-bleu-nuit-profond) 0%, var(--crn-bleu-nuit-profond) 100%);
+    border-color: var(--crn-or);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 16px 32px -10px rgba(26, 44, 91, 0.75), 0 0 0 5px rgba(217, 196, 138, 0.16);
+  }
+
+  .site-header__toggle {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    width: var(--tap-target-min);
+    height: var(--tap-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .site-header__toggle-bar,
+  .site-header__toggle-bar::before,
+  .site-header__toggle-bar::after {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--color-text);
+    position: relative;
+  }
+
+  .site-header__toggle-bar::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+  }
+
+  .site-header__toggle-bar::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+  }
+
+  /* Menu déroulant mobile : carte relevée (bord fin, ombre marquée, coin généreux), légère
+     entrée animée (respecte prefers-reduced-motion via la règle globale). */
+  .site-header__nav {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: var(--gutter-mobile);
+    right: var(--gutter-mobile);
+    background: var(--crn-blanc);
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-lift);
+    padding: var(--space-1) var(--space-2);
+    overflow: hidden;
+  }
+
+  .site-header__nav.is-open {
+    display: block;
+    animation: site-header-nav-in 0.22s ease;
+  }
+
+  @keyframes site-header-nav-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .site-header__nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-header__nav li + li {
+    border-top: 1px solid var(--crn-gris-clair);
+  }
+
+  .site-header__nav a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    color: var(--crn-noir);
+    text-decoration: none;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 18px;
+    min-height: var(--tap-target-min);
+    transition: background-color var(--transition-standard), color var(--transition-standard), padding-left var(--transition-standard);
+  }
+
+  .site-header__nav a :global(.icon) {
+    flex-shrink: 0;
+    color: var(--crn-or);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity var(--transition-standard), transform var(--transition-standard);
+  }
+
+  .site-header__nav a:hover,
+  .site-header__nav a:focus-visible {
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+    padding-left: calc(var(--space-2) + 6px);
+  }
+
+  .site-header__nav a:hover :global(.icon),
+  .site-header__nav a:focus-visible :global(.icon) {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .site-header__nav a[aria-current='page'] {
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+    box-shadow: inset 3px 0 0 var(--crn-or);
+  }
+
+  .site-header__nav a[aria-current='page'] :global(.icon) {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Déclencheur « Multimédia » : même apparence que les liens du menu mobile, mais un <button>
+     (sous-menu, pas une destination directe). */
+  .site-header__nav-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2);
+    background: none;
+    border: none;
+    color: var(--crn-noir);
+    text-decoration: none;
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 18px;
+    min-height: var(--tap-target-min);
+    cursor: pointer;
+    text-align: left;
+    transition: background-color var(--transition-standard), color var(--transition-standard), padding-left var(--transition-standard);
+  }
+
+  .site-header__nav-trigger :global(.icon) {
+    flex-shrink: 0;
+    color: var(--crn-or);
+    transition: transform var(--transition-standard);
+  }
+
+  /* Même animation de survol que les autres liens du menu déroulant mobile (décalage du texte,
+     fond crème) ; seul le chevron garde son rôle propre (rotation = sous-menu ouvert ou non). */
+  .site-header__nav-trigger:hover,
+  .site-header__nav-trigger:focus-visible {
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+    padding-left: calc(var(--space-2) + 6px);
+  }
+
+  .site-header__nav-item.is-open .site-header__nav-trigger {
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .site-header__nav-item.is-open .site-header__nav-trigger :global(.icon) {
+    transform: rotate(180deg);
+  }
+
+  /* Sous-menu mobile : accordéon en ligne (pas de pilule flottante), indenté et teinté pour se
+     distinguer des catégories principales. */
+  .site-header__submenu {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 4px var(--space-2);
+    background: var(--crn-creme);
+  }
+
+  .site-header__nav-item.is-open .site-header__submenu {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-header__submenu a {
+    font-size: 16px;
+    min-height: 40px;
+    padding-block: var(--space-1);
+  }
+
+  @media (min-width: 1024px) {
+    .site-header__toggle {
+      display: none;
+    }
+
+    /* Marges resserrées pour l'en-tête seulement (pas celles des sections de contenu en dessous,
+       qui gardent le gabarit standard) : la marge généreuse de 80 px de chaque côté ne laissait
+       plus assez de place pour 7 catégories de menu + logo et CTA agrandis sur une seule ligne. */
+    .site-header .container {
+      padding-inline: var(--space-3);
+    }
+
+    .site-header__nav {
+      display: flex;
+      position: static;
+      flex: 1;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      padding: 0;
+      align-items: center;
+      background: transparent;
+      margin-inline: 0;
+      overflow: visible;
+      min-width: 0;
+    }
+
+    /* Rangée centrée dans l'espace disponible. Avec Multimédia, 7 catégories + logo et CTA agrandis
+       ne tenaient plus sur une ligne dans le gabarit standard (marges de page à 80 px, texte à
+       18 px) : la marge de l'en-tête est resserrée (elle seule, pas celle des sections de contenu
+       en dessous) et le texte redescend à 16 px — le minimum absolu GBIS, jamais en dessous.
+       `flex-wrap` reste un filet de sécurité pour une très petite largeur « bureau ». */
+    .site-header__nav ul {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      row-gap: 6px;
+      column-gap: clamp(10px, 1.4vw, 18px);
+    }
+
+    .site-header__nav li + li {
+      border-top: none;
+    }
+
+    .site-header__nav-item {
+      position: relative;
+    }
+
+    /* Menu horizontal — libellés plus affirmés, soulignement or animé, page courante repérée ;
+       jamais sur deux lignes (chaque libellé reste sur une seule ligne, quitte à ce que le menu
+       passe lui-même sur deux rangées en dernier recours, voir .site-header__nav ul ci-dessus). */
+    .site-header__nav ul a,
+    .site-header__nav-trigger {
+      position: relative;
+      padding: 10px 1px;
+      border-radius: 0;
+      min-height: auto;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--crn-noir);
+      white-space: nowrap;
+    }
+
+    /* Le chevron ne sert que dans le menu déroulant mobile (effet de survol) ; le menu horizontal
+       bureau utilise déjà le soulignement animé comme indicateur. */
+    .site-header__nav ul a :global(.icon) {
+      display: none;
+    }
+
+    .site-header__nav-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      width: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-labeur);
+    }
+
+    .site-header__nav-trigger :global(.icon) {
+      opacity: 1;
+      transform: none;
+      transition: transform var(--transition-standard);
+    }
+
+    .site-header__nav-item.is-open .site-header__nav-trigger :global(.icon) {
+      transform: rotate(180deg);
+    }
+
+    /* Sous-menu bureau : carte flottante pleine (jamais en verre dépoli, pour rester lisible quel
+       que soit l'état de l'en-tête). */
+    .site-header__submenu {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      min-width: 200px;
+      background: var(--crn-blanc);
+      border: 1px solid var(--crn-gris-clair);
+      border-radius: var(--radius-card-sm);
+      box-shadow: var(--shadow-lift);
+      padding: var(--space-1);
+    }
+
+    .site-header__nav-item:not(.is-open) .site-header__submenu {
+      display: none;
+    }
+
+    .site-header__submenu a {
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    /* Le sous-menu reste une liste verticale même sur bureau (carte flottante) : il reprend donc
+       la même animation « verticale » que le menu déroulant mobile (icône qui glisse à
+       l'apparition, surlignage), pas le soulignement horizontal. Préfixé par `.site-header__nav-
+       item` pour l'emporter sur les règles génériques de la rangée horizontale (même spécificité
+       de base sinon, cf. docs/conformite.md). */
+    .site-header__nav-item .site-header__submenu a :global(.icon) {
+      display: inline-block;
+    }
+
+    .site-header__nav-item .site-header__submenu a::after {
+      display: none;
+    }
+
+    .site-header__nav-item .site-header__submenu a:hover,
+    .site-header__nav-item .site-header__submenu a:focus-visible {
+      background: var(--crn-creme);
+      color: var(--crn-bleu-nuit);
+    }
+
+    /* La pilule glissée sur le héros colore tous ses liens en blanc par descendance — mais le
+       sous-menu est une carte pleine détachée, jamais en verre dépoli : on neutralise cette
+       couleur pour qu'elle reste toujours lisible (sélecteur plus spécifique, aucun !important
+       nécessaire). */
+    .site-header--overlay .site-header__pill .site-header__submenu a {
+      color: var(--crn-noir);
+    }
+
+    .site-header--overlay .site-header__pill .site-header__submenu a[aria-current='page'] {
+      color: var(--crn-bleu-nuit);
+    }
+
+    /* Grille transparente « posée » sur l'image du héros : pilule en verre dépoli, texte blanc. */
+    .site-header--overlay .site-header__pill {
+      background: rgba(16, 16, 16, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: var(--radius-pill);
+      padding: 6px var(--space-3);
+      box-shadow: 0 12px 32px -18px rgba(16, 16, 16, 0.5);
+      transition: background-color var(--transition-standard), border-color var(--transition-standard);
+    }
+
+    .site-header--overlay .site-header__pill a,
+    .site-header--overlay .site-header__pill .site-header__nav-trigger {
+      color: var(--crn-blanc);
+    }
+
+    .site-header--overlay .site-header__pill a[aria-current='page'] {
+      color: var(--crn-or-lumiere);
+    }
+
+    .site-header--overlay .site-header__pill a::after,
+    .site-header--overlay .site-header__pill .site-header__nav-trigger::after {
+      background: var(--crn-or-lumiere);
+    }
+
+    .site-header--overlay.is-scrolled .site-header__pill {
+      background: transparent;
+      border-color: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      box-shadow: none;
+      padding: 6px 2px;
+    }
+
+    .site-header--overlay.is-scrolled .site-header__pill a,
+    .site-header--overlay.is-scrolled .site-header__pill .site-header__nav-trigger {
+      color: var(--crn-noir);
+    }
+
+    .site-header--overlay.is-scrolled .site-header__pill a[aria-current='page'] {
+      color: var(--crn-bleu-nuit);
+    }
+
+    .site-header--overlay.is-scrolled .site-header__pill a::after,
+    .site-header--overlay.is-scrolled .site-header__pill .site-header__nav-trigger::after {
+      background: var(--crn-or);
+    }
+
+    /* Même soulignement animé que les autres catégories horizontales, y compris pour le
+       déclencheur « Multimédia » (un <button>, pas un <a>, mais la même animation). */
+    .site-header__nav ul a::after,
+    .site-header__nav-trigger::after {
+      content: '';
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      bottom: 4px;
+      height: 2px;
+      background: var(--crn-or);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--transition-standard);
+    }
+
+    .site-header__nav-item.is-open .site-header__nav-trigger::after {
+      transform: scaleX(1);
+    }
+
+    /* Pas de changement de couleur générique au survol : l'en-tête transparent affiche du texte
+       blanc sur fond sombre, et un survol qui le forcerait en bleu nuit le rendrait invisible
+       (texte or clair/noir sur fond or clair/noir pour les cas verre dépoli). Seul le soulignement
+       anime au survol ; chaque état (par défaut / posé sur le héros / défilé) garde sa couleur. */
+    .site-header__nav ul a:hover,
+    .site-header__nav-trigger:hover {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .site-header__nav ul a:hover::after,
+    .site-header__nav-trigger:hover::after {
+      transform: scaleX(1);
+    }
+
+    .site-header--overlay .site-header__pill a:hover,
+    .site-header--overlay .site-header__pill .site-header__nav-trigger:hover {
+      color: var(--crn-or-lumiere);
+    }
+
+    .site-header--overlay.is-scrolled .site-header__pill a:hover,
+    .site-header--overlay.is-scrolled .site-header__pill .site-header__nav-trigger:hover {
+      color: var(--crn-bleu-nuit);
+    }
+
+    .site-header__nav ul a[aria-current='page'] {
+      background: transparent;
+      color: var(--crn-bleu-nuit);
+      box-shadow: none;
+    }
+
+    .site-header__nav ul a[aria-current='page']::after {
+      transform: scaleX(1);
+    }
+
+    .site-header__badge {
+      height: 81px;
+      padding: 10px 30px 10px 10px;
+      gap: 16px;
+    }
+
+    .site-header__badge-icon {
+      width: 62px;
+      height: 62px;
+    }
+
+    .site-header__badge-value {
+      font-size: 22px;
+    }
+  }
+</style>

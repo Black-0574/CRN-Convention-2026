@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import PageHero from '../components/shared/PageHero.astro';
+---
+
+<BaseLayout
+  title="Confidentialité"
+  description="Politique de protection des données de la Page de la Convention CRN 2026."
+>
+  <PageHero
+    eyebrow="Vos données"
+    title="Politique de protection des données"
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Confidentialité' }]}
+  />
+
+  <Section tone="default" ariaLabel="Politique de protection des données">
+    <div class="legal-prose">
+      <h2>Responsable</h2>
+      <p>Ministères Christ Révélé aux Nations (CRN) — Libreville, Gabon.</p>
+
+      <h2>Données collectées</h2>
+      <p>
+        Lorsqu'un formulaire est proposé sur cette Page (par exemple pour s'inscrire ou être tenu
+        informé), seules les données nécessaires sont demandées. Aucune donnée de paiement n'est
+        conservée par la Page : les paiements sont traités par un prestataire agréé.
+      </p>
+
+      <h2>Consentement</h2>
+      <p>
+        Toute collecte de données s'accompagne d'une case de consentement non pré-cochée et distincte de
+        toute autre action. La date, l'heure et le texte du consentement sont enregistrés.
+      </p>
+
+      <h2>Conservation et retrait</h2>
+      <p class="legal-placeholder">
+        Durée de conservation et procédure de retrait à arrêter (ARB-PAGE-07) avant la mise en
+        production des formulaires d'inscription.
+      </p>
+
+      <h2>Droit applicable</h2>
+      <p>
+        Cette politique est établie dans le respect de la réglementation gabonaise applicable, notamment
+        la loi n° 001/2011 relative à la protection des données à caractère personnel.
+      </p>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .legal-prose {
+    max-width: 70ch;
+  }
+
+  .legal-prose h2 {
+    margin-top: var(--space-4);
+  }
+
+  .legal-prose h2:first-child {
+    margin-top: 0;
+  }
+
+  .legal-placeholder {
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+</style>

@@ -1,0 +1,9 @@
+{
+  "nom": "Pass Académie Intégral",
+  "categorie": "pass",
+  "prixFCFA": 50000,
+  "description": "Les trois classes de l’Académie des Sciences Divines, du 8 au 10 décembre.",
+  "lienAchat": "#billetterie-a-configurer",
+  "statut": "disponible",
+  "ordre": 2
+}

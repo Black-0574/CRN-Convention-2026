@@ -1,0 +1,6 @@
+{
+  "question": "J’ai un problème avec mon pass ou mon paiement, qui contacter ?",
+  "reponse": "Utilisez les coordonnées indiquées sur la page Contact. Conservez votre référence de transaction : elle facilite le traitement de votre demande.",
+  "etats": ["campagne", "evenement"],
+  "ordre": 7
+}

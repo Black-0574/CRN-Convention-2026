@@ -1,0 +1,125 @@
+---
+interface Props {
+  cibleISO: string;
+}
+const { cibleISO } = Astro.props;
+---
+
+<div class="countdown" id="countdown" data-cible={cibleISO} role="timer" aria-live="off">
+  <div class="countdown__unit">
+    <span class="countdown__value" data-unit="jours">–</span>
+    <span class="countdown__label">jours</span>
+  </div>
+  <div class="countdown__unit">
+    <span class="countdown__value" data-unit="heures">–</span>
+    <span class="countdown__label">heures</span>
+  </div>
+  <div class="countdown__unit">
+    <span class="countdown__value" data-unit="minutes">–</span>
+    <span class="countdown__label">min</span>
+  </div>
+  <div class="countdown__unit">
+    <span class="countdown__value" data-unit="secondes">–</span>
+    <span class="countdown__label">sec</span>
+  </div>
+</div>
+
+<script>
+  import { computeCountdown } from '../../lib/state';
+
+  const el = document.getElementById('countdown');
+  if (el) {
+    const cible = new Date(el.dataset.cible ?? '');
+    const values = {
+      jours: el.querySelector('[data-unit="jours"]'),
+      heures: el.querySelector('[data-unit="heures"]'),
+      minutes: el.querySelector('[data-unit="minutes"]'),
+      secondes: el.querySelector('[data-unit="secondes"]'),
+    };
+
+    // Petit « battement » sur les secondes à chaque tic, pour une sensation de compte à rebours
+    // vivant — purement décoratif, respecte prefers-reduced-motion (durée neutralisée globalement).
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const pulse = (target: Element | null) => {
+      if (!target || prefersReducedMotion) return;
+      target.classList.remove('countdown__value--pulse');
+      void (target as HTMLElement).offsetWidth;
+      target.classList.add('countdown__value--pulse');
+    };
+
+    const tick = () => {
+      const c = computeCountdown(new Date(), cible);
+      if (values.jours) values.jours.textContent = String(c.jours);
+      if (values.heures) values.heures.textContent = String(c.heures).padStart(2, '0');
+      if (values.minutes) values.minutes.textContent = String(c.minutes).padStart(2, '0');
+      if (values.secondes) values.secondes.textContent = String(c.secondes).padStart(2, '0');
+      pulse(values.secondes);
+      if (c.termine) clearInterval(interval);
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+  }
+</script>
+
+<style>
+  .countdown {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding-top: var(--space-1);
+  }
+
+  .countdown__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 56px;
+  }
+
+  /* Grand corps (≥ 24 px), gras : l'or passe le seuil de contraste WCAG sur bleu nuit (3,4:1,
+     conforme GBIS §03 pour les titres et accents en grand corps — jamais en texte courant). */
+  .countdown__value {
+    display: inline-block;
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 36px;
+    color: var(--crn-or);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 3px 14px rgba(0, 0, 0, 0.6);
+  }
+
+  .countdown__label {
+    margin-top: 4px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--crn-blanc);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+
+  @media (min-width: 1024px) {
+    .countdown__value {
+      font-size: 45px;
+    }
+  }
+
+  .countdown__value--pulse {
+    animation: countdown-pulse 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes countdown-pulse {
+    0% {
+      transform: scale(1);
+    }
+    30% {
+      transform: scale(1.18);
+      color: var(--crn-or-lumiere);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+</style>

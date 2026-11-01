@@ -1,0 +1,89 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/shared/Section.astro';
+import PageHero from '../../components/shared/PageHero.astro';
+import SpeakerCard from '../../components/speakers/SpeakerCard.astro';
+import { isPublished } from '../../lib/state';
+
+const now = new Date();
+const speakersAll = await getCollection('speakers');
+const speakersPublished = speakersAll.filter((s) => isPublished(now, s.data.datePublication));
+
+const ordreCategories = ['hote', 'international', 'national', 'prophetique', 'plateforme'] as const;
+const labelsCategories: Record<(typeof ordreCategories)[number], string> = {
+  hote: 'Hôte',
+  international: 'Orateurs internationaux',
+  national: 'Orateurs nationaux',
+  prophetique: 'Ministère prophétique',
+  plateforme: 'Intervenantes de plateforme',
+};
+
+const groupes = ordreCategories
+  .map((categorie) => ({
+    categorie,
+    label: labelsCategories[categorie],
+    speakers: speakersPublished.filter((s) => s.data.categorie === categorie),
+  }))
+  .filter((g) => g.speakers.length > 0);
+---
+
+<BaseLayout
+  title="Orateurs"
+  description="Tous les orateurs de la Convention CRN 2026, du 6 au 13 décembre à Libreville."
+>
+  <PageHero
+    eyebrow="Au service d’une génération"
+    title="Les orateurs"
+    intro="Des serviteurs réunis pour la Convention CRN 2026, du 6 au 13 décembre à Libreville."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Orateurs' }]}
+  />
+
+  <Section tone="default" ariaLabel="Les orateurs">
+    {speakersPublished.length === 0 && (
+      <p class="orateurs-empty">
+        Les fiches des orateurs seront révélées progressivement à partir du 2 novembre 2026.
+      </p>
+    )}
+
+    {groupes.map((g) => (
+      <div class="orateurs-groupe">
+        <h2>{g.label}</h2>
+        <div class="orateurs-grid" data-reveal-group>
+          {g.speakers.map((s) => (
+            <SpeakerCard nom={s.data.nom} categorie={s.data.categorie} photo={s.data.photo} href={`/orateurs/${s.id}`} />
+          ))}
+        </div>
+      </div>
+    ))}
+  </Section>
+</BaseLayout>
+
+<style>
+  .orateurs-empty {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .orateurs-groupe {
+    margin-top: var(--space-6);
+  }
+
+  .orateurs-groupe h2 {
+    border-bottom: 2px solid var(--crn-or);
+    padding-bottom: var(--space-1);
+    margin-bottom: var(--space-3);
+  }
+
+  .orateurs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 768px) {
+    .orateurs-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

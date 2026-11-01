@@ -1,0 +1,97 @@
+---
+interface Props {
+  id?: string;
+  tone?: 'default' | 'alt' | 'inverse' | 'feature';
+  ariaLabel?: string;
+}
+const { id, tone = 'default', ariaLabel } = Astro.props;
+---
+
+<section id={id} class={`section-block section-block--${tone}`} aria-label={ariaLabel}>
+  <div class="container">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section-block {
+    padding-block: var(--space-6);
+    border-top: 2px solid var(--crn-or);
+  }
+
+  @media (min-width: 1024px) {
+    .section-block {
+      padding-block: var(--space-10);
+    }
+  }
+
+  .section-block--default {
+    background: var(--color-bg);
+  }
+
+  .section-block--alt {
+    background: var(--color-bg-alt);
+  }
+
+  /* Bande « chiffres clés » (seul usage de ce ton) : padding resserré, nettement plus bas que les
+     autres sections, pour une bande courte et dense plutôt qu'un bloc plein écran. */
+  .section-block--inverse {
+    background: var(--color-bg-inverse);
+    color: var(--color-text-inverse);
+    padding-block: var(--space-3);
+  }
+
+  @media (min-width: 1024px) {
+    .section-block--inverse {
+      padding-block: var(--space-6);
+    }
+  }
+
+  .section-block--inverse :global(h1),
+  .section-block--inverse :global(h2),
+  .section-block--inverse :global(h3),
+  .section-block--inverse :global(h4) {
+    color: var(--color-text-inverse);
+  }
+
+  /* Fond « feature » : toile sobre et abstraite (palette GBIS exclusive), lumière volumétrique
+     douce et fines particules dorées — jamais de texte, de logo, de visage ni d'image religieuse
+     toute faite, conformément à la consigne reçue. Coin bas-gauche gardé calme et sombre (aucune
+     lumière n'y est placée). Remplace le fond gris plat d'origine sur cette section. */
+  .section-block--feature {
+    position: relative;
+    background: linear-gradient(160deg, var(--crn-bleu-nuit-profond) 0%, var(--crn-bleu-nuit) 55%, var(--crn-noir) 100%);
+    color: var(--crn-blanc);
+    overflow: hidden;
+  }
+
+  .section-block--feature::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 55% at 78% 12%, rgba(217, 196, 138, 0.18) 0%, transparent 62%),
+      radial-gradient(ellipse 45% 40% at 45% -5%, rgba(184, 150, 62, 0.12) 0%, transparent 70%);
+  }
+
+  .section-block--feature::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(217, 196, 138, 0.4) 0.8px, transparent 1.3px);
+    background-size: 26px 26px;
+    opacity: 0.45;
+  }
+
+  .section-block--feature .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* h1-h4 ont une couleur explicite par défaut (pas d'héritage) : on ne corrige que le titre de
+     l'en-tête de section, jamais les titres des cartes « Le Trône » etc. qui restent sur fond
+     blanc et doivent garder leur propre couleur sombre lisible. */
+  .section-block--feature :global(.section-heading__title) {
+    color: var(--crn-blanc);
+  }
+</style>

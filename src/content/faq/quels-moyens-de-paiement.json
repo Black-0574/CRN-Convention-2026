@@ -1,0 +1,6 @@
+{
+  "question": "Quels moyens de paiement sont acceptés ?",
+  "reponse": "Airtel Money, Moov Money et carte bancaire. La Page de la Convention ne conserve aucune donnée de paiement : les transactions sont traitées par un prestataire de paiement agréé.",
+  "etats": ["campagne", "evenement"],
+  "ordre": 3
+}

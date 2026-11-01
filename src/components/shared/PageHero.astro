@@ -1,0 +1,47 @@
+---
+import Section from './Section.astro';
+import Breadcrumb from './Breadcrumb.astro';
+
+interface Crumb {
+  label: string;
+  href?: string;
+}
+interface Props {
+  eyebrow: string;
+  title: string;
+  intro?: string;
+  crumbs: Crumb[];
+}
+const { eyebrow, title, intro, crumbs } = Astro.props;
+---
+
+<Section tone="feature" ariaLabel={title}>
+  <Breadcrumb items={crumbs} inverse />
+  <p class="page-hero__eyebrow" data-reveal>{eyebrow}</p>
+  <h1 class="page-hero__title" data-reveal>{title}</h1>
+  {intro && <p class="page-hero__intro" data-reveal>{intro}</p>}
+</Section>
+
+<style>
+  .page-hero__eyebrow {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 28px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--crn-or);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .page-hero__title {
+    color: var(--crn-blanc);
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .page-hero__intro {
+    max-width: 65ch;
+    font-size: var(--text-p);
+    color: rgba(255, 255, 255, 0.82);
+    margin: 0;
+  }
+</style>

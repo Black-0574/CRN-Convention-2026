@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import PageHero from '../components/shared/PageHero.astro';
+import InfoCard from '../components/shared/InfoCard.astro';
+---
+
+<BaseLayout
+  title="Action sociale"
+  description="Collecte de vivres et de vêtements pour l'action sociale de la Convention CRN 2026, du 9 au 27 novembre."
+>
+  <PageHero
+    eyebrow="De l’autel à la cité"
+    title="Action sociale"
+    intro="À l’image du thème « de l’autel à la cité », la Convention CRN 2026 porte un geste concret vers les familles de Libreville : une collecte de vivres et de vêtements, suivie d’une distribution lors de la pré-convention sociale."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Action sociale' }]}
+  />
+
+  <Section tone="default" ariaLabel="Détails de la collecte">
+    <div class="info-grid" data-reveal-group>
+      <InfoCard>
+        <p class="info-card__label">Collecte</p>
+        <p class="info-card__value">Du 9 au 27 novembre 2026</p>
+      </InfoCard>
+      <InfoCard>
+        <p class="info-card__label">Distribution</p>
+        <p class="info-card__value">Samedi 5 décembre 2026, 9h – 12h, Église Centrale</p>
+      </InfoCard>
+    </div>
+
+    <p class="info-footnote">
+      Les points de collecte seront précisés prochainement sur cette page. Pour soutenir cette action
+      depuis la diaspora, consultez la page <a href="/diaspora">Diaspora</a>.
+    </p>
+  </Section>
+</BaseLayout>
+
+<style>
+  .info-grid {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: 1fr;
+  }
+
+  .info-card__label {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: var(--text-s);
+    letter-spacing: 0.06em;
+    color: var(--crn-or-profond);
+    margin: 0 0 6px 0;
+  }
+
+  .info-card__value {
+    margin: 0;
+    font-size: var(--text-h4-mobile);
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .info-footnote {
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+
+  @media (min-width: 768px) {
+    .info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

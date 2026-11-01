@@ -1,0 +1,89 @@
+/*
+  Jetons de design — GBIS Écosystème CRN v2.1
+  Palette exclusive (§03) : aucune autre couleur, sous aucune forme.
+  Règle absolue : sur fond or, le texte est toujours noir ; jamais de blanc sur or ;
+  jamais de texte or sur fond clair (l'or y porte filets et ornements uniquement).
+*/
+:root {
+  /* Couleurs du socle (§03) */
+  --crn-noir: #101010;
+  --crn-blanc: #ffffff;
+  --crn-or: #b8963e;
+  --crn-or-lumiere: #d9c48a;
+  --crn-or-profond: #8a6e22;
+  --crn-bleu-nuit: #1a2c5b;
+  --crn-bleu-nuit-profond: #16244a;
+  --crn-creme: #f7f5f0;
+  --crn-gris: #6b6b6b;
+  --crn-gris-clair: #d8d4cb;
+
+  /* Rôles sémantiques (Colonne 2 · Le Créateur : or ~40 %, bleu nuit en support, fonds crème/blanc) */
+  --color-bg: var(--crn-creme);
+  --color-bg-alt: var(--crn-blanc);
+  --color-bg-inverse: var(--crn-bleu-nuit);
+  --color-bg-inverse-deep: var(--crn-bleu-nuit-profond);
+  --color-text: var(--crn-noir);
+  --color-text-inverse: var(--crn-blanc);
+  --color-text-muted: var(--crn-gris);
+  --color-accent: var(--crn-or);
+  --color-accent-deep: var(--crn-or-profond);
+  --color-border: var(--crn-gris-clair);
+  --color-focus: var(--crn-or);
+
+  /* Typographie — familles (licence provisoire, scénario A, cf. docs/CONV-PROMPTS.md) */
+  --font-titrage: 'Source Serif 4', Georgia, serif;
+  --font-labeur: 'Source Sans 3', -apple-system, 'Segoe UI', sans-serif;
+
+  /* Échelle typographique, ratio 1,25 base 16 px (§04) — desktop */
+  --text-h1: 49px;
+  --text-h2: 39px;
+  --text-h3: 31px;
+  --text-h4: 25px;
+  --text-p: 20px;
+  --text-s: 16px;
+
+  /* Échelle mobile : un cran en dessous, jamais hors échelle */
+  --text-h1-mobile: 39px;
+  --text-h2-mobile: 31px;
+  --text-h3-mobile: 25px;
+  --text-h4-mobile: 20px;
+
+  /* Unité de base 8 px (§05) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-6: 48px;
+  --space-10: 80px;
+
+  /* Composants (§09), évolution contemporaine 2026 : géométrie plus généreuse, teintes et
+     typographie inchangées (palette et contraste restent ceux du GBIS v2.1). */
+  --radius-control: 10px;
+  --radius-card: 20px;
+  --radius-card-sm: 14px;
+  --radius-pill: 999px;
+  --radius-flat: 0px;
+  --border-width-rest: 1px;
+  --border-width-hover: 1.5px;
+  --tap-target-min: 44px;
+  --transition-standard: 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  --focus-ring: 2px solid var(--color-focus);
+  --shadow-card: 0 1px 2px rgba(16, 16, 16, 0.04), 0 12px 32px -16px rgba(16, 16, 16, 0.18);
+  --shadow-lift: 0 24px 48px -20px rgba(16, 16, 16, 0.3);
+
+  /* Grille (§05) */
+  --container-max: 1224px;
+  --gutter-mobile: 20px;
+  --gutter-desktop: 80px;
+
+  color-scheme: light;
+}
+
+/* Pastilles de statut écosystème — jamais de vert (correction CONV-PROMPTS.md) */
+:root {
+  --badge-disponible-bg: var(--crn-bleu-nuit);
+  --badge-disponible-fg: var(--crn-blanc);
+  --badge-apercu-bg: var(--crn-or);
+  --badge-apercu-fg: var(--crn-noir);
+  --badge-chantier-border: var(--crn-gris-clair);
+  --badge-chantier-fg: var(--crn-gris);
+}

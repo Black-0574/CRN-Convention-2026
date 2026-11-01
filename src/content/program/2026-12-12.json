@@ -1,0 +1,34 @@
+{
+  "date": "2026-12-12",
+  "label": "Samedi 12 décembre",
+  "ordre": 8,
+  "sessions": [
+    {
+      "heureDebut": "08:00",
+      "heureFin": "11:00",
+      "titre": "Femme de Foi — Live",
+      "lieu": "Église Centrale",
+      "intervenants": ["patricia-piebi"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "13:00",
+      "heureFin": "16:30",
+      "titre": "J’ai soif",
+      "lieu": "Église Centrale",
+      "intervenants": ["jek-kalombo", "carelle-ambouroue"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "19:00",
+      "heureFin": "22:00",
+      "titre": "Dîner des Élites",
+      "lieu": "Lieu à annoncer",
+      "intervenants": [],
+      "diffusion": "non_diffuse",
+      "visible": true
+    }
+  ]
+}

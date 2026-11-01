@@ -1,0 +1,185 @@
+---
+import Icon from '../shared/Icon.astro';
+
+const logos = [
+  { slug: 'academie-liderciel', nom: 'Académie Apostolique Liderciel' },
+  { slug: 'mjo-global', nom: 'MJO Global' },
+  { slug: 'crn-media', nom: 'CRN Média' },
+  { slug: 'crn-fondation', nom: 'CRN Fondation' },
+  { slug: 'crn-evenementiel', nom: 'CRN Évènementiel' },
+  { slug: 'crn-editions', nom: 'CRN Éditions' },
+  { slug: 'cercle-royaume', nom: 'Cercle Royaume' },
+  { slug: 'crn-boutique', nom: 'CRN Boutique' },
+];
+---
+
+<section class="ecosystem-band" aria-label="L'écosystème digital du CRN">
+  <div class="container">
+    <p class="ecosystem-band__label">L'écosystème digital CRN</p>
+    <div class="ecosystem-band__row">
+      <button type="button" class="ecosystem-band__nav ecosystem-band__nav--prev" data-action="ecosystem-prev" aria-label="Plateformes précédentes">
+        <Icon name="arrow-left" size={16} />
+      </button>
+      <ul class="ecosystem-band__track" id="ecosystem-track">
+        {logos.map((l) => (
+          <li class="ecosystem-band__item">
+            <img src={`/images/ecosystem/${l.slug}.webp`} alt={l.nom} loading="lazy" />
+          </li>
+        ))}
+        {logos.map((l) => (
+          <li class="ecosystem-band__item" aria-hidden="true">
+            <img src={`/images/ecosystem/${l.slug}.webp`} alt="" loading="lazy" />
+          </li>
+        ))}
+      </ul>
+      <button type="button" class="ecosystem-band__nav ecosystem-band__nav--next" data-action="ecosystem-next" aria-label="Plateformes suivantes">
+        <Icon name="arrow-right" size={16} />
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Défilement autonome — DÉROGATION DOCUMENTÉE à la règle GBIS « Aucun carrousel ni défilement
+  // automatique » (voir docs/conformite.md, demande explicite et confirmée du Commanditaire).
+  // Reste accessible : respecte prefers-reduced-motion (désactivé entièrement, défilement manuel
+  // seul alors disponible), pause au survol/focus, et la liste est dupliquée une seule fois pour
+  // une boucle continue sans à-coup (saut invisible au milieu, identique visuellement).
+  const track = document.getElementById('ecosystem-track');
+  if (track) {
+    const scrollByAmount = () => track.clientWidth * 0.8;
+    let autoPaused = false;
+
+    const pauseAuto = () => { autoPaused = true; };
+    const resumeAuto = () => { autoPaused = false; };
+
+    document.querySelector('[data-action="ecosystem-prev"]')?.addEventListener('click', () => {
+      pauseAuto();
+      track.scrollBy({ left: -scrollByAmount(), behavior: 'smooth' });
+      window.setTimeout(resumeAuto, 1200);
+    });
+    document.querySelector('[data-action="ecosystem-next"]')?.addEventListener('click', () => {
+      pauseAuto();
+      track.scrollBy({ left: scrollByAmount(), behavior: 'smooth' });
+      window.setTimeout(resumeAuto, 1200);
+    });
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!prefersReducedMotion) {
+      track.addEventListener('mouseenter', pauseAuto);
+      track.addEventListener('mouseleave', resumeAuto);
+      track.addEventListener('focusin', pauseAuto);
+      track.addEventListener('focusout', resumeAuto);
+
+      const speedPxPerSecond = 26;
+      let last = performance.now();
+
+      const tick = (now: number) => {
+        const dt = (now - last) / 1000;
+        last = now;
+        if (!autoPaused) {
+          const half = track.scrollWidth / 2;
+          track.scrollLeft += speedPxPerSecond * dt;
+          if (track.scrollLeft >= half) {
+            track.scrollLeft -= half;
+          }
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
+</script>
+
+<style>
+  /* Fond clair (comble l'espace jusque-là vide entre le contenu et le pied de page) : l'étiquette
+     reste donc en bleu nuit, jamais en or (règle GBIS « jamais de texte or sur fond clair »). */
+  .ecosystem-band {
+    background: var(--color-bg);
+    border-top: 2px solid var(--crn-or);
+    padding-block: var(--space-3);
+  }
+
+  .ecosystem-band__label {
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: 32px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--crn-bleu-nuit);
+    text-align: left;
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .ecosystem-band__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .ecosystem-band__nav {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--crn-blanc);
+    color: var(--crn-bleu-nuit);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--transition-standard), border-color var(--transition-standard), color var(--transition-standard);
+  }
+
+  .ecosystem-band__nav:hover {
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  /* Logos non cliquables (simples <img>, aucun lien) : le curseur reste neutre, seul le zoom au
+     survol (ci-dessous) signale une interaction purement décorative. Pas de scroll-snap : la
+     boucle est continue (voir le script), un alignement forcé créerait des à-coups. */
+  .ecosystem-band__track {
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 4px 4px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .ecosystem-band__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ecosystem-band__item {
+    flex: 0 0 auto;
+    cursor: default;
+    transition: transform var(--transition-standard);
+  }
+
+  /* « Zoom sortant » : le logo survolé ressort légèrement de la bande, au-dessus de ses voisins. */
+  .ecosystem-band__item:hover {
+    transform: scale(1.18);
+    z-index: 1;
+  }
+
+  .ecosystem-band__item img {
+    display: block;
+    height: 56px;
+    width: auto;
+  }
+
+  @media (min-width: 768px) {
+    .ecosystem-band__item img {
+      height: 76px;
+    }
+  }
+</style>

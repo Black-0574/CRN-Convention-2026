@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import PageHero from '../components/shared/PageHero.astro';
+---
+
+<BaseLayout
+  title="Mentions légales"
+  description="Mentions légales de la Page de la Convention CRN 2026."
+>
+  <PageHero
+    eyebrow="Informations légales"
+    title="Mentions légales"
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Mentions légales' }]}
+  />
+
+  <Section tone="default" ariaLabel="Mentions légales">
+    <div class="legal-prose">
+      <h2>Éditeur</h2>
+      <p>Ministères Christ Révélé aux Nations (CRN) — Libreville, Gabon.</p>
+
+      <h2>Hébergement</h2>
+      <p class="legal-placeholder">
+        Prestataire et localisation d'hébergement à compléter par le CRN avant la mise en production
+        (ARB-PAGE-01).
+      </p>
+
+      <h2>Propriété</h2>
+      <p>
+        Le nom de domaine, les contenus, les données et le code spécifique développé pour cette Page
+        sont la propriété du CRN.
+      </p>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .legal-prose {
+    max-width: 70ch;
+  }
+
+  .legal-prose h2 {
+    margin-top: var(--space-4);
+  }
+
+  .legal-prose h2:first-child {
+    margin-top: 0;
+  }
+
+  .legal-placeholder {
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+</style>

@@ -1,0 +1,25 @@
+{
+  "date": "2026-12-07",
+  "label": "Lundi 7 décembre",
+  "ordre": 3,
+  "sessions": [
+    {
+      "heureDebut": "09:00",
+      "heureFin": "15:00",
+      "titre": "Pastorale CRN",
+      "lieu": "Église Centrale",
+      "intervenants": [],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    },
+    {
+      "heureDebut": "17:00",
+      "heureFin": "21:00",
+      "titre": "Cérémonie d’ouverture",
+      "lieu": "Église Centrale",
+      "intervenants": ["mike-jocktane"],
+      "diffusion": "a_arbitrer",
+      "visible": true
+    }
+  ]
+}

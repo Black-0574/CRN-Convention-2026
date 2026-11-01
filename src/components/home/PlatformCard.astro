@@ -1,0 +1,115 @@
+---
+import Icon from '../shared/Icon.astro';
+import Button from '../shared/Button.astro';
+
+interface Props {
+  titre: string;
+  date: string;
+  lieu: string;
+  href: string;
+  icone: 'book' | 'heart' | 'music' | 'crown' | 'building' | 'people';
+}
+const { titre, date, lieu, href, icone } = Astro.props;
+---
+
+<article class="platform-card">
+  <span class="platform-card__icon"><Icon name={icone} size={26} /></span>
+  <h3 class="platform-card__title">{titre}</h3>
+  <p class="platform-card__meta">
+    <span><Icon name="calendar" size={15} /> {date}</span>
+    <span><Icon name="pin" size={15} /> {lieu}</span>
+  </p>
+  <Button href={href} variant="primary">Prendre mon ticket <Icon name="arrow-right" size={16} /></Button>
+</article>
+
+<style>
+  /* Pavé « flottant » sur le fond bleu nuit de la section (même principe que les cartes de séance
+     de « Programme ») : fond clair en léger dégradé. Rebords haut et droit en or vieilli (plus
+     épais que les deux autres côtés) pour suggérer une tranche éclairée et donner de la
+     perspective, comme un pavé en relief légèrement tourné vers la lumière ; accentué au survol. */
+  .platform-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    background: linear-gradient(165deg, var(--crn-blanc) 0%, var(--crn-creme) 100%);
+    border-style: solid;
+    border-width: 3px 3px 1px 1px;
+    border-color: var(--crn-or) var(--crn-or) var(--color-border) var(--color-border);
+    border-radius: var(--radius-card);
+    height: 100%;
+    position: relative;
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .platform-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lift), 0 0 0 1px rgba(184, 150, 62, 0.3);
+    border-color: var(--crn-or-lumiere) var(--crn-or-lumiere) var(--crn-or) var(--crn-or);
+  }
+
+  /* Médaillon bleu nuit / or (même famille que les initiales orateur), gage de prestance sur un
+     fond de carte clair : icône or lumière sur fond sombre, jamais l'inverse (règle GBIS). */
+  .platform-card__icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-or);
+    border: 2px solid var(--crn-or);
+    box-shadow: 0 10px 22px -10px rgba(26, 44, 91, 0.5), 0 0 0 4px rgba(184, 150, 62, 0.16);
+    margin-bottom: 4px;
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .platform-card__icon::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    border: 1px solid rgba(184, 150, 62, 0.45);
+  }
+
+  .platform-card:hover .platform-card__icon {
+    transform: translateY(-3px) rotate(-6deg) scale(1.06);
+    color: var(--crn-or-lumiere);
+    border-color: var(--crn-or-lumiere);
+    box-shadow: 0 14px 26px -10px rgba(26, 44, 91, 0.55), 0 0 0 6px rgba(184, 150, 62, 0.22);
+  }
+
+  .platform-card__title {
+    font-weight: 700;
+    font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+    margin: 0;
+  }
+
+  /* Écritures plus prononcées sur le fond clair du pavé : bleu nuit et gras (plutôt que le gris
+     muted par défaut), seuls poids autorisés par la charte (Regular/Bold). */
+  .platform-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0 0 var(--space-2) 0;
+    font-size: var(--text-s);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit-profond);
+    flex: 1;
+  }
+
+  .platform-card__meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .platform-card :global(.button) {
+    width: 100%;
+  }
+</style>
