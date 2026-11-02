@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/shared/Section.astro';
 import Breadcrumb from '../../components/shared/Breadcrumb.astro';
 import SpeakerCard from '../../components/speakers/SpeakerCard.astro';
+import Icon, { type IconName } from '../../components/shared/Icon.astro';
 import { isPublished } from '../../lib/state';
 
 export async function getStaticPaths() {
@@ -21,6 +22,18 @@ const paragraphesBio = (speaker.data.bio ?? '')
   .split(/\n\s*\n/)
   .map((p) => p.trim())
   .filter(Boolean);
+
+// Réseaux sociaux saisis dans l'admin → pictogramme au trait + nom lisible (lecteurs d'écran).
+const reseaux = {
+  facebook: { icone: 'facebook', libelle: 'Facebook' },
+  instagram: { icone: 'instagram', libelle: 'Instagram' },
+  youtube: { icone: 'youtube', libelle: 'YouTube' },
+  tiktok: { icone: 'tiktok', libelle: 'TikTok' },
+  linkedin: { icone: 'linkedin', libelle: 'LinkedIn' },
+  x: { icone: 'x', libelle: 'X' },
+  site: { icone: 'globe', libelle: 'Site web' },
+} satisfies Record<string, { icone: IconName; libelle: string }>;
+const liensReseaux = speaker.data.reseauxSociaux ?? [];
 
 const categorieLabels: Record<string, string> = {
   hote: 'Hôte',
@@ -51,6 +64,23 @@ const categorieLabels: Record<string, string> = {
         <div>
           <p class="speaker-detail__category">{categorieLabels[speaker.data.categorie]}</p>
           <h1>{speaker.data.nom}</h1>
+          {speaker.data.fonction && <p class="speaker-detail__fonction">{speaker.data.fonction}</p>}
+          {liensReseaux.length > 0 && (
+            <ul class="speaker-detail__reseaux" aria-label={`Réseaux sociaux de ${speaker.data.nom}`}>
+              {liensReseaux.map((r) => (
+                <li>
+                  <a
+                    href={r.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${reseaux[r.reseau].libelle} de ${speaker.data.nom} (nouvel onglet)`}
+                  >
+                    <Icon name={reseaux[r.reseau].icone} size={20} />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
           {paragraphesBio.length > 0 ? (
             <div class="speaker-detail__bio">
               {paragraphesBio.map((p) => <p>{p}</p>)}
@@ -93,6 +123,42 @@ const categorieLabels: Record<string, string> = {
     border-radius: var(--radius-pill);
     padding: 4px 14px;
     margin-bottom: var(--space-1);
+  }
+
+  .speaker-detail__fonction {
+    margin: calc(-1 * var(--space-1)) 0 var(--space-2) 0;
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  /* Pastilles au trait (bleu nuit sur crème, jamais l'or sur fond clair), zone tactile 44 px. */
+  .speaker-detail__reseaux {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin: 0 0 var(--space-3) 0;
+    padding: 0;
+  }
+
+  .speaker-detail__reseaux a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--crn-gris-clair);
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+    transition: background-color var(--transition-standard), color var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .speaker-detail__reseaux a:hover,
+  .speaker-detail__reseaux a:focus-visible {
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
   }
 
   /* Retours à la ligne simples conservés à l'intérieur d'un paragraphe. */

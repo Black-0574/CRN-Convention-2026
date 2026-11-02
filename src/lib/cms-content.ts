@@ -117,8 +117,12 @@ export async function loadSpeakers(): Promise<Entry[]> {
       compact({
         id: String(d.slug ?? d.id),
         nom: d.nom,
+        fonction: d.fonction || undefined,
         categorie: d.categorie,
         bio: d.bio,
+        reseauxSociaux: Array.isArray(d.reseauxSociaux) && d.reseauxSociaux.length
+          ? (d.reseauxSociaux as Obj[]).map((r) => ({ reseau: r.reseau, url: String(r.url ?? '').trim() }))
+          : undefined,
         photo: await photoUrl(d.photo),
         videoInvitation: d.videoInvitation,
         datePublication: librevilleDay(d.datePublication),

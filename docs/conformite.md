@@ -102,6 +102,21 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Orateurs : fonction et réseaux sociaux ; lien depuis la photo (2 novembre 2026)
+
+Demande du Commanditaire : saisir nom, fonction, biographie et réseaux sociaux de l'orateur depuis
+l'interface de sa photo. Arbitrage validé par le Commanditaire : les données restent sur la fiche
+Orateur (une seule source) ; la page de la photo (Médias) affiche « Orateur lié à cette photo »
+avec lien direct vers la fiche (champ `join`, rien de stocké en double ; idem pour les artistes).
+Ajouts sur la fiche Orateur : « Fonction » (affichée sous le nom) et « Réseaux sociaux » (liste
+réseau + adresse https obligatoire ; Facebook, Instagram, YouTube, TikTok, LinkedIn, X, site
+web). Migration `20261102_074843` (colonne `fonction`, table `speakers_reseaux_sociaux`). Sur le
+site, pictogrammes au trait 44 px, simples liens de sortie en nouvel onglet avec libellé
+accessible — aucun widget ni script de ces plateformes chargé (NF-CNV-001). Preuve : base jetable
+en mode production → 3 migrations puis import initial ; fonction et lien enregistrés, adresse
+invalide refusée ; la photo affiche son orateur lié ; fiche rendue avec fonction, deux liens et
+biographie (données de test retirées) ; lint, types, tests unitaires et e2e OK.
+
 ## Biographie des orateurs rédigée dans l'admin (2 novembre 2026)
 
 Demande du Commanditaire : rédiger, modifier ou supprimer la biographie de chaque orateur depuis
