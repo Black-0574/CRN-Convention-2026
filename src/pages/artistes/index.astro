@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/shared/Section.astro';
+import PageHero from '../../components/shared/PageHero.astro';
+import SpeakerCard from '../../components/speakers/SpeakerCard.astro';
+
+// Artistes actifs dans l'admin (les désactivés sont déjà exclus par src/lib/cms-content.ts), par
+// ordre alphabétique — F-CNV-012.
+const artistes = (await getCollection('artists')).sort((a, b) => a.data.nom.localeCompare(b.data.nom, 'fr'));
+---
+
+<BaseLayout
+  title="Artistes"
+  description="Les artistes de la Convention CRN 2026, du 6 au 13 décembre à Libreville."
+>
+  <PageHero
+    eyebrow="Louange et adoration"
+    title="Les artistes"
+    intro="Les voix qui accompagneront la Convention CRN 2026, du 6 au 13 décembre à Libreville."
+    crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Artistes' }]}
+  />
+
+  <Section tone="default" ariaLabel="Les artistes">
+    {artistes.length === 0 ? (
+      <p class="artistes-vide">Les artistes seront annoncés prochainement.</p>
+    ) : (
+      <div class="artistes-grid" data-reveal-group>
+        {artistes.map((a) => (
+          <SpeakerCard nom={a.data.nom} role={a.data.fonction ?? 'Artiste'} photo={a.data.photo} href={`/artistes/${a.id}`} />
+        ))}
+      </div>
+    )}
+  </Section>
+</BaseLayout>
+
+<style>
+  .artistes-vide {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .artistes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 768px) {
+    .artistes-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>

@@ -102,6 +102,25 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Artistes : même fiche que les orateurs, pages publiques (F-CNV-012, 2 novembre 2026)
+
+Demande du Commanditaire : « faire de même pour les artistes ». Fiche Artiste de l'admin alignée
+sur la fiche Orateur — nom, fonction, identifiant d'adresse, photo, biographie, réseaux
+sociaux (définitions communes : `backend/src/fields/profil.ts`) ; la photo affiche son artiste lié.
+Migration `20261102_083128` (colonnes `fonction`, `slug`, `bio`, table
+`artists_reseaux_sociaux`) qui donne aux 10 artistes existants un identifiant déduit de leur nom.
+Le site n'affichait aucun artiste alors que F-CNV-012 prévoit leurs fiches : ajout de `/artistes`
+(liste, ordre alphabétique, « Artiste » par défaut sous le nom) et `/artistes/<identifiant>`
+(fiche), rendus par le composant commun `ProfilDetails.astro` (aussi utilisé par les orateurs) ;
+liens « Orateurs » et « Artistes » en pied de page, lien depuis /orateurs. Pas de date de
+publication pour les artistes : « Actif » décoché les masque (révélation progressive non requise
+à ce stade — **écart signalé** au regard de F-CNV-012, à arbitrer si besoin). Aucune donnée
+inventée : fonction, biographie et liens restent vides tant qu'ils ne sont pas saisis ; les
+artistes sans photo gardent le cadre neutre « Photo réelle à fournir ». Preuve : base jetable en
+mode production → 4 migrations, import, fiche enregistrée, `http://` refusé, identifiants rejoués
+sur artistes existants (accents compris) ; pages rendues avec données de test (retirées) ; lint,
+types, tests unitaires et e2e OK.
+
 ## Orateurs : fonction et réseaux sociaux ; lien depuis la photo (2 novembre 2026)
 
 Demande du Commanditaire : saisir nom, fonction, biographie et réseaux sociaux de l'orateur depuis

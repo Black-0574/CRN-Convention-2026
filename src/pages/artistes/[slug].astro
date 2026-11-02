@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/shared/Section.astro';
+import Breadcrumb from '../../components/shared/Breadcrumb.astro';
+import ProfilDetails from '../../components/speakers/ProfilDetails.astro';
+
+export async function getStaticPaths() {
+  const artistes = await getCollection('artists');
+  return artistes.map((a) => ({ params: { slug: a.id }, props: { artiste: a } }));
+}
+
+const { artiste } = Astro.props;
+---
+
+<BaseLayout
+  title={artiste.data.nom}
+  description={`Fiche artiste — ${artiste.data.nom}, Convention CRN 2026.`}
+>
+  <Section tone="default" ariaLabel="Fiche artiste">
+    <Breadcrumb
+      items={[
+        { label: 'Accueil', href: '/' },
+        { label: 'Artistes', href: '/artistes' },
+        { label: artiste.data.nom },
+      ]}
+    />
+    <ProfilDetails
+      nom={artiste.data.nom}
+      etiquette="Artiste"
+      photo={artiste.data.photo}
+      fonction={artiste.data.fonction}
+      bio={artiste.data.bio}
+      reseauxSociaux={artiste.data.reseauxSociaux}
+      retour={{ href: '/artistes', label: 'Tous les artistes' }}
+    />
+  </Section>
+</BaseLayout>

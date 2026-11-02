@@ -64,6 +64,16 @@ const program = defineCollection({
   }),
 });
 
+// Liens de sortie vers les comptes d'un orateur ou d'un artiste (aucun widget chargé, NF-CNV-001).
+const reseauxSociaux = z
+  .array(
+    z.object({
+      reseau: z.enum(['facebook', 'instagram', 'youtube', 'tiktok', 'linkedin', 'x', 'site']),
+      url: z.string().url(),
+    }),
+  )
+  .optional();
+
 const speakers = defineCollection({
   loader: source('speakers', cms.loadSpeakers),
   schema: z.object({
@@ -71,15 +81,7 @@ const speakers = defineCollection({
     fonction: z.string().optional(), // titre affiché sous le nom sur la fiche
     categorie: z.enum(['hote', 'international', 'national', 'prophetique', 'plateforme']),
     bio: z.string().optional(),
-    // Liens de sortie vers les comptes de l'orateur (aucun widget chargé, NF-CNV-001).
-    reseauxSociaux: z
-      .array(
-        z.object({
-          reseau: z.enum(['facebook', 'instagram', 'youtube', 'tiktok', 'linkedin', 'x', 'site']),
-          url: z.string().url(),
-        }),
-      )
-      .optional(),
+    reseauxSociaux,
     photo: z.string().optional(), // chemin public ; absent => cadre neutre
     videoInvitation: z.string().optional(),
     datePublication: z.string().optional(), // ISO ; absent/future => fiche masquée (révélation progressive)
@@ -88,8 +90,12 @@ const speakers = defineCollection({
 
 const artists = defineCollection({
   loader: source('artists', cms.loadArtists),
+  // Même fiche que les orateurs (F-CNV-012), page /artistes/<identifiant>.
   schema: z.object({
     nom: z.string(),
+    fonction: z.string().optional(),
+    bio: z.string().optional(),
+    reseauxSociaux,
     photo: z.string().optional(),
   }),
 });

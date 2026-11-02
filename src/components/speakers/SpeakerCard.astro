@@ -3,16 +3,18 @@ import Icon from '../shared/Icon.astro';
 
 interface Props {
   nom: string;
-  categorie: 'hote' | 'international' | 'national' | 'prophetique' | 'plateforme';
+  /** Catégorie d'orateur affichée sous le nom ; pour un artiste, `role` la remplace. */
+  categorie?: 'hote' | 'international' | 'national' | 'prophetique' | 'plateforme';
+  role?: string;
   photo?: string;
   href?: string;
   /** Masque le nom/rôle sous la photo — pour la fiche détaillée, où ils sont déjà affichés
       à côté (évite la répétition). */
   hideCaption?: boolean;
 }
-const { nom, categorie, photo, href, hideCaption = false } = Astro.props;
+const { nom, categorie, role, photo, href, hideCaption = false } = Astro.props;
 
-const labels: Record<Props['categorie'], string> = {
+const labels: Record<NonNullable<Props['categorie']>, string> = {
   hote: 'Hôte',
   international: 'Orateur international',
   national: 'Orateur national',
@@ -42,7 +44,7 @@ const Tag = href ? 'a' : 'div';
   {!hideCaption && (
     <>
       <p class="speaker-card__name">{nom}</p>
-      <p class="speaker-card__role">{labels[categorie]}</p>
+      {(role ?? (categorie && labels[categorie])) && <p class="speaker-card__role">{role ?? (categorie && labels[categorie])}</p>}
     </>
   )}
 </Tag>

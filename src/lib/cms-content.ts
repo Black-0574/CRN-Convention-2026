@@ -111,6 +111,13 @@ export async function loadVenues(): Promise<Entry[]> {
   return (await list('venues')).map((d) => compact({ id: String(d.id), nom: d.nom, adresse: d.adresse, lienCarte: d.lienCarte }));
 }
 
+// Champs de profil communs aux orateurs et aux artistes (backend/src/fields/profil.ts).
+function reseauxSociaux(v: unknown) {
+  return Array.isArray(v) && v.length
+    ? (v as Obj[]).map((r) => ({ reseau: r.reseau, url: String(r.url ?? '').trim() }))
+    : undefined;
+}
+
 export async function loadSpeakers(): Promise<Entry[]> {
   return Promise.all(
     (await list('speakers')).map(async (d) =>
@@ -120,9 +127,7 @@ export async function loadSpeakers(): Promise<Entry[]> {
         fonction: d.fonction || undefined,
         categorie: d.categorie,
         bio: d.bio,
-        reseauxSociaux: Array.isArray(d.reseauxSociaux) && d.reseauxSociaux.length
-          ? (d.reseauxSociaux as Obj[]).map((r) => ({ reseau: r.reseau, url: String(r.url ?? '').trim() }))
-          : undefined,
+        reseauxSociaux: reseauxSociaux(d.reseauxSociaux),
         photo: await photoUrl(d.photo),
         videoInvitation: d.videoInvitation,
         datePublication: librevilleDay(d.datePublication),
@@ -133,7 +138,16 @@ export async function loadSpeakers(): Promise<Entry[]> {
 
 export async function loadArtists(): Promise<Entry[]> {
   return Promise.all(
-    (await list('artists')).map(async (d) => compact({ id: String(d.id), nom: d.nom, photo: await photoUrl(d.photo) })),
+    (await list('artists')).map(async (d) =>
+      compact({
+        id: String(d.slug ?? d.id),
+        nom: d.nom,
+        fonction: d.fonction || undefined,
+        bio: d.bio,
+        reseauxSociaux: reseauxSociaux(d.reseauxSociaux),
+        photo: await photoUrl(d.photo),
+      }),
+    ),
   );
 }
 

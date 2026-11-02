@@ -56,6 +56,10 @@ const groupes = ordreCategories
         </div>
       </div>
     ))}
+
+    <p class="orateurs-artistes">
+      <a href="/artistes">Découvrir aussi les artistes de la Convention →</a>
+    </p>
   </Section>
 </BaseLayout>
 
@@ -73,6 +77,15 @@ const groupes = ordreCategories
     border-bottom: 2px solid var(--crn-or);
     padding-bottom: var(--space-1);
     margin-bottom: var(--space-3);
+  }
+
+  .orateurs-artistes {
+    margin-top: var(--space-6);
+  }
+
+  .orateurs-artistes a {
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
   }
 
   .orateurs-grid {

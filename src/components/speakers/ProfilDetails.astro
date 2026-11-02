@@ -1,0 +1,167 @@
+---
+/*
+  Fiche détaillée d'un orateur ou d'un artiste (F-CNV-012) : photo, étiquette, nom, fonction,
+  liens vers ses réseaux sociaux et biographie, tous saisis dans l'admin (champs communs :
+  backend/src/fields/profil.ts).
+*/
+import SpeakerCard from './SpeakerCard.astro';
+import Icon, { type IconName } from '../shared/Icon.astro';
+
+type Reseau = 'facebook' | 'instagram' | 'youtube' | 'tiktok' | 'linkedin' | 'x' | 'site';
+
+interface Props {
+  nom: string;
+  etiquette: string;
+  photo?: string;
+  fonction?: string;
+  bio?: string;
+  reseauxSociaux?: { reseau: Reseau; url: string }[];
+  retour: { href: string; label: string };
+}
+const { nom, etiquette, photo, fonction, bio, reseauxSociaux = [], retour } = Astro.props;
+
+// « de » élidé devant une voyelle : « Instagram d’Annick Nzie », « Facebook de Jek Kalombo ».
+const deNom = /^[aeiouyàâäéèêëîïôöùûü]/i.test(nom) ? `d’${nom}` : `de ${nom}`;
+
+// Biographie saisie dans l'admin (champ texte) : une ligne vide sépare deux paragraphes ; un
+// texte vide ou fait d'espaces équivaut à l'absence de biographie.
+const paragraphesBio = (bio ?? '')
+  .split(/\n\s*\n/)
+  .map((p) => p.trim())
+  .filter(Boolean);
+
+// Réseau → pictogramme au trait + nom lisible (lecteurs d'écran). Simples liens de sortie :
+// aucun widget ni script de ces plateformes n'est chargé (NF-CNV-001).
+const reseaux = {
+  facebook: { icone: 'facebook', libelle: 'Facebook' },
+  instagram: { icone: 'instagram', libelle: 'Instagram' },
+  youtube: { icone: 'youtube', libelle: 'YouTube' },
+  tiktok: { icone: 'tiktok', libelle: 'TikTok' },
+  linkedin: { icone: 'linkedin', libelle: 'LinkedIn' },
+  x: { icone: 'x', libelle: 'X' },
+  site: { icone: 'globe', libelle: 'Site web' },
+} satisfies Record<Reseau, { icone: IconName; libelle: string }>;
+---
+
+<div class="profil-detail" data-reveal>
+  <div class="profil-detail__photo">
+    <SpeakerCard nom={nom} photo={photo} hideCaption />
+  </div>
+  <div>
+    <p class="profil-detail__etiquette">{etiquette}</p>
+    <h1>{nom}</h1>
+    {fonction && <p class="profil-detail__fonction">{fonction}</p>}
+    {reseauxSociaux.length > 0 && (
+      <ul class="profil-detail__reseaux" aria-label={`Réseaux sociaux ${deNom}`}>
+        {reseauxSociaux.map((r) => (
+          <li>
+            <a href={r.url} target="_blank" rel="noopener noreferrer" aria-label={`${reseaux[r.reseau].libelle} ${deNom} (nouvel onglet)`}>
+              <Icon name={reseaux[r.reseau].icone} size={20} />
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+    {paragraphesBio.length > 0 ? (
+      <div class="profil-detail__bio">
+        {paragraphesBio.map((p) => <p>{p}</p>)}
+      </div>
+    ) : (
+      <p class="profil-detail__placeholder">Biographie à paraître.</p>
+    )}
+    <a class="profil-detail__retour" href={retour.href}>← {retour.label}</a>
+  </div>
+</div>
+
+<style>
+  .profil-detail {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+
+  .profil-detail__photo {
+    max-width: 220px;
+  }
+
+  .profil-detail__etiquette {
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    font-size: var(--text-s);
+    color: var(--crn-or-profond);
+    background: var(--crn-creme);
+    border: 1px solid var(--crn-or-lumiere);
+    border-radius: var(--radius-pill);
+    padding: 4px 14px;
+    margin-bottom: var(--space-1);
+  }
+
+  .profil-detail__fonction {
+    margin: calc(-1 * var(--space-1)) 0 var(--space-2) 0;
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  /* Pastilles au trait (bleu nuit sur crème, jamais l'or sur fond clair), zone tactile 44 px. */
+  .profil-detail__reseaux {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin: 0 0 var(--space-3) 0;
+    padding: 0;
+  }
+
+  .profil-detail__reseaux a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--crn-gris-clair);
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+    transition: background-color var(--transition-standard), color var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .profil-detail__reseaux a:hover,
+  .profil-detail__reseaux a:focus-visible {
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  /* Retours à la ligne simples conservés à l'intérieur d'un paragraphe. */
+  .profil-detail__bio p {
+    white-space: pre-line;
+    max-width: 68ch;
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .profil-detail__placeholder {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .profil-detail__retour {
+    display: inline-block;
+    margin-top: var(--space-2);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+  }
+
+  .profil-detail__retour:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 768px) {
+    .profil-detail {
+      grid-template-columns: 220px 1fr;
+      align-items: start;
+    }
+  }
+</style>
