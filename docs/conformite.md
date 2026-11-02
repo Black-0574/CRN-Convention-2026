@@ -102,6 +102,16 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Biographie des orateurs rédigée dans l'admin (2 novembre 2026)
+
+Demande du Commanditaire : rédiger, modifier ou supprimer la biographie de chaque orateur depuis
+le back-office. Champ « Biographie » de la fiche Orateur agrandi (12 lignes) avec consigne de
+saisie ; sur le site (`src/pages/orateurs/[slug].astro`), une ligne vide sépare deux paragraphes,
+les retours à la ligne sont conservés, et un champ vidé réaffiche « Biographie à paraître ». Aucune
+biographie n'est inventée : les 10 orateurs restent sans biographie tant qu'elle n'est pas saisie.
+Preuve : fiche rendue avec deux paragraphes à partir d'un texte de test (retiré ensuite) ; lint,
+types, tests unitaires et e2e OK.
+
 ## Correctif — film de la Convention lisible au clic en 3G (NF-CNV-002/003, 1er novembre 2026)
 
 Constat : la vidéo de 14 s derrière les deux boutons « Voir le film » (héros, section Film)

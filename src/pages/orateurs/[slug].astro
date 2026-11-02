@@ -15,6 +15,13 @@ const { speaker } = Astro.props;
 const now = new Date();
 const publie = isPublished(now, speaker.data.datePublication);
 
+// Biographie saisie dans l'admin (champ texte) : une ligne vide sépare deux paragraphes ; un
+// texte vide ou fait d'espaces équivaut à l'absence de biographie.
+const paragraphesBio = (speaker.data.bio ?? '')
+  .split(/\n\s*\n/)
+  .map((p) => p.trim())
+  .filter(Boolean);
+
 const categorieLabels: Record<string, string> = {
   hote: 'Hôte',
   international: 'Orateur international',
@@ -44,8 +51,10 @@ const categorieLabels: Record<string, string> = {
         <div>
           <p class="speaker-detail__category">{categorieLabels[speaker.data.categorie]}</p>
           <h1>{speaker.data.nom}</h1>
-          {speaker.data.bio ? (
-            <p>{speaker.data.bio}</p>
+          {paragraphesBio.length > 0 ? (
+            <div class="speaker-detail__bio">
+              {paragraphesBio.map((p) => <p>{p}</p>)}
+            </div>
           ) : (
             <p class="speaker-detail__placeholder">Biographie à paraître.</p>
           )}
@@ -84,6 +93,13 @@ const categorieLabels: Record<string, string> = {
     border-radius: var(--radius-pill);
     padding: 4px 14px;
     margin-bottom: var(--space-1);
+  }
+
+  /* Retours à la ligne simples conservés à l'intérieur d'un paragraphe. */
+  .speaker-detail__bio p {
+    white-space: pre-line;
+    max-width: 68ch;
+    margin: 0 0 var(--space-2) 0;
   }
 
   .speaker-detail__placeholder {
