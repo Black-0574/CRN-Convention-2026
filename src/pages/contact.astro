@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import Icon from '../components/shared/Icon.astro';
+import { hotline } from '../lib/contact';
 import { reseauxSociaux } from '../lib/social';
 ---
 
@@ -71,7 +72,14 @@ import { reseauxSociaux } from '../lib/social';
             <span class="contact-aside__icon"><Icon name="phone" size={20} /></span>
             <span>
               <span class="contact-aside__label">Hotline</span>
-              <a href="tel:+24170101010">+241 70 10 10 10</a>
+              <a href={hotline.tel}>{hotline.affichage}</a>
+            </span>
+          </li>
+          <li class="contact-aside__item">
+            <span class="contact-aside__icon"><Icon name="whatsapp" size={20} /></span>
+            <span>
+              <span class="contact-aside__label">WhatsApp</span>
+              <a href={hotline.whatsapp} target="_blank" rel="noopener noreferrer">{hotline.affichage}</a>
             </span>
           </li>
           <li class="contact-aside__item">

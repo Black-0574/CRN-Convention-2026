@@ -1,5 +1,6 @@
 ---
 import Icon from '../shared/Icon.astro';
+import { hotline } from '../../lib/contact';
 import { reseauxSociaux } from '../../lib/social';
 
 /*
@@ -11,10 +12,22 @@ import { reseauxSociaux } from '../../lib/social';
 
 <div class="top-bar">
   <div class="container top-bar__inner">
-    <a class="top-bar__hotline" href="tel:+24170101010" aria-label="Appeler la hotline, +241 70 10 10 10">
-      <Icon name="phone" size={18} />
-      <span aria-hidden="true">Hotline : +241 70 10 10 10</span>
-    </a>
+    <!-- Hotline : appel (icône téléphone + numéro) et WhatsApp (icône seule, même numéro). -->
+    <div class="top-bar__hotline-group">
+      <a class="top-bar__hotline" href={hotline.tel} aria-label={`Appeler la hotline, ${hotline.affichage}`}>
+        <Icon name="phone" size={18} />
+        <span aria-hidden="true">Hotline : {hotline.affichage}</span>
+      </a>
+      <a
+        class="top-bar__whatsapp"
+        href={hotline.whatsapp}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Écrire à la hotline sur WhatsApp, ${hotline.affichage} (nouvel onglet)`}
+      >
+        <Icon name="whatsapp" size={20} />
+      </a>
+    </div>
 
     <a class="top-bar__email" href="mailto:contact@crn-convention2026.events">
       <Icon name="mail" size={18} />
@@ -81,6 +94,35 @@ import { reseauxSociaux } from '../../lib/social';
 
   .top-bar__hotline span {
     white-space: nowrap;
+  }
+
+  .top-bar__hotline-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Pastille WhatsApp : même composition que les réseaux sociaux à droite (crème / bleu nuit). */
+  .top-bar__whatsapp {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--crn-creme);
+    border: 1.5px solid var(--crn-blanc);
+    color: var(--crn-bleu-nuit-profond);
+    box-shadow: 0 3px 8px -3px rgba(16, 16, 16, 0.35);
+    transition: background-color var(--transition-standard), color var(--transition-standard), transform var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .top-bar__whatsapp:hover,
+  .top-bar__whatsapp:focus-visible {
+    background: var(--crn-bleu-nuit-profond);
+    border-color: var(--crn-or-lumiere);
+    color: var(--crn-or-lumiere);
+    transform: translateY(-2px) scale(1.08);
   }
 
   /* Adresse mail officielle, entre la hotline et les réseaux sociaux — masquée en dessous de
@@ -155,9 +197,21 @@ import { reseauxSociaux } from '../../lib/social';
     box-shadow: 0 8px 16px -6px rgba(16, 16, 16, 0.5);
   }
 
+  /* Téléphone : numéro masqué faute de place ; l'icône d'appel devient une pastille de même
+     taille que celle de WhatsApp (deux cibles tactiles égales, côte à côte). */
   @media (max-width: 480px) {
     .top-bar__hotline span {
       display: none;
+    }
+
+    .top-bar__hotline {
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--crn-creme);
+      border: 1.5px solid var(--crn-blanc);
+      box-shadow: 0 3px 8px -3px rgba(16, 16, 16, 0.35);
     }
   }
 </style>

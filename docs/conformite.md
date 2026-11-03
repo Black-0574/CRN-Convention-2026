@@ -102,6 +102,19 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Hotline : nouveau numéro, appel et WhatsApp (3 novembre 2026)
+
+Demande du Commanditaire : hotline remplacée par **+241 62 70 51 83**, avec icônes téléphone et
+WhatsApp. Source unique côté site `src/lib/contact.ts` (barre du haut, page Contact) ; réponses de
+NASTY mises à jour côté back-office. Barre du haut : icône téléphone + numéro (`tel:+24162705183`)
+puis pastille WhatsApp (`https://wa.me/24162705183`, nouvel onglet) ; sur téléphone (< 480 px),
+deux pastilles de 34 px côte à côte. Page Contact : lignes « Hotline » et « WhatsApp ». Nouveau
+pictogramme `whatsapp` au trait (GBIS §07). Lien de sortie uniquement, aucune ressource WhatsApp
+chargée (NF-CNV-001, audit réseau e2e OK) — **à noter** : WhatsApp étant bloqué au Gabon, ce lien ne
+fonctionne pour les fidèles sur place que si l'application est accessible ; l'appel reste le canal
+garanti. Preuve : liens vérifiés dans le HTML, rendu 1440 et 360 px sans débordement ; lint, types,
+tests unitaires et e2e OK.
+
 ## Artistes : même fiche que les orateurs, pages publiques (F-CNV-012, 2 novembre 2026)
 
 Demande du Commanditaire : « faire de même pour les artistes ». Fiche Artiste de l'admin alignée
