@@ -102,6 +102,17 @@ demande de republication. Lint, types, 15 tests unitaires, 11 tests e2e (dont NF
 
 **Statut : Couvert**, la republication automatique dépendant du jeton à fournir.
 
+## Pied de page : double logo, contacts et réseaux sociaux (3 novembre 2026)
+
+Demande du Commanditaire : dans le bloc identité du pied de page, afficher le double logo de la
+Convention, les contacts (hotline et e-mail) et, en dessous, toutes les icônes des réseaux
+sociaux. `Footer.astro` : double logo (même fichier que l'en-tête) sur pavé blanc, accroche,
+Hotline (appel + WhatsApp, source `src/lib/contact.ts`) et E-mail, puis les 6 réseaux CRN
+(`src/lib/social.ts`) en pastilles 44 px — au survol fond or lumière et pictogramme bleu nuit,
+jamais de blanc sur or. Titre « Convention CRN 2026 » conservé pour les lecteurs d'écran. Colonne
+élargie sur grand écran, pleine largeur en tablette. Preuve : rendu 1440 px (e-mail sur une
+ligne) et 360 px sans débordement ; lint, types, tests unitaires et e2e (dont axe) OK.
+
 ## Hotline : nouveau numéro, appel et WhatsApp (3 novembre 2026)
 
 Demande du Commanditaire : hotline remplacée par **+241 62 70 51 83**, avec icônes téléphone et
