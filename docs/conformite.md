@@ -717,3 +717,36 @@ Preuve : 42 tests (`npx vitest run --root boutique/domaine`) — bascule à 23h5
 (Libreville), 200 demandes pour 50 places → 50 acceptées, webhooks doublon / désordre / signature
 invalide, double scan refusé, jetons altérés rejetés ; types stricts OK ; ajoutés à la CI. Règles
 permanentes de la boutique copiées dans `CLAUDE.md`. **Statut : en cours (Palier 1).**
+
+## CRN Boutique — boutique complète en local (4 novembre 2026)
+
+À la demande du Commanditaire (« construire toute la boutique en local, greffée sur le site, et
+l'apprécier avant de pousser ») : boutique fonctionnelle de bout en bout sur le poste, **non
+poussée** (branche locale `boutique-palier-1`).
+
+- **API et back-office** (`boutique/api`, Payload 3.45 + PostgreSQL 16 local via embedded-postgres) :
+  modèle de données du plan (catalogue, paliers, quotas, variantes, commandes, réservations,
+  événements de paiement, titulaires, droits par séance, journal des scans, retraits,
+  consentements, journal des actions), rôles nominatifs, tableau des ventes en tête du
+  back-office, exports CSV, émission des billets PDF signés, e-mails capturés en local.
+- **Vitrine** (`boutique/vitrine`, Astro rendu serveur) : styles du site importés tels quels,
+  accueil avec comptes à rebours réels (palier du Pass Intégral, ouverture), rangées de produits
+  (carrousel mobile, pastille or 8 → 24 px), fiche produit (séances publiques, kit, variantes),
+  tiroir du panier (320 ms, voile flouté), tunnel en 3 étapes sans rechargement, paiement Mobile
+  Money (simulé), suivi de commande, contrôle d'accès des agents, pages légales « à fournir ».
+- **Catalogue importé** : tickets, tee-shirt et pagne au prix validé ; pass Or, Diamant,
+  Intégral, Génération, Génération Plus « Prix à valider » (aperçu local uniquement).
+- **Déploiement** : Docker Compose (PostgreSQL, API, vitrine, Caddy HTTPS, en-têtes de sécurité,
+  CSP) prêt pour le VPS — non testé (pas de Docker sur le poste).
+
+Preuves (base locale réelle) : 200 commandes simultanées sur 50 places → 50 acceptées, 150
+refusées, aucune survente ; contrôle d'accès 6/6 (second scan refusé avec heure et poste,
+plateforme non incluse, QR falsifié, 10 scans simultanés → 1 accepté) ; parcours Playwright
+360 × 740 (3 titulaires, paiement simulé, 3 billets PDF) et lien de billet falsifié refusé ;
+cœur métier 42 tests ; types API et vitrine sans erreur ; lint du site OK.
+
+Écarts et décisions : PostgreSQL 16 (et non 18) en local, aligné sur la production — l'outil de
+schéma de Payload 3.45 gère mal les contraintes NOT NULL nommées de PostgreSQL 18 ; binaires
+téléchargés par reprise (connexion instable) et empreinte SHA-512 vérifiée contre npm.
+**Statut : Palier 1 complet en local ; production bloquée** par les questions au CRN (VPS,
+agrégateur Mobile Money, grille validée, e-mail, CGV).

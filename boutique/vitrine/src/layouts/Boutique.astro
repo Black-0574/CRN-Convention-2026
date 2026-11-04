@@ -1,0 +1,309 @@
+---
+/*
+  Gabarit de la CRN Boutique : styles du site de la Convention importés tels quels (jetons GBIS,
+  polices auto-hébergées, boutons, conteneurs) ; en-tête avec retour au site ; tiroir du panier ;
+  pied de page avec contacts et textes légaux. Bandeau « démonstration » en mode local.
+*/
+import '@site/styles/global.css';
+import TiroirPanier from '../components/TiroirPanier.astro';
+import { SITE_CONVENTION_URL } from '../lib/api';
+
+interface Props {
+  title: string;
+  description?: string;
+  demo?: boolean;
+}
+const { title, description = 'Boutique officielle de la Convention CRN 2026 : pass, billets et articles officiels.', demo = false } = Astro.props;
+const titreComplet = title === 'Accueil' ? 'CRN Boutique — Convention CRN 2026' : `${title} · CRN Boutique`;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titreComplet}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#16244A" />
+    <link rel="icon" type="image/png" href="/brand/favicon.png" />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    {demo && (
+      <div class="b-demo" role="note">
+        Démonstration locale — paiements simulés ; les produits marqués « Aperçu » attendent la validation de leur tarif par le CRN.
+      </div>
+    )}
+    <header class="b-entete">
+      <div class="container b-entete__inner">
+        <a class="b-entete__marque" href="/" aria-label="CRN Boutique — accueil de la boutique">
+          <img src="/brand/logo.webp" alt="" width="72" height="61" />
+          <span class="b-entete__nom">
+            <span class="b-entete__titre">CRN Boutique</span>
+            <span class="b-entete__sous-titre">Convention CRN 2026</span>
+          </span>
+        </a>
+        <nav class="b-entete__nav" aria-label="Navigation de la boutique">
+          <a class="b-entete__retour" href={SITE_CONVENTION_URL}>
+            <span aria-hidden="true">←</span> <span class="b-entete__retour-long">Site de la Convention</span><span class="b-entete__retour-court">Le site</span>
+          </a>
+          <button type="button" class="b-entete__panier" data-ouvrir-panier aria-label="Ouvrir le panier, 0 article" data-libelle-panier>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9Z" /><path d="M9 10V6a3 3 0 0 1 6 0v4" /></svg>
+            <span>Panier</span>
+            <span class="b-entete__compteur" data-compteur-panier hidden>0</span>
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="contenu">
+      <slot />
+    </main>
+
+    <footer class="b-pied">
+      <div class="container b-pied__grille">
+        <div>
+          <p class="b-pied__titre">CRN Boutique</p>
+          <p>Boutique officielle de la Convention CRN 2026 — Ministères Christ Révélé aux Nations (CRN). 6 – 13 décembre 2026, Libreville.</p>
+        </div>
+        <div>
+          <p class="b-pied__titre">Une question ?</p>
+          <ul>
+            <li><a href="tel:+24162705183">Hotline : +241 62 70 51 83</a></li>
+            <li><a href="mailto:contact@crn-convention2026.events">contact@crn-convention2026.events</a></li>
+            <li><a href={`${SITE_CONVENTION_URL}/nasty`}>Discuter avec NASTY</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="b-pied__titre">Informations</p>
+          <ul>
+            <li><a href="/cgv">Conditions générales de vente</a></li>
+            <li><a href="/mentions-legales">Mentions légales</a></li>
+            <li><a href="/confidentialite">Confidentialité</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="container b-pied__bas">© 2026 Ministères Christ Révélé aux Nations (CRN). Paiement sécurisé par Mobile Money.</p>
+    </footer>
+
+    <TiroirPanier />
+  </body>
+</html>
+
+<script>
+  import { nombreArticles, ouvrirPanier, surChangement } from '../lib/panier';
+
+  // Mesure (LOT A, A5) : provenance des visiteurs venus du site (utm_source / utm_medium),
+  // gardée pour la session et jointe à la commande.
+  try {
+    const recherche = new URLSearchParams(location.search);
+    if (recherche.has('utm_source')) {
+      const provenance = new URLSearchParams();
+      for (const cle of ['utm_source', 'utm_medium', 'utm_campaign']) {
+        const valeur = recherche.get(cle);
+        if (valeur) provenance.set(cle, valeur.slice(0, 80));
+      }
+      sessionStorage.setItem('crn-provenance', provenance.toString());
+    }
+  } catch {
+    /* stockage indisponible : la vente n'est simplement pas attribuée */
+  }
+
+  const compteur = document.querySelector<HTMLElement>('[data-compteur-panier]');
+  const bouton = document.querySelector<HTMLButtonElement>('[data-libelle-panier]');
+  const majCompteur = () => {
+    const n = nombreArticles();
+    if (compteur) {
+      compteur.textContent = String(n);
+      compteur.hidden = n === 0;
+    }
+    bouton?.setAttribute('aria-label', `Ouvrir le panier, ${n} article${n > 1 ? 's' : ''}`);
+  };
+  majCompteur();
+  surChangement(majCompteur);
+  document.querySelectorAll('[data-ouvrir-panier]').forEach((b) => b.addEventListener('click', ouvrirPanier));
+</script>
+
+<style is:global>
+  /* L'attribut hidden l'emporte toujours, même sur un élément stylé en grid ou flex. */
+  [hidden] {
+    display: none !important;
+  }
+</style>
+
+<style>
+  .b-demo {
+    background: var(--crn-or-lumiere);
+    color: var(--crn-noir);
+    text-align: center;
+    padding: 8px var(--gutter-mobile);
+    font-size: var(--text-s);
+    font-weight: 700;
+  }
+
+  .b-entete {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 1px 0 rgba(16, 16, 16, 0.06), 0 12px 32px -24px rgba(16, 16, 16, 0.25);
+  }
+
+  .b-entete__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-block: 10px;
+  }
+
+  .b-entete__marque {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--crn-bleu-nuit);
+    min-width: 0;
+  }
+
+  .b-entete__marque img {
+    height: 48px;
+    width: auto;
+  }
+
+  .b-entete__nom {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .b-entete__titre {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .b-entete__sous-titre {
+    font-size: var(--text-s);
+    color: var(--crn-gris);
+  }
+
+  .b-entete__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .b-entete__retour {
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: var(--text-s);
+    white-space: nowrap;
+  }
+
+  .b-entete__retour:hover {
+    text-decoration: underline;
+  }
+
+  .b-entete__retour-long {
+    display: none;
+  }
+
+  .b-entete__panier {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--tap-target-min);
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--crn-or-lumiere);
+    background: linear-gradient(135deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-blanc);
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    cursor: pointer;
+  }
+
+  .b-entete__panier:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .b-entete__compteur {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--crn-or);
+    color: var(--crn-noir);
+    font-size: 16px;
+  }
+
+  @media (max-width: 420px) {
+    .b-entete__nom {
+      display: none;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .b-entete__retour-long {
+      display: inline;
+    }
+
+    .b-entete__retour-court {
+      display: none;
+    }
+  }
+
+  .b-pied {
+    margin-top: var(--space-10);
+    background: var(--crn-bleu-nuit-profond);
+    color: rgba(255, 255, 255, 0.85);
+    padding-block: var(--space-6) var(--space-3);
+  }
+
+  .b-pied__grille {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 768px) {
+    .b-pied__grille {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+
+  .b-pied__titre {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    color: var(--crn-blanc);
+    margin: 0 0 8px;
+  }
+
+  .b-pied ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+  }
+
+  .b-pied a {
+    color: var(--crn-blanc);
+  }
+
+  .b-pied__bas {
+    margin-top: var(--space-3);
+    padding-top: var(--space-2);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: var(--text-s);
+  }
+</style>

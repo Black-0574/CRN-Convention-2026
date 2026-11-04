@@ -1,0 +1,16 @@
+# API + back-office (Payload 3, Next.js). Construit depuis la racine du dépôt.
+FROM node:22.20.0-alpine AS construction
+WORKDIR /depot/boutique
+COPY boutique/domaine ./domaine
+COPY boutique/api/package.json boutique/api/package-lock.json ./api/
+RUN cd api && npm ci --omit=optional
+COPY boutique/api ./api
+RUN cd api && npm run build
+
+FROM node:22.20.0-alpine
+WORKDIR /depot/boutique/api
+ENV NODE_ENV=production
+COPY --from=construction /depot/boutique /depot/boutique
+USER node
+EXPOSE 3101
+CMD ["npm", "run", "start"]

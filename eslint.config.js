@@ -35,7 +35,7 @@ export default [
   },
   {
     // Scripts d'outillage exécutés par Node (ex. scripts/export-seed-content.mjs).
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', '**/*.config.mjs'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -46,6 +46,8 @@ export default [
     // backend/ est un projet Next.js/Payload séparé (lot L3), avec son propre outillage — voir
     // backend/package.json (son propre `npm run lint` y est à prévoir si besoin).
     // `.claude/` : copies de travail (git worktrees) des sessions parallèles, chacune lintée chez elle.
-    ignores: ['dist/', '.astro/', 'node_modules/', 'playwright-report/', 'test-results/', 'backend/', '.claude/'],
+    ignores: ['dist/', '.astro/', 'node_modules/', 'playwright-report/', 'test-results/', 'backend/', '.claude/',
+      // CRN Boutique : l'API (Payload/Next) a son propre outillage (tsc), comme backend/ ; dossiers générés.
+      'boutique/api/', 'boutique/**/.astro/', 'boutique/**/dist/', 'boutique/**/node_modules/'],
   },
 ];

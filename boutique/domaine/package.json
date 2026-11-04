@@ -5,7 +5,9 @@
   "description": "Cœur métier de la CRN Boutique : paliers tarifaires, montants, jetons de billet, droits d'accès, quotas, paiements. Sans réseau ni base de données.",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./montants": "./src/montants.ts",
+    "./paliers": "./src/paliers.ts"
   },
   "scripts": {
     "test": "vitest run",

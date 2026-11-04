@@ -1,0 +1,277 @@
+---
+/*
+  Tiroir du panier (direction artistique retenue du dossier) : glissement de droite à gauche en
+  320 ms, courbe cubic-bezier(0.16, 1, 0.3, 1), voile rgba(22, 36, 74, 0.4) avec flou de 4 px.
+  Accessible : dialogue modal, focus piégé par <dialog>, fermeture par Échap ou clic sur le voile.
+  Sans animation si prefers-reduced-motion.
+*/
+---
+
+<dialog class="tiroir" data-tiroir aria-labelledby="tiroir-titre">
+  <div class="tiroir__panneau">
+    <div class="tiroir__entete">
+      <h2 id="tiroir-titre">Votre panier</h2>
+      <button type="button" class="tiroir__fermer" data-fermer-tiroir aria-label="Fermer le panier">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </div>
+    <ul class="tiroir__lignes" data-lignes-tiroir></ul>
+    <p class="tiroir__vide" data-vide-tiroir>Votre panier est vide.</p>
+    <div class="tiroir__pied" data-pied-tiroir>
+      <p class="tiroir__total"><span>Total</span> <strong data-total-tiroir></strong></p>
+      <p class="tiroir__euros" data-euros-tiroir></p>
+      <p class="tiroir__note">Prix garanti 15 minutes à partir de la validation de la commande.</p>
+      <a class="button button--primary tiroir__commander" href="/commande">Commander</a>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { formaterEUR, formaterXAF } from '../lib/format';
+  import { changerQuantite, lirePanier, surChangement, type LignePanier } from '../lib/panier';
+
+  const tiroir = document.querySelector<HTMLDialogElement>('[data-tiroir]')!;
+  const liste = tiroir.querySelector<HTMLUListElement>('[data-lignes-tiroir]')!;
+  const vide = tiroir.querySelector<HTMLElement>('[data-vide-tiroir]')!;
+  const pied = tiroir.querySelector<HTMLElement>('[data-pied-tiroir]')!;
+  const total = tiroir.querySelector<HTMLElement>('[data-total-tiroir]')!;
+  const euros = tiroir.querySelector<HTMLElement>('[data-euros-tiroir]')!;
+
+  const echapper = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+  function rendre(lignes: LignePanier[]) {
+    liste.innerHTML = lignes
+      .map(
+        (l) => `<li class="tiroir__ligne">
+          <div class="tiroir__vignette">${l.photo ? `<img src="${echapper(l.photo)}" alt="" width="64" height="64" loading="lazy">` : '<span aria-hidden="true">CRN</span>'}</div>
+          <div class="tiroir__infos">
+            <a href="/produits/${encodeURIComponent(l.slug)}">${echapper(l.nom)}</a>
+            ${l.variante !== 'Unique' ? `<span class="tiroir__variante">${echapper(l.variante)}</span>` : ''}
+            <span>${formaterXAF(l.prixXAF)}</span>
+            <div class="tiroir__quantite" role="group" aria-label="Quantité de ${echapper(l.nom)}">
+              <button type="button" data-moins="${l.varianteId}" aria-label="Retirer un exemplaire">−</button>
+              <span aria-live="polite">${l.quantite}</span>
+              <button type="button" data-plus="${l.varianteId}" aria-label="Ajouter un exemplaire">+</button>
+              <button type="button" class="tiroir__retirer" data-retirer="${l.varianteId}">Retirer</button>
+            </div>
+          </div>
+        </li>`,
+      )
+      .join('');
+    const somme = lignes.reduce((s, l) => s + l.prixXAF * l.quantite, 0);
+    vide.hidden = lignes.length > 0;
+    pied.hidden = lignes.length === 0;
+    total.textContent = formaterXAF(somme);
+    euros.textContent = `soit environ ${formaterEUR(somme)}`;
+  }
+
+  liste.addEventListener('click', (e) => {
+    const cible = (e.target as HTMLElement).closest('button');
+    if (!cible) return;
+    const lignes = lirePanier();
+    const id = Number(cible.dataset.moins ?? cible.dataset.plus ?? cible.dataset.retirer);
+    const l = lignes.find((x) => x.varianteId === id);
+    if (!l) return;
+    if (cible.dataset.retirer) changerQuantite(id, 0);
+    else changerQuantite(id, l.quantite + (cible.dataset.plus ? 1 : -1));
+  });
+
+  const ouvrir = () => {
+    rendre(lirePanier());
+    tiroir.showModal();
+    requestAnimationFrame(() => tiroir.classList.add('tiroir--ouvert'));
+  };
+  const fermer = () => {
+    tiroir.classList.remove('tiroir--ouvert');
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(() => tiroir.close(), reduit ? 0 : 320);
+  };
+
+  window.addEventListener('crn:ouvrir-panier', ouvrir);
+  tiroir.querySelector('[data-fermer-tiroir]')!.addEventListener('click', fermer);
+  tiroir.addEventListener('click', (e) => e.target === tiroir && fermer());
+  tiroir.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    fermer();
+  });
+  surChangement(rendre);
+</script>
+
+<style is:global>
+  .tiroir {
+    margin: 0 0 0 auto;
+    height: 100dvh;
+    max-height: 100dvh;
+    width: min(420px, 100vw);
+    max-width: 100vw;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .tiroir::backdrop {
+    background: rgba(22, 36, 74, 0);
+    backdrop-filter: blur(0);
+    transition: background 320ms cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .tiroir--ouvert::backdrop {
+    background: rgba(22, 36, 74, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  .tiroir__panneau {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--crn-blanc);
+    box-shadow: var(--shadow-lift);
+    transform: translateX(100%);
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .tiroir--ouvert .tiroir__panneau {
+    transform: translateX(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tiroir__panneau,
+    .tiroir::backdrop {
+      transition: none;
+    }
+  }
+
+  .tiroir__entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--crn-gris-clair);
+  }
+
+  .tiroir__entete h2 {
+    margin: 0;
+    font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .tiroir__fermer {
+    width: var(--tap-target-min);
+    height: var(--tap-target-min);
+    border-radius: 50%;
+    border: 1px solid var(--crn-gris-clair);
+    background: none;
+    cursor: pointer;
+    color: var(--crn-noir);
+  }
+
+  .tiroir__lignes {
+    list-style: none;
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    overflow-y: auto;
+    flex: 1;
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+
+  .tiroir__vide {
+    padding: var(--space-3);
+    color: var(--crn-gris);
+  }
+
+  .tiroir__ligne {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 12px;
+  }
+
+  .tiroir__vignette {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-control);
+    background: var(--crn-creme);
+    border: 1px solid var(--crn-gris-clair);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: var(--crn-or-profond);
+    font-family: var(--font-titrage);
+    font-weight: 700;
+  }
+
+  .tiroir__vignette img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .tiroir__infos {
+    display: grid;
+    gap: 2px;
+  }
+
+  .tiroir__infos a {
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .tiroir__variante {
+    color: var(--crn-gris);
+  }
+
+  .tiroir__quantite {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .tiroir__quantite button {
+    min-width: 36px;
+    height: 36px;
+    border-radius: var(--radius-control);
+    border: 1px solid var(--crn-gris-clair);
+    background: var(--crn-blanc);
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  .tiroir__quantite .tiroir__retirer {
+    margin-left: auto;
+    border: none;
+    background: none;
+    color: var(--crn-bleu-nuit);
+    text-decoration: underline;
+    font-size: 16px;
+  }
+
+  .tiroir__pied {
+    padding: var(--space-2) var(--space-3) var(--space-3);
+    border-top: 1px solid var(--crn-gris-clair);
+    background: var(--crn-creme);
+  }
+
+  .tiroir__total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    margin: 0;
+  }
+
+  .tiroir__euros,
+  .tiroir__note {
+    margin: 4px 0 0;
+    color: var(--crn-gris);
+    font-size: 16px;
+  }
+
+  .tiroir__commander {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-2);
+  }
+</style>

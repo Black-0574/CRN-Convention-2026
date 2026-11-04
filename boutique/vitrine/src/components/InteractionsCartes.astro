@@ -1,0 +1,92 @@
+---
+/*
+  Comportements partagés des cartes : favoris (mémorisés dans ce navigateur seulement, simple
+  commodité) et aperçu rapide (dialogue modal accessible).
+*/
+---
+
+<dialog class="apercu" data-dialogue-apercu aria-label="Aperçu rapide">
+  <div class="apercu__contenu" data-contenu-apercu></div>
+  <button type="button" class="apercu__fermer" data-fermer-apercu aria-label="Fermer l’aperçu">×</button>
+</dialog>
+
+<script>
+  const CLE = 'crn-boutique-favoris-v1';
+  const lire = (): string[] => {
+    try {
+      return JSON.parse(localStorage.getItem(CLE) ?? '[]');
+    } catch {
+      return [];
+    }
+  };
+  const ecrire = (f: string[]) => {
+    try {
+      localStorage.setItem(CLE, JSON.stringify(f));
+    } catch {
+      /* stockage indisponible */
+    }
+  };
+
+  const synchroniser = () => {
+    const favoris = new Set(lire());
+    document.querySelectorAll<HTMLButtonElement>('[data-favori]').forEach((b) => b.setAttribute('aria-pressed', String(favoris.has(b.dataset.favori!))));
+  };
+  synchroniser();
+
+  document.addEventListener('click', (e) => {
+    const favori = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-favori]');
+    if (favori) {
+      const f = new Set(lire());
+      const slug = favori.dataset.favori!;
+      if (f.has(slug)) f.delete(slug);
+      else f.add(slug);
+      ecrire([...f]);
+      synchroniser();
+      return;
+    }
+    const apercu = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-apercu-rapide]');
+    if (apercu) {
+      const gabarit = document.querySelector<HTMLTemplateElement>(`[data-gabarit-apercu="${apercu.dataset.apercuRapide}"]`);
+      const dialogue = document.querySelector<HTMLDialogElement>('[data-dialogue-apercu]')!;
+      dialogue.querySelector('[data-contenu-apercu]')!.replaceChildren(gabarit!.content.cloneNode(true));
+      dialogue.showModal();
+    }
+  });
+  const dialogue = document.querySelector<HTMLDialogElement>('[data-dialogue-apercu]')!;
+  dialogue.querySelector('[data-fermer-apercu]')!.addEventListener('click', () => dialogue.close());
+  dialogue.addEventListener('click', (e) => e.target === dialogue && dialogue.close());
+</script>
+
+<style>
+  .apercu {
+    width: min(520px, calc(100vw - 32px));
+    border: none;
+    border-radius: var(--radius-card);
+    padding: var(--space-3);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .apercu::backdrop {
+    background: rgba(22, 36, 74, 0.4);
+    backdrop-filter: blur(4px);
+  }
+
+  .apercu__contenu :global(h2) {
+    margin-top: 0;
+    color: var(--crn-bleu-nuit);
+    font-size: var(--text-h3-mobile);
+  }
+
+  .apercu__fermer {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: var(--tap-target-min);
+    height: var(--tap-target-min);
+    border-radius: 50%;
+    border: 1px solid var(--crn-gris-clair);
+    background: var(--crn-blanc);
+    font-size: 24px;
+    cursor: pointer;
+  }
+</style>

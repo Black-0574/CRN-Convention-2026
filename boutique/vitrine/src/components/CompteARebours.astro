@@ -1,0 +1,175 @@
+---
+/*
+  Compte à rebours en cadrans (jours, heures, minutes, secondes) avec bascule verticale du chiffre.
+  Correction obligatoire n° 3 : réservé aux échéances RÉELLES (prochaine bascule tarifaire,
+  ouverture de la Convention, fin de réservation). Aucune animation si prefers-reduced-motion.
+*/
+interface Props {
+  cible: string;
+  libelle: string;
+  /** Texte affiché une fois l'échéance atteinte. */
+  echu?: string;
+  sombre?: boolean;
+}
+const { cible, libelle, echu = 'Échéance atteinte.', sombre = false } = Astro.props;
+---
+
+<div class:list={['car', { 'car--sombre': sombre }]} data-compte-a-rebours={cible} data-echu={echu}>
+  <p class="car__libelle">{libelle}</p>
+  <div class="car__cadrans" role="timer" aria-live="off">
+    {[
+      ['j', 'jours'],
+      ['h', 'heures'],
+      ['m', 'min'],
+      ['s', 's'],
+    ].map(([cle, unite]) => (
+      <div class="car__cadran">
+        <span class="car__valeur" data-valeur={cle}>
+          <span class="car__chiffre">--</span>
+        </span>
+        <span class="car__unite">{unite}</span>
+      </div>
+    ))}
+  </div>
+  <p class="visually-hidden" data-texte-accessible></p>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-compte-a-rebours]').forEach((bloc) => {
+    const cible = new Date(bloc.dataset.compteARebours!).getTime();
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const accessible = bloc.querySelector<HTMLElement>('[data-texte-accessible]')!;
+    const precedent: Record<string, string> = {};
+
+    const poser = (cle: string, valeur: string) => {
+      if (precedent[cle] === valeur) return;
+      precedent[cle] = valeur;
+      const zone = bloc.querySelector<HTMLElement>(`[data-valeur="${cle}"]`)!;
+      const nouveau = document.createElement('span');
+      nouveau.className = 'car__chiffre';
+      nouveau.textContent = valeur;
+      if (reduit) {
+        zone.replaceChildren(nouveau);
+        return;
+      }
+      // Bascule verticale : l'ancien chiffre sort par le haut, le nouveau entre par le bas.
+      const ancien = zone.firstElementChild as HTMLElement | null;
+      nouveau.classList.add('car__chiffre--entree');
+      zone.append(nouveau);
+      ancien?.classList.add('car__chiffre--sortie');
+      setTimeout(() => {
+        ancien?.remove();
+        nouveau.classList.remove('car__chiffre--entree');
+      }, 360);
+    };
+
+    const tic = () => {
+      const reste = Math.max(0, cible - Date.now());
+      if (reste === 0) {
+        bloc.querySelector('.car__cadrans')!.replaceWith(Object.assign(document.createElement('p'), { className: 'car__echu', textContent: bloc.dataset.echu }));
+        return false;
+      }
+      const s = Math.floor(reste / 1000);
+      const v = { j: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
+      poser('j', String(v.j));
+      poser('h', String(v.h).padStart(2, '0'));
+      poser('m', String(v.m).padStart(2, '0'));
+      poser('s', String(v.s).padStart(2, '0'));
+      accessible.textContent = `${v.j} jours, ${v.h} heures et ${v.m} minutes restants.`;
+      return true;
+    };
+    if (tic()) {
+      const id = setInterval(() => !tic() && clearInterval(id), 1000);
+    }
+  });
+</script>
+
+<style is:global>
+  .car__libelle {
+    margin: 0 0 8px;
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .car--sombre .car__libelle {
+    color: var(--crn-or-lumiere);
+  }
+
+  .car__cadrans {
+    display: flex;
+    gap: 8px;
+  }
+
+  .car__cadran {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .car__valeur {
+    position: relative;
+    display: block;
+    width: 64px;
+    height: 56px;
+    overflow: hidden;
+    border-radius: var(--radius-control);
+    background: var(--crn-bleu-nuit-profond);
+    border: 1px solid var(--crn-or);
+  }
+
+  .car__chiffre {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 28px;
+    color: var(--crn-or-lumiere);
+    transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1), opacity 360ms ease;
+  }
+
+  .car__chiffre--entree {
+    transform: translateY(100%);
+    opacity: 0;
+    animation: car-entree 360ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .car__chiffre--sortie {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  @keyframes car-entree {
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .car__unite {
+    font-size: 16px;
+    color: var(--crn-gris);
+  }
+
+  .car--sombre .car__unite {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .car__echu {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .car__chiffre,
+    .car__chiffre--entree {
+      transition: none;
+      animation: none;
+      transform: none;
+      opacity: 1;
+    }
+  }
+</style>

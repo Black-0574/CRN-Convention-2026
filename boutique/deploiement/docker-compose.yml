@@ -1,0 +1,66 @@
+# CRN Boutique — déploiement conteneurisé, portable chez tout hébergeur (VPS). Une pile par
+# environnement : `docker compose -p boutique-preprod --env-file preprod.env up -d` et
+# `docker compose -p boutique-prod --env-file prod.env up -d` (bases, secrets et volumes séparés).
+# Contexte de construction : la racine du dépôt (la vitrine reprend les styles du site).
+name: crn-boutique
+
+services:
+  postgres:
+    image: postgres:16.10-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: boutique
+      POSTGRES_USER: boutique
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?mot de passe PostgreSQL requis}
+    volumes:
+      - donnees:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U boutique -d boutique']
+      interval: 10s
+      retries: 5
+
+  api:
+    build: { context: ../.., dockerfile: boutique/deploiement/Dockerfile.api }
+    restart: unless-stopped
+    depends_on: { postgres: { condition: service_healthy } }
+    environment:
+      NODE_ENV: production
+      DATABASE_URI: postgres://boutique:${POSTGRES_PASSWORD}@postgres:5432/boutique
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?}
+      BILLETS_SECRET: ${BILLETS_SECRET:?}
+      LIENS_SECRET: ${LIENS_SECRET:?}
+      PAIEMENT_PRESTATAIRE: ${PAIEMENT_PRESTATAIRE:?prestataire Mobile Money requis}
+      VITRINE_URL: ${VITRINE_URL:?}
+      API_URL: ${VITRINE_URL}
+      MEDIA_DIR: /donnees/medias
+      BILLETS_DIR: /donnees/billets
+    volumes:
+      - fichiers:/donnees
+
+  vitrine:
+    build: { context: ../.., dockerfile: boutique/deploiement/Dockerfile.vitrine }
+    restart: unless-stopped
+    depends_on: [api]
+    environment:
+      HOST: 0.0.0.0
+      PORT: '4322'
+      API_URL: http://api:3101
+      VITRINE_URL: ${VITRINE_URL}
+      SITE_CONVENTION_URL: https://www.crn-convention2026.events
+
+  # Proxy HTTPS : /api et /admin vers l'API, le reste vers la vitrine (même origine).
+  caddy:
+    image: caddy:2.10.2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      DOMAINE: ${DOMAINE:?domaine requis (ex. boutique.crn-convention2026.events)}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+    depends_on: [api, vitrine]
+
+volumes:
+  donnees:
+  fichiers:
+  caddy:

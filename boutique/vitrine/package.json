@@ -1,0 +1,23 @@
+{
+  "name": "@crn-boutique/vitrine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CRN Boutique — vitrine (Astro SSR) : catalogue, fiche produit, panier, tunnel de commande en 3 étapes, suivi et billets. Mêmes jetons, polices et composants visuels que le site de la Convention.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --port 4322",
+    "build": "astro build",
+    "start": "node dist/server/entry.mjs",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/node": "11.1.9",
+    "@crn-boutique/domaine": "file:../domaine",
+    "@fontsource/source-sans-3": "5.3.1",
+    "@fontsource/source-serif-4": "5.3.1",
+    "astro": "7.3.8"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
