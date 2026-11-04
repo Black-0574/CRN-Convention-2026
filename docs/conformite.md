@@ -833,3 +833,25 @@ SQLite sérialisant les écritures) ; les fiches statiques se mettent à jour à
 — le prix du palier et la disponibilité font foi côté serveur à la commande. Dossier `boutique/`
 retiré du dépôt (les restes locaux non versionnés — dépendances, base PostgreSQL de test — peuvent
 être supprimés par le Commanditaire). **Statut : fusion faite en local, non poussée.**
+
+## Boutique — pass nominatifs, livraison dans le réseau, paiement multi-pays (4 novembre 2026)
+
+Consignes du Commanditaire : « Tous les pass doivent être nominatifs générés avec un QR code à
+l'achat et à scanner pour donner accès aux différents sites concernés » ; « les produits physiques
+[…] livrés dans les différentes églises du réseau au Gabon ou hors du Gabon, ou à domicile ou lieu
+de travail à Libreville exceptionnellement » ; paiement par « un agrégateur de mobile money et
+carte qui couvre plusieurs pays », sans se limiter à Airtel Money et Moov Money.
+
+| Consigne | Réalisation | Preuve |
+| --- | --- | --- |
+| Pass nominatifs à QR code, scannés par site | Déjà en place (un titulaire et un QR signé par exemplaire, émis au paiement, un droit par séance) ; ajout : un pass ou ticket ne peut être mis en vente sans au moins une séance (site et heure) ; le poste de scan affiche séance, site et heure | Achat e2e (3 billets, PDF) ; scan 6/6 |
+| Livraison en église du réseau, Gabon et étranger | Collection « Églises du réseau » (pays, ville, adresse, horaires, frais, délai), choix à la commande, frais ajoutés au total, destination sur la commande, les articles à remettre, l'e-mail et le suivi | e2e : tee-shirt livré à l'église (démonstration) de Paris, frais 15 000 F CFA inclus, payé par carte |
+| Domicile ou lieu de travail à Libreville, exceptionnel | Réglage de la boutique (activation, zone, frais, conditions) ; adresse et téléphone obligatoires | Validation serveur (`lib/livraison.ts`) |
+| Agrégateur multi-pays, Mobile Money et carte | Plus aucun opérateur imposé : redirection vers la page sécurisée de l'agrégateur, moyen (Mobile Money / carte) et détail (opérateur, pays) enregistrés ; page de paiement simulée en local | Domaine 44/44 (redirection, moyen transmis) ; e2e : MTN MoMo — Cameroun |
+
+Décisions à valider par le CRN : le retrait sur le lieu de la Convention reste proposé en plus des
+deux modes demandés (désactivable dans les réglages) ; aucune église ni aucun frais n'est saisi en
+production (mode non proposé tant que la liste est vide — données en démonstration locale
+seulement, marquées « démonstration ») ; textes publics mis à jour (accueil de la boutique, FAQ,
+NASTY) — la FAQ en production se modifie dans le back-office. Migration de la boutique régénérée
+(`20261104_172946_boutique`, jamais déployée). **Statut : fait en local, non poussé.**

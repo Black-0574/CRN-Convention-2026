@@ -167,6 +167,6 @@ test.describe('A4 — FAQ', () => {
   test('« Comment acheter un pass ou un billet ? » renvoie vers la boutique', async ({ page }) => {
     await page.goto('/faq');
     await page.getByText('Comment acheter un pass ou un billet').click();
-    await expect(page.getByText(/Sur la Boutique de la Convention, boutique\.crn-convention2026\.events/)).toBeVisible();
+    await expect(page.getByText(/Sur la Boutique de la Convention, crn-convention2026\.events\/boutique/)).toBeVisible();
   });
 });

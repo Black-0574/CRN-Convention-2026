@@ -113,8 +113,12 @@ async function localiserPhotos(p: VueProduit): Promise<VueProduit> {
 
 let catalogueEnCours: Promise<{ demo: boolean; produits: VueProduit[] } | null> | undefined;
 
-/** Catalogue public (lu une fois par build), ou `null` si l'API est injoignable hors production. */
+/**
+ * Catalogue public (lu une fois par build), ou `null` si l'API est injoignable hors production.
+ * En développement, relu à chaque page : le catalogue local change pendant les essais.
+ */
 export function catalogue() {
+  if (import.meta.env.DEV) catalogueEnCours = undefined;
   catalogueEnCours ??= (async () => {
     const c = await lireAuBuild<{ demo: boolean; produits: VueProduit[] }>('/api/boutique/catalogue');
     return c && { demo: c.demo, produits: await Promise.all(c.produits.map(localiserPhotos)) };

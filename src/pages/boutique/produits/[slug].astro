@@ -28,6 +28,8 @@ const pourPanier = {
   ageMin: p.ageMin,
   ageMax: p.ageMax,
   kitTailles: p.kit.filter((k) => k.tailles.length > 0).map((k) => ({ nom: k.nom, tailles: k.tailles })),
+  // Articles physiques à livrer : l'article lui-même, ou le kit inclus dans un pass.
+  aLivrer: p.type === 'physique' || p.kit.length > 0,
   photo: p.photos[0]?.carte ?? null,
   variantes: p.variantes,
 };
@@ -165,6 +167,7 @@ const pourPanier = {
       ageMin: donnees.ageMin,
       ageMax: donnees.ageMax,
       kitTailles: donnees.kitTailles,
+      aLivrer: donnees.aLivrer,
       photo: donnees.photo,
     });
     const confirmation = formulaire.querySelector('[data-confirmation]');

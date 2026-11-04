@@ -1,6 +1,6 @@
 {
   "question": "Comment acheter un pass ou un billet ?",
-  "reponse": "Sur la Boutique de la Convention, boutique.crn-convention2026.events, accessible depuis le bouton de la boutique en haut de chaque page du site. Choisissez votre pass ou votre ticket, renseignez le nom et les coordonnées de chaque titulaire, puis payez par Mobile Money. Chaque billet est nominatif, avec un QR code unique, et vous est envoyé par e-mail. Les articles officiels (tee-shirt, pagne) se retirent sur place : le lieu et les horaires de retrait sont à annoncer.",
+  "reponse": "Sur la Boutique de la Convention, crn-convention2026.events/boutique, accessible depuis le bouton de la boutique en haut de chaque page du site. Choisissez votre pass ou votre ticket, renseignez le nom et les coordonnées de chaque titulaire, puis payez par Mobile Money ou par carte bancaire. Chaque pass et chaque billet est nominatif, avec un QR code unique émis dès le paiement et envoyé par e-mail ; il est scanné à l’entrée de chaque site auquel il donne accès. Les articles officiels (tee-shirt, pagne) et les kits des pass sont livrés dans l’église du réseau de votre choix, au Gabon ou hors du Gabon, ou, à titre exceptionnel, à domicile ou au lieu de travail à Libreville.",
   "etats": ["campagne", "evenement"],
   "ordre": 1
 }

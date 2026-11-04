@@ -42,7 +42,7 @@ test('achat de trois billets « Concert pour la vie — VIP », paiement simulé
   await page.getByLabel('Prénom').fill('Awa');
   await page.getByLabel('Nom', { exact: true }).fill('Essono');
   await page.getByLabel('E-mail').fill('awa.essono@exemple.org');
-  await page.getByLabel('Téléphone').fill('+241 60 11 11 11');
+  await page.locator('[data-etape="1"]').getByLabel('Téléphone').fill('+241 60 11 11 11');
   await page.getByRole('button', { name: 'Continuer' }).click();
 
   // Étape 2 : trois titulaires ; le consentement n'est jamais pré-coché.
@@ -59,22 +59,58 @@ test('achat de trois billets « Concert pour la vie — VIP », paiement simulé
   await page.locator('input[name="cgv"]').check();
   await page.getByRole('button', { name: 'Valider et passer au paiement' }).click();
 
-  // Étape 3 : réservation de 15 minutes, puis paiement Mobile Money simulé.
+  // Billets seuls : aucune livraison demandée.
+  // Étape 3 : réservation de 15 minutes, puis page de paiement de l'agrégateur (simulée) :
+  // Mobile Money d'un autre pays que le Gabon.
   await expect(page.locator('[data-reservation]')).toContainText('réservés encore');
-  await page.getByRole('button', { name: 'Payer' }).click();
-  await expect(page.getByText('Validez le paiement sur votre téléphone')).toBeVisible();
-  await page.getByRole('button', { name: 'Valider le paiement' }).click();
+  await page.getByRole('button', { name: /^Payer/ }).click();
+  await page.waitForURL(/\/paiement-simule\?/);
+  await page.getByLabel('Pays', { exact: true }).fill('Cameroun');
+  await page.getByLabel('Opérateur', { exact: true }).fill('MTN MoMo');
+  await page.getByRole('button', { name: /^Payer/ }).click();
+  await page.waitForURL(/\/boutique\/suivi\?commande=/);
 
   // Suivi : commande confirmée, un billet par titulaire.
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Merci, votre commande est confirmée', { timeout: 20_000 });
   const liens = page.getByRole('link', { name: 'Télécharger (PDF)' });
   await expect(liens).toHaveCount(3);
   for (const t of TITULAIRES) await expect(page.getByText(`${t.prenom} ${t.nom}`, { exact: true })).toBeVisible();
+  await expect(page.getByText('Payé par Mobile Money : MTN MoMo — Cameroun')).toBeVisible();
 
   const reponse = await request.get(await liens.first().getAttribute('href') as string);
   expect(reponse.status()).toBe(200);
   expect(reponse.headers()['content-type']).toContain('application/pdf');
   expect((await reponse.body()).subarray(0, 5).toString()).toBe('%PDF-');
+});
+
+test('tee-shirt livré dans une église du réseau hors du Gabon, payé par carte, frais inclus', async ({ page }) => {
+  await page.goto('/boutique/produits/tee-shirt-officiel');
+  await page.getByRole('button', { name: 'Ajouter au panier' }).click();
+  await page.locator('[data-tiroir]').getByRole('link', { name: 'Commander' }).click();
+
+  await page.getByLabel('Prénom').fill('Awa');
+  await page.getByLabel('Nom', { exact: true }).fill('Essono');
+  await page.getByLabel('E-mail').fill('awa.essono@exemple.org');
+  await page.locator('[data-etape="1"]').getByLabel('Téléphone').fill('+241 60 11 11 11');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+
+  // Livraison : église du réseau à l'étranger (démonstration : Paris, 15 000 F CFA de frais).
+  await page.getByText('Dans une église du réseau').click();
+  await page.locator('select[name="pointLivraison"]').selectOption({ label: 'Église de démonstration — Paris — Paris' });
+  await expect(page.locator('[data-recap-lignes]')).toContainText('Livraison');
+  await page.locator('input[name="cgv"]').check();
+  await page.getByRole('button', { name: 'Valider et passer au paiement' }).click();
+
+  await expect(page.locator('[data-reservation]')).toContainText('25 000');
+  await page.getByRole('button', { name: /^Payer/ }).click();
+  await page.waitForURL(/\/paiement-simule\?/);
+  await page.getByText('Carte bancaire').click();
+  await page.getByRole('button', { name: /^Payer/ }).click();
+  await page.waitForURL(/\/boutique\/suivi\?commande=/);
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Merci, votre commande est confirmée', { timeout: 20_000 });
+  await expect(page.getByText('Livraison à l’église du réseau : Église de démonstration — Paris — Paris, France.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Payé par carte bancaire', { exact: false })).toBeVisible();
 });
 
 test('un lien de billet falsifié est refusé', async ({ request }) => {

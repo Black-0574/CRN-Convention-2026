@@ -1,9 +1,10 @@
 ---
 /*
   Suivi d'une commande (lien personnel envoyé par e-mail : /boutique/suivi?commande=…&t=…).
-  Page statique : la commande est lue dans le navigateur auprès de l'API de la boutique. Billets à
-  télécharger une fois le paiement confirmé, articles à retirer, état de la réservation ; mise à
-  jour automatique tant que le paiement est en attente.
+  Page statique : la commande est lue dans le navigateur auprès de l'API de la boutique. C'est aussi
+  la page où l'agrégateur de paiement renvoie le client. Billets nominatifs (QR code) à télécharger
+  une fois le paiement confirmé, livraison des articles, état de la réservation ; mise à jour
+  automatique tant que le paiement est en attente.
 */
 import Boutique from '../../layouts/BoutiqueLayout.astro';
 ---
@@ -21,20 +22,22 @@ import Boutique from '../../layouts/BoutiqueLayout.astro';
 <script>
   import { API_BOUTIQUE } from '../../lib/boutique-adresse';
   import { formaterXAF } from '../../lib/boutique-format';
+  import { vider } from '../../lib/boutique-panier';
 
-  type Ligne = { libelle: string; quantite: number; prixUnitaireXAF: number; inclus: boolean; aRetirer: boolean };
+  type Ligne = { libelle: string; quantite: number; prixUnitaireXAF: number; inclus: boolean; aLivrer: boolean };
   type Commande = {
     numero: string;
     statut: string;
     totalXAF: number;
     lignes: Ligne[];
     billets: { numero: string; titulaire: string; lien: string }[];
-    retrait: { lieu: string | null; horaires: string | null };
+    livraison: { mode: string; destination: string | null; fraisXAF: number; texte: string } | null;
+    paiement: { moyen: string | null; detail: string | null };
     courrielsLocaux?: string[];
   };
 
   const LIBELLES: Record<string, { titre: string; texte: string }> = {
-    en_attente: { titre: 'Paiement en attente', texte: 'Validez le paiement sur votre téléphone. Cette page se met à jour toute seule.' },
+    en_attente: { titre: 'Paiement en attente', texte: 'Terminez le paiement sur la page de notre partenaire de paiement. Cette page se met à jour toute seule.' },
     payee: { titre: 'Merci, votre commande est confirmée', texte: 'Vos billets sont prêts. Ils vous ont aussi été envoyés par e-mail.' },
     echouee: { titre: 'Paiement non abouti', texte: 'Le paiement a été refusé ou annulé. Aucun montant n’a été débité ; vos places ont été rendues à la vente.' },
     expiree: { titre: 'Délai de réservation dépassé', texte: 'La réservation de 15 minutes a expiré avant le paiement : vos places ont été rendues à la vente.' },
@@ -71,19 +74,23 @@ import Boutique from '../../layouts/BoutiqueLayout.astro';
         .map((b) => `<li><div><strong>${echapper(b.titulaire)}</strong><span>Billet ${echapper(b.numero)}</span></div><a class="button button--primary" href="${echapper(b.lien)}" target="_blank" rel="noopener">Télécharger (PDF)</a></li>`)
         .join('')}</ul><p class="aide">Billet nominatif et non transférable : présentez-le (imprimé ou sur téléphone) avec une pièce d’identité. Le QR code est scanné à chaque entrée.</p></section>`);
     }
-    const aRetirer = c.lignes.filter((l) => l.aRetirer);
-    if (c.statut === 'payee' && aRetirer.length > 0) {
-      blocs.push(`<section class="bloc"><h2>Kits et articles à retirer</h2><ul>${aRetirer.map((l) => `<li>${echapper(l.libelle)} × ${l.quantite}</li>`).join('')}</ul><p>Retrait sur le lieu de la Convention : <strong>${echapper(c.retrait.lieu ?? 'lieu à annoncer')}</strong>, ${echapper(c.retrait.horaires ?? 'horaires à annoncer')}.</p></section>`);
+    const aLivrer = c.lignes.filter((l) => l.aLivrer);
+    if (aLivrer.length > 0 && c.livraison) {
+      blocs.push(`<section class="bloc"><h2>Livraison de vos articles</h2><ul>${aLivrer.map((l) => `<li>${echapper(l.libelle)} × ${l.quantite}</li>`).join('')}</ul><p>${echapper(c.livraison.texte)}</p></section>`);
     }
     blocs.push(`<section class="bloc"><h2>Détail</h2><ul class="detail">${c.lignes
       .map((l) => `<li><span>${l.quantite} × ${echapper(l.libelle)}</span><span>${l.inclus ? 'inclus' : formaterXAF(l.quantite * l.prixUnitaireXAF)}</span></li>`)
-      .join('')}</ul><p class="detail__total"><span>Total</span><strong>${formaterXAF(c.totalXAF)}</strong></p></section>`);
+      .join('')}${c.livraison ? `<li><span>Livraison</span><span>${c.livraison.fraisXAF ? formaterXAF(c.livraison.fraisXAF) : 'offerte'}</span></li>` : ''}</ul><p class="detail__total"><span>Total</span><strong>${formaterXAF(c.totalXAF)}</strong></p>${
+        c.statut === 'payee' && c.paiement.detail ? `<p class="aide">Payé par ${c.paiement.moyen === 'carte' ? 'carte bancaire' : 'Mobile Money'} : ${echapper(c.paiement.detail)}</p>` : ''
+      }</section>`);
     if (c.courrielsLocaux?.length) {
       blocs.push(`<section class="bloc bloc--demo"><h2>E-mails envoyés (démonstration locale)</h2><ul>${c.courrielsLocaux
         .map((f) => `<li><a href="${API_BOUTIQUE}/api/boutique/dev/courriels/${encodeURIComponent(f)}" target="_blank">${echapper(f.split('--')[1] ?? f)}</a></li>`)
         .join('')}</ul></section>`);
     }
     $('[data-contenu]').innerHTML = blocs.join('');
+    // Commande payée : le panier a rempli son office.
+    if (c.statut === 'payee') vider();
   }
 
   (async () => {

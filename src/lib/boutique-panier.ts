@@ -15,6 +15,8 @@ export interface LignePanier {
   ageMax: number | null;
   /** Articles du kit dont la taille est à choisir par chaque titulaire. */
   kitTailles: { nom: string; tailles: string[] }[];
+  /** Article physique, ou pass avec kit : un mode de livraison est demandé à la commande. */
+  aLivrer?: boolean;
   photo: string | null;
 }
 
@@ -65,5 +67,8 @@ export function surChangement(rappel: (lignes: LignePanier[]) => void) {
   window.addEventListener(EVENEMENT, (e) => rappel((e as CustomEvent<LignePanier[]>).detail));
   window.addEventListener('storage', (e) => e.key === CLE && rappel(lirePanier()));
 }
+
+/** Le panier contient-il des articles à livrer (articles officiels, kits des pass) ? */
+export const contientArticlesALivrer = (lignes = lirePanier()) => lignes.some((l) => l.aLivrer ?? (!l.nominatif || l.kitTailles.length > 0));
 
 export const ouvrirPanier = () => window.dispatchEvent(new CustomEvent('crn:ouvrir-panier'));

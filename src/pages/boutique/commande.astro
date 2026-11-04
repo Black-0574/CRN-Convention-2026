@@ -2,22 +2,18 @@
 /*
   Tunnel de commande en 3 étapes, sans rechargement de page (F01) :
   1. Vos coordonnées (compte express : aucune création de mot de passe) ;
-  2. Titulaires (un par billet, F02) et retrait des articles ; consentement facultatif non pré-coché ;
-  3. Paiement Mobile Money (Airtel Money ou Moov Money), validation sur le téléphone.
+  2. Titulaires (un par billet, F02 : chaque pass et ticket est nominatif, avec son QR code émis à
+     l'achat) et livraison des articles (église du réseau au Gabon ou hors du Gabon, domicile ou
+     lieu de travail à Libreville, ou retrait à la Convention) ; consentement facultatif non
+     pré-coché ;
+  3. Paiement sur la page sécurisée de l'agrégateur : Mobile Money (plusieurs pays) ou carte.
   La commande est créée au passage à l'étape 3 : stock et places sont alors réservés 15 minutes
   (F03), prix garanti pendant ce délai.
 */
 import Boutique from '../../layouts/BoutiqueLayout.astro';
-import { reglages as lireReglages, type Reglages } from '../../lib/boutique-api';
+import { reglages as lireReglages } from '../../lib/boutique-api';
 
-let r: Reglages | null;
-try {
-  r = await lireReglages();
-} catch {
-  r = null;
-}
-const lieu = r?.lieuRetrait ?? 'Lieu à annoncer';
-const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
+const r = await lireReglages();
 ---
 
 <Boutique title="Commande" demo={r?.demo ?? false}>
@@ -25,7 +21,7 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
     <h1>Votre commande</h1>
     <ol class="etapes" aria-label="Étapes de la commande">
       <li data-indicateur="1" aria-current="step">1. Coordonnées</li>
-      <li data-indicateur="2">2. Titulaires et retrait</li>
+      <li data-indicateur="2">2. Titulaires et livraison</li>
       <li data-indicateur="3">3. Paiement</li>
     </ol>
 
@@ -48,13 +44,24 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
 
         <!-- Étape 2 -->
         <form class="etape" data-etape="2" hidden novalidate>
-          <h2>Titulaires et retrait</h2>
-          <p class="aide">Chaque billet est nominatif et non transférable : indiquez la personne qui l’utilisera (pièce d’identité exigée à l’entrée).</p>
+          <h2>Titulaires et livraison</h2>
+          <p class="aide">Chaque pass et chaque billet est nominatif et non transférable : indiquez la personne qui l’utilisera. Son QR code, émis dès le paiement, est scanné à l’entrée de chaque site auquel il donne accès (pièce d’identité exigée).</p>
           <div data-titulaires></div>
-          <div class="retrait" data-bloc-retrait hidden>
-            <h3>Retrait des articles</h3>
-            <p>Retrait sur le lieu de la Convention (comptoir COM Boutique) : <strong>{lieu}</strong>, {horaires}.</p>
-          </div>
+          <fieldset class="retrait" data-bloc-livraison hidden>
+            <legend>Livraison de vos articles</legend>
+            <p class="aide" data-livraison-chargement>Chargement des modes de livraison…</p>
+            <div class="livraison__modes" data-livraison-modes></div>
+            <div data-livraison-eglise hidden>
+              <label>Église du réseau<select name="pointLivraison" data-champ-livraison="eglise"></select></label>
+              <p class="aide" data-eglise-detail></p>
+            </div>
+            <div class="champs" data-livraison-domicile hidden>
+              <p class="aide" data-domicile-conditions></p>
+              <label>Adresse de livraison (domicile ou lieu de travail : quartier, rue, repère)<textarea name="adresse" rows="2" data-champ-livraison="domicile"></textarea></label>
+              <label>Téléphone joignable pour la livraison<input name="telephoneLivraison" type="tel" data-champ-livraison="domicile" /></label>
+              <label>Précisions (facultatif)<input name="instructions" /></label>
+            </div>
+          </fieldset>
           <label class="case">
             <input type="checkbox" name="consentement" />
             <span>{r?.consentement?.texte ?? 'J’accepte d’être recontacté par le CRN au sujet de ses activités (facultatif).'}</span>
@@ -71,28 +78,16 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
 
         <!-- Étape 3 -->
         <div class="etape" data-etape="3" hidden>
-          <h2>Paiement Mobile Money</h2>
+          <h2>Paiement</h2>
           <div class="reservation" data-reservation></div>
           <form data-formulaire-paiement novalidate>
-            <fieldset class="operateurs">
-              <legend>Opérateur</legend>
-              <label class="operateur"><input type="radio" name="operateur" value="airtel" checked /><span>Airtel Money</span></label>
-              <label class="operateur"><input type="radio" name="operateur" value="moov" /><span>Moov Money</span></label>
-            </fieldset>
-            <label class="champ-seul">Numéro Mobile Money<input name="telephone" type="tel" inputmode="tel" placeholder="+241 …" required /></label>
+            <ul class="moyens-acceptes">
+              <li><strong>Mobile Money</strong> — opérateurs de plusieurs pays d’Afrique</li>
+              <li><strong>Carte bancaire</strong> — depuis le Gabon ou l’étranger</li>
+            </ul>
+            <p class="aide">Vous choisissez votre moyen de paiement sur la page sécurisée de notre partenaire de paiement, puis vous revenez automatiquement au suivi de votre commande.</p>
             <button type="submit" class="button button--primary" data-payer>Payer</button>
           </form>
-          <div class="attente" data-attente hidden>
-            <p class="attente__titre">Validez le paiement sur votre téléphone</p>
-            <p>Une demande de paiement vient d’être envoyée à votre numéro. Saisissez votre code secret pour confirmer ; cette page se met à jour toute seule.</p>
-            <div class="simulation" data-simulation hidden>
-              <p><strong>Simulation (démonstration locale)</strong> — aucun paiement réel. Choisissez la réponse de l’opérateur :</p>
-              <div class="actions">
-                <button type="button" class="button button--primary" data-simuler="valider">Valider le paiement</button>
-                <button type="button" class="button button--secondary" data-simuler="refuser">Refuser</button>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -104,27 +99,39 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
       </aside>
     </div>
   </div>
-  <script type="application/json" data-lieu-retrait set:html={JSON.stringify({ lieu, horaires })} />
 </Boutique>
 
 <script>
   import { formaterEUR, formaterXAF } from '../../lib/boutique-format';
   import { API_BOUTIQUE } from '../../lib/boutique-adresse';
-  import { lirePanier, vider, type LignePanier } from '../../lib/boutique-panier';
+  import { contientArticlesALivrer, lirePanier, type LignePanier } from '../../lib/boutique-panier';
+
+  type Eglise = { id: number; nom: string; ville: string; pays: string; adresse: string | null; horaires: string | null; fraisXAF: number; delai: string | null };
+  type Options = {
+    eglises: Eglise[];
+    domicile: { zone: string; fraisXAF: number; delai: string | null; conditions: string | null } | null;
+    convention: { lieu: string | null; horaires: string | null } | null;
+  };
 
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const panier = lirePanier();
   const erreur = $('[data-erreur]');
-  const etat: { client?: Record<string, string>; numero?: string; jeton?: string } = {};
+  const etat: { client?: Record<string, string>; numero?: string; jeton?: string; options?: Options } = {};
   const echapper = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-  if (panier.length === 0) location.replace('/');
+  if (panier.length === 0) location.replace('/boutique');
 
-  // ——— Récapitulatif ———
-  const total = panier.reduce((s, l) => s + l.prixXAF * l.quantite, 0);
-  $('[data-recap-lignes]').innerHTML = panier.map((l) => `<li><span>${l.quantite} × ${echapper(l.nom)}${l.variante !== 'Unique' ? ` — ${echapper(l.variante)}` : ''}</span><span>${formaterXAF(l.prixXAF * l.quantite)}</span></li>`).join('');
-  $('[data-recap-total]').textContent = formaterXAF(total);
-  $('[data-recap-euros]').textContent = `soit environ ${formaterEUR(total)} (parité fixe 1 € = 655,957 F CFA)`;
+  // ——— Récapitulatif (frais de livraison ajoutés dès que le mode est choisi) ———
+  const sousTotal = panier.reduce((s, l) => s + l.prixXAF * l.quantite, 0);
+  let total = sousTotal;
+  const lignesRecap = panier.map((l) => `<li><span>${l.quantite} × ${echapper(l.nom)}${l.variante !== 'Unique' ? ` — ${echapper(l.variante)}` : ''}</span><span>${formaterXAF(l.prixXAF * l.quantite)}</span></li>`).join('');
+  function majRecap(frais: number | null) {
+    total = sousTotal + (frais ?? 0);
+    $('[data-recap-lignes]').innerHTML = lignesRecap + (frais !== null ? `<li><span>Livraison</span><span>${frais ? formaterXAF(frais) : 'offerte'}</span></li>` : '');
+    $('[data-recap-total]').textContent = formaterXAF(total);
+    $('[data-recap-euros]').textContent = `soit environ ${formaterEUR(total)} (parité fixe 1 € = 655,957 F CFA)`;
+  }
+  majRecap(null);
 
   const montrerErreur = (message: string | null) => {
     erreur.hidden = !message;
@@ -187,7 +194,7 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
     const conteneur = $('[data-titulaires]');
     if (conteneur.childElementCount) return;
     conteneur.innerHTML = panier.flatMap((l, i) => (l.nominatif ? Array.from({ length: l.quantite }, (_, n) => blocTitulaire(l, i, n)) : [])).join('');
-    $('[data-bloc-retrait]').hidden = !panier.some((l) => !l.nominatif || l.kitTailles.length > 0);
+    if (contientArticlesALivrer(panier)) chargerLivraison();
     conteneur.querySelector('[data-moi]')?.addEventListener('click', (e) => {
       const bloc = (e.currentTarget as HTMLElement).closest<HTMLElement>('[data-titulaire]')!;
       const id = bloc.dataset.id;
@@ -196,6 +203,83 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
         if (input) input.value = etat.client?.[champ] ?? '';
       }
     });
+  }
+
+  // ——— Étape 2 : livraison des articles (modes lus en direct auprès du back-office) ———
+  const blocLivraison = $<HTMLFieldSetElement>('[data-bloc-livraison]');
+  const fraisDe = (mode: string) => {
+    const o = etat.options;
+    if (!o) return null;
+    if (mode === 'eglise') return o.eglises.find((e) => String(e.id) === $<HTMLSelectElement>('[name="pointLivraison"]').value)?.fraisXAF ?? null;
+    if (mode === 'domicile') return o.domicile?.fraisXAF ?? null;
+    return mode === 'convention' ? 0 : null;
+  };
+  const libelleFrais = (f: number) => (f ? `${formaterXAF(f)} de frais` : 'sans frais');
+
+  function choisirMode(mode: string) {
+    for (const m of ['eglise', 'domicile']) {
+      const zone = blocLivraison.querySelector<HTMLElement>(`[data-livraison-${m}]`)!;
+      zone.hidden = m !== mode;
+      zone.querySelectorAll<HTMLInputElement>(`[data-champ-livraison="${m}"]`).forEach((c) => (c.required = m === mode));
+    }
+    if (mode === 'eglise') majEglise();
+    majRecap(fraisDe(mode));
+  }
+
+  function majEglise() {
+    const e = etat.options?.eglises.find((x) => String(x.id) === $<HTMLSelectElement>('[name="pointLivraison"]').value);
+    $('[data-eglise-detail]').textContent = e
+      ? [e.adresse, e.horaires ? `Retrait : ${e.horaires}` : null, `Délai : ${e.delai || 'à confirmer'}`, libelleFrais(e.fraisXAF)].filter(Boolean).join(' · ')
+      : '';
+    majRecap(fraisDe('eglise'));
+  }
+
+  async function chargerLivraison() {
+    blocLivraison.hidden = false;
+    let o: Options;
+    try {
+      const res = await fetch(`${API_BOUTIQUE}/api/boutique/livraison`);
+      if (!res.ok) throw new Error();
+      o = await res.json();
+    } catch {
+      $('[data-livraison-chargement]').textContent = 'Les modes de livraison n’ont pas pu être chargés : rechargez la page.';
+      return;
+    }
+    etat.options = o;
+    const modes: string[] = [];
+    if (o.eglises.length) {
+      const pays = [...new Set(o.eglises.map((e) => e.pays))];
+      modes.push(`<label class="livraison__mode"><input type="radio" name="modeLivraison" value="eglise" required><span><strong>Dans une église du réseau</strong><br>${echapper(pays.join(', '))}</span></label>`);
+      $('[name="pointLivraison"]').innerHTML =
+        '<option value="">Choisir l’église</option>' +
+        pays
+          .map((p) => `<optgroup label="${echapper(p)}">${o.eglises.filter((e) => e.pays === p).map((e) => `<option value="${e.id}">${echapper(`${e.nom} — ${e.ville}`)}</option>`).join('')}</optgroup>`)
+          .join('');
+    }
+    if (o.domicile) {
+      modes.push(`<label class="livraison__mode"><input type="radio" name="modeLivraison" value="domicile" required><span><strong>À domicile ou au lieu de travail</strong><br>${echapper(o.domicile.zone)} uniquement, à titre exceptionnel · ${libelleFrais(o.domicile.fraisXAF)}</span></label>`);
+      $('[data-domicile-conditions]').textContent = o.domicile.conditions ?? '';
+    }
+    if (o.convention) {
+      modes.push(`<label class="livraison__mode"><input type="radio" name="modeLivraison" value="convention" required><span><strong>Retrait sur le lieu de la Convention</strong><br>${echapper(o.convention.lieu ?? 'Lieu à annoncer')}, ${echapper(o.convention.horaires ?? 'horaires à annoncer')} · sans frais</span></label>`);
+    }
+    $('[data-livraison-chargement]').hidden = modes.length > 0;
+    if (!modes.length) $('[data-livraison-chargement]').textContent = 'Aucun mode de livraison n’est encore ouvert : contactez la hotline.';
+    $('[data-livraison-modes]').innerHTML = modes.join('');
+    blocLivraison.querySelectorAll<HTMLInputElement>('[name="modeLivraison"]').forEach((r) => r.addEventListener('change', () => choisirMode(r.value)));
+    $('[name="pointLivraison"]').addEventListener('change', majEglise);
+  }
+
+  function saisieLivraison(champs: FormData) {
+    if (blocLivraison.hidden) return undefined;
+    const mode = String(champs.get('modeLivraison') ?? '');
+    return {
+      mode,
+      ...(mode === 'eglise' ? { pointId: Number(champs.get('pointLivraison')) } : {}),
+      ...(mode === 'domicile'
+        ? { adresse: String(champs.get('adresse') ?? ''), telephone: String(champs.get('telephoneLivraison') ?? ''), instructions: String(champs.get('instructions') ?? '') }
+        : {}),
+    };
   }
 
   document.querySelector('[data-retour="1"]')!.addEventListener('click', () => allerA(1));
@@ -222,6 +306,7 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
           client: etat.client,
           lignes: panier.map((l) => ({ varianteId: l.varianteId, quantite: l.quantite })),
           titulaires,
+          livraison: saisieLivraison(champs),
           consentement: champs.get('consentement') === 'on',
           cgvAcceptees: champs.get('cgv') === 'on',
           provenance: { source: parametres.get('utm_source') ?? undefined, emplacement: parametres.get('utm_medium') ?? undefined, campagne: parametres.get('utm_campaign') ?? undefined },
@@ -235,8 +320,7 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
         $('[data-recap-total]').textContent = formaterXAF(donnees.totalXAF);
       }
       afficherReservation(donnees.reservationExpireA, donnees.totalXAF);
-      const tel = $<HTMLInputElement>('[data-formulaire-paiement] [name="telephone"]');
-      tel.value = etat.client?.telephone ?? '';
+      $('[data-payer]').textContent = `Payer ${formaterXAF(donnees.totalXAF)}`;
       allerA(3);
     } catch (err) {
       montrerErreur((err as Error).message);
@@ -272,52 +356,21 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
 
   $<HTMLFormElement>('[data-formulaire-paiement]').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-    if (!valider(form)) return;
-    const champs = new FormData(form);
-    const bouton = form.querySelector<HTMLButtonElement>('[data-payer]')!;
+    const bouton = (e.currentTarget as HTMLFormElement).querySelector<HTMLButtonElement>('[data-payer]')!;
     bouton.disabled = true;
     try {
-      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/paiement?t=${etat.jeton}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ operateur: champs.get('operateur'), telephone: champs.get('telephone') }),
-      });
+      // Session de paiement chez l'agrégateur, puis redirection vers sa page sécurisée : le client
+      // y choisit Mobile Money (son pays, son opérateur) ou carte, et revient au suivi de commande.
+      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/paiement?t=${etat.jeton}`, { method: 'POST' });
       const donnees = await res.json();
-      if (!res.ok) throw new Error(donnees.erreur ?? 'Paiement impossible.');
-      form.hidden = true;
-      $('[data-attente]').hidden = false;
-      $('[data-simulation]').hidden = !donnees.simulation;
-      suivre();
+      if (!res.ok || !donnees.redirection) throw new Error(donnees.erreur ?? 'Paiement impossible.');
+      bouton.textContent = 'Ouverture de la page de paiement…';
+      location.href = donnees.redirection;
     } catch (err) {
       montrerErreur((err as Error).message);
       bouton.disabled = false;
     }
   });
-
-  document.querySelectorAll<HTMLButtonElement>('[data-simuler]').forEach((b) =>
-    b.addEventListener('click', async () => {
-      b.disabled = true;
-      await fetch(`${API_BOUTIQUE}/api/boutique/bac-a-sable/${etat.numero}/${b.dataset.simuler}?t=${etat.jeton}`, { method: 'POST' });
-    }),
-  );
-
-  // Suivi : la page de commande prend le relais dès que le paiement aboutit ou échoue.
-  function suivre() {
-    const id = setInterval(async () => {
-      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}?t=${etat.jeton}`);
-      if (!res.ok) return;
-      const c = await res.json();
-      if (c.statut === 'payee') {
-        clearInterval(id);
-        vider();
-        location.href = `/boutique/suivi?commande=${encodeURIComponent(etat.numero!)}&t=${encodeURIComponent(etat.jeton!)}`;
-      } else if (c.statut !== 'en_attente') {
-        clearInterval(id);
-        location.href = `/boutique/suivi?commande=${encodeURIComponent(etat.numero!)}&t=${encodeURIComponent(etat.jeton!)}`;
-      }
-    }, 2000);
-  }
 </script>
 
 <style is:global>
@@ -462,9 +515,22 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
     margin-bottom: var(--space-2);
   }
 
-  .retrait h3 {
-    margin: 0 0 6px;
+  .retrait {
+    border: none;
+  }
+
+  .retrait legend {
+    font-family: var(--font-titrage);
+    font-weight: 700;
     font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+    padding: 0;
+    margin-bottom: 8px;
+  }
+
+  .retrait label {
+    display: grid;
+    gap: 6px;
   }
 
   .case {
@@ -490,34 +556,38 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
     gap: 12px;
   }
 
-  .operateurs {
-    border: none;
-    padding: 0;
-    margin: 0 0 var(--space-2);
-    display: flex;
+  .livraison__modes {
+    display: grid;
     gap: 12px;
-    flex-wrap: wrap;
+    margin-bottom: var(--space-2);
   }
 
-  .operateurs legend {
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .operateur {
+  .livraison__mode {
     display: flex !important;
-    align-items: center;
-    gap: 10px !important;
-    min-height: var(--tap-target-min);
-    padding: 8px 16px;
+    align-items: flex-start;
+    gap: 12px !important;
+    padding: 12px 16px;
     border: 1.5px solid var(--crn-gris-clair);
     border-radius: var(--radius-control);
+    background: var(--crn-blanc);
+    font-weight: 400 !important;
     cursor: pointer;
   }
 
-  .operateur:has(input:checked) {
+  .livraison__mode input {
+    margin-top: 4px;
+  }
+
+  .livraison__mode:has(input:checked) {
     border-color: var(--crn-bleu-nuit);
     box-shadow: inset 0 0 0 1px var(--crn-bleu-nuit);
+  }
+
+  .moyens-acceptes {
+    margin: 0 0 var(--space-2);
+    padding-left: 20px;
+    display: grid;
+    gap: 6px;
   }
 
   .champ-seul {
@@ -535,21 +605,6 @@ const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
 
   .reservation p {
     margin: 0;
-  }
-
-  .attente__titre {
-    font-family: var(--font-titrage);
-    font-weight: 700;
-    font-size: var(--text-h4-mobile);
-    color: var(--crn-bleu-nuit);
-  }
-
-  .simulation {
-    margin-top: var(--space-2);
-    padding: var(--space-2);
-    border: 1px dashed var(--crn-or);
-    border-radius: var(--radius-card-sm);
-    background: var(--crn-creme);
   }
 
   .alerte {
