@@ -1,11 +1,12 @@
 ---
 import Icon from './Icon.astro';
+import { lienBoutique } from '../../lib/boutique';
 
 const CHAT_API_URL = import.meta.env.PUBLIC_CHAT_API_URL ?? 'http://localhost:3001/api/chat';
 
 const liensRapides = [
   { label: 'Programme', href: '/programme' },
-  { label: 'Billetterie', href: '/billetterie' },
+  { label: 'Boutique', href: lienBoutique('nasty') },
   { label: 'Orateurs', href: '/orateurs' },
   { label: 'Contact', href: '/contact' },
 ];

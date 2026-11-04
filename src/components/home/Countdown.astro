@@ -1,11 +1,15 @@
 ---
 interface Props {
   cibleISO: string;
+  /** « heros » : posé sur une photo (par défaut) ; « carte » : sur fond clair (carte produit). */
+  variante?: 'heros' | 'carte';
+  /** Nom accessible du minuteur (ex. « Avant le prochain palier tarifaire »). */
+  label?: string;
 }
-const { cibleISO } = Astro.props;
+const { cibleISO, variante = 'heros', label } = Astro.props;
 ---
 
-<div class="countdown" id="countdown" data-cible={cibleISO} role="timer" aria-live="off">
+<div class={`countdown countdown--${variante}`} data-countdown data-cible={cibleISO} role="timer" aria-live="off" aria-label={label}>
   <div class="countdown__unit">
     <span class="countdown__value" data-unit="jours">–</span>
     <span class="countdown__label">jours</span>
@@ -27,9 +31,20 @@ const { cibleISO } = Astro.props;
 <script>
   import { computeCountdown } from '../../lib/state';
 
-  const el = document.getElementById('countdown');
-  if (el) {
-    const cible = new Date(el.dataset.cible ?? '');
+  // Plusieurs comptes à rebours possibles sur une même page (héros, carte de la boutique) : chacun
+  // relit sa cible à chaque tic, pour suivre une cible mise à jour par la page (palier suivant).
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Petit « battement » sur les secondes à chaque tic, pour une sensation de compte à rebours
+  // vivant — purement décoratif, respecte prefers-reduced-motion (durée neutralisée globalement).
+  const pulse = (target: Element | null) => {
+    if (!target || prefersReducedMotion) return;
+    target.classList.remove('countdown__value--pulse');
+    void (target as HTMLElement).offsetWidth;
+    target.classList.add('countdown__value--pulse');
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-countdown]').forEach((el) => {
     const values = {
       jours: el.querySelector('[data-unit="jours"]'),
       heures: el.querySelector('[data-unit="heures"]'),
@@ -37,29 +52,18 @@ const { cibleISO } = Astro.props;
       secondes: el.querySelector('[data-unit="secondes"]'),
     };
 
-    // Petit « battement » sur les secondes à chaque tic, pour une sensation de compte à rebours
-    // vivant — purement décoratif, respecte prefers-reduced-motion (durée neutralisée globalement).
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pulse = (target: Element | null) => {
-      if (!target || prefersReducedMotion) return;
-      target.classList.remove('countdown__value--pulse');
-      void (target as HTMLElement).offsetWidth;
-      target.classList.add('countdown__value--pulse');
-    };
-
     const tick = () => {
-      const c = computeCountdown(new Date(), cible);
+      const c = computeCountdown(new Date(), new Date(el.dataset.cible ?? ''));
       if (values.jours) values.jours.textContent = String(c.jours);
       if (values.heures) values.heures.textContent = String(c.heures).padStart(2, '0');
       if (values.minutes) values.minutes.textContent = String(c.minutes).padStart(2, '0');
       if (values.secondes) values.secondes.textContent = String(c.secondes).padStart(2, '0');
-      pulse(values.secondes);
-      if (c.termine) clearInterval(interval);
+      if (!c.termine) pulse(values.secondes);
     };
 
     tick();
-    const interval = setInterval(tick, 1000);
-  }
+    setInterval(tick, 1000);
+  });
 </script>
 
 <style>
@@ -106,6 +110,35 @@ const { cibleISO } = Astro.props;
     }
   }
 
+  /* Variante « carte » (fond clair) : jamais de texte or sur fond clair (règle absolue GBIS) —
+     chiffres bleu nuit, sans ombre portée, corps réduit mais jamais sous 16 px. */
+  /* Quatre cadrans sur une seule ligne, même dans une carte de 3 colonnes (≈ 190 px utiles). */
+  .countdown--carte {
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    padding-top: 0;
+  }
+
+  .countdown--carte .countdown__unit {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .countdown--carte .countdown__value {
+    font-size: 24px;
+    color: var(--crn-bleu-nuit);
+    text-shadow: none;
+  }
+
+  .countdown--carte .countdown__label {
+    margin-top: 2px;
+    font-size: 16px;
+    color: var(--crn-gris);
+    text-shadow: none;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
   .countdown__value--pulse {
     animation: countdown-pulse 500ms cubic-bezier(0.22, 1, 0.36, 1);
   }
@@ -117,6 +150,23 @@ const { cibleISO } = Astro.props;
     30% {
       transform: scale(1.18);
       color: var(--crn-or-lumiere);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Sur fond clair, le battement ne repasse pas par l'or lumière (texte or sur fond clair). */
+  .countdown--carte .countdown__value--pulse {
+    animation-name: countdown-pulse-carte;
+  }
+
+  @keyframes countdown-pulse-carte {
+    0% {
+      transform: scale(1);
+    }
+    30% {
+      transform: scale(1.12);
     }
     100% {
       transform: scale(1);

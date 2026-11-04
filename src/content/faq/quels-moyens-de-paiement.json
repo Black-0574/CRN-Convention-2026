@@ -1,6 +1,6 @@
 {
   "question": "Quels moyens de paiement sont acceptés ?",
-  "reponse": "Airtel Money, Moov Money et carte bancaire. La Page de la Convention ne conserve aucune donnée de paiement : les transactions sont traitées par un prestataire de paiement agréé.",
+  "reponse": "Sur la Boutique de la Convention, le paiement se fait par Mobile Money (Airtel Money, Moov Money) ; le paiement par carte bancaire sera annoncé sur la boutique. La Page de la Convention ne conserve aucune donnée de paiement : les transactions sont traitées par un prestataire de paiement agréé.",
   "etats": ["campagne", "evenement"],
   "ordre": 3
 }

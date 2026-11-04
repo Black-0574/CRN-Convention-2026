@@ -5,6 +5,7 @@ import Button from '../shared/Button.astro';
 import Icon from '../shared/Icon.astro';
 import heroImage from '../../assets/images/hero-venue-2.webp';
 import heroSpeaker from '../../assets/images/hero-orateur-1.webp';
+import { lienBoutique } from '../../lib/boutique';
 
 const cibleISO = '2026-12-06T09:00:00+01:00';
 ---
@@ -58,7 +59,7 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
       </div>
 
       <div class="hero__actions">
-        <Button href="/billetterie" variant="secondary">Prendre mon pass <Icon name="arrow-right" size={16} /></Button>
+        <Button href={lienBoutique('accueil-heros')} variant="secondary">Prendre mon pass <Icon name="arrow-right" size={16} /></Button>
         <Button href="/programme" variant="secondary">Voir le programme</Button>
         <p class="hero__badge"><Icon name="pin" size={14} /> Libreville, Gabon</p>
       </div>

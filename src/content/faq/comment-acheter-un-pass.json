@@ -1,6 +1,6 @@
 {
   "question": "Comment acheter un pass ou un billet ?",
-  "reponse": "Rendez-vous sur la page Billetterie et choisissez le produit souhaité. Vous serez redirigé vers la billetterie officielle de la Convention pour finaliser votre achat.",
+  "reponse": "Sur la Boutique de la Convention, boutique.crn-convention2026.events, accessible depuis le bouton de la boutique en haut de chaque page du site. Choisissez votre pass ou votre ticket, renseignez le nom et les coordonnées de chaque titulaire, puis payez par Mobile Money. Chaque billet est nominatif, avec un QR code unique, et vous est envoyé par e-mail. Les articles officiels (tee-shirt, pagne) se retirent sur place : le lieu et les horaires de retrait sont à annoncer.",
   "etats": ["campagne", "evenement"],
   "ordre": 1
 }

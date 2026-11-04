@@ -1,10 +1,17 @@
 ---
+/*
+  LOT A, A3 — page d'information : l'achat se fait sur la Boutique de la Convention. Elle garde
+  les règles d'accès (F-CNV-021 : billet nominatif, QR code unique) et le contenu de chaque pass
+  ou ticket, chaque carte renvoyant vers la fiche produit de la boutique (lien suivi, A5).
+*/
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
+import Icon from '../components/shared/Icon.astro';
 import PriceCard from '../components/ticketing/PriceCard.astro';
 import AccessRules from '../components/ticketing/AccessRules.astro';
+import { lienBoutique, lienProduit } from '../lib/boutique';
 
 const produits = (await getCollection('products')).sort((a, b) => a.data.ordre - b.data.ordre);
 
@@ -13,35 +20,51 @@ const categories: { key: typeof produits[number]['data']['categorie']; label: st
   { key: 'plateforme', label: 'Plateformes' },
   { key: 'concert', label: 'Concert pour la vie' },
   { key: 'pass', label: 'Pass' },
-  { key: 'boutique', label: 'Boutique' },
+  { key: 'boutique', label: 'Articles officiels' },
 ];
 ---
 
 <BaseLayout
   title="Billetterie"
-  description="Grille tarifaire officielle de la Convention CRN 2026 : Académie, plateformes, Concert pour la vie, pass et boutique."
+  description="Pass et tickets de la Convention CRN 2026 : règles d’accès par QR code, contenu de chaque pass, achat sur la Boutique de la Convention."
 >
   <PageHero
-    eyebrow="Ouverte depuis le 25 octobre"
+    eyebrow="Pass et tickets"
     title="Billetterie"
-    intro="Chaque pass est nominatif et intransférable, lié à un QR code unique — voir les règles d’accès ci-dessous."
+    intro="Les pass, les tickets et les articles officiels s’achètent sur la Boutique de la Convention. Chaque billet est nominatif et intransférable, lié à un QR code unique."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Billetterie' }]}
   />
 
   <Section tone="default" ariaLabel="Billetterie">
+    <div class="billetterie-boutique">
+      <span class="billetterie-boutique__icone"><Icon name="bag" size={28} /></span>
+      <div class="billetterie-boutique__texte">
+        <h2>Acheter sur la Boutique de la Convention</h2>
+        <p>Choisissez vos pass, tickets et articles, renseignez le titulaire de chaque billet et réglez votre commande en ligne.</p>
+      </div>
+      <a class="button button--primary" href={lienBoutique('billetterie')}>
+        Accéder à la boutique <Icon name="arrow-right" size={16} />
+      </a>
+    </div>
+
+    <div class="access-rules-wrap">
+      <AccessRules />
+    </div>
+
+    <h2 class="billetterie__titre">Ce que contient chaque pass</h2>
     {categories.map((cat) => {
       const items = produits.filter((p) => p.data.categorie === cat.key);
       if (items.length === 0) return null;
       return (
         <div class="price-group" id={cat.key}>
-          <h2>{cat.label}</h2>
+          <h3>{cat.label}</h3>
           <div class="price-grid" data-reveal-group>
             {items.map((p) => (
               <PriceCard
                 nom={p.data.nom}
                 prixFCFA={p.data.prixFCFA}
                 description={p.data.description}
-                lienAchat={p.data.lienAchat}
+                lienAchat={lienProduit(p.id, 'billetterie')}
                 statut={p.data.statut}
                 featured={p.data.nom === 'Pass Académie Intégral'}
               />
@@ -50,19 +73,54 @@ const categories: { key: typeof produits[number]['data']['categorie']; label: st
         </div>
       );
     })}
-
-    <div class="access-rules-wrap">
-      <AccessRules />
-    </div>
   </Section>
 </BaseLayout>
 
 <style>
-  .price-group {
-    margin-top: var(--space-6);
+  /* Encart de renvoi vers la boutique : seul bouton primaire de la page. */
+  .billetterie-boutique {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: var(--color-bg-alt);
+    border: var(--border-width-rest) solid var(--color-border);
+    border-top: 3px solid var(--crn-or);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
   }
 
-  .price-group h2 {
+  .billetterie-boutique__icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--crn-bleu-nuit);
+    color: var(--crn-or-lumiere);
+  }
+
+  .billetterie-boutique__texte h2 {
+    font-size: var(--text-h4-mobile);
+    margin: 0 0 var(--space-1);
+  }
+
+  .billetterie-boutique__texte p {
+    margin: 0;
+  }
+
+  .billetterie__titre {
+    margin-top: var(--space-6);
+    font-size: var(--text-h3-mobile);
+  }
+
+  .price-group {
+    margin-top: var(--space-3);
+  }
+
+  .price-group h3 {
     font-size: var(--text-h4-mobile);
   }
 
@@ -74,10 +132,19 @@ const categories: { key: typeof produits[number]['data']['categorie']; label: st
   }
 
   .access-rules-wrap {
-    margin-top: var(--space-6);
+    margin-top: var(--space-3);
   }
 
   @media (min-width: 768px) {
+    .billetterie-boutique {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .billetterie-boutique__texte {
+      flex: 1;
+    }
+
     .price-grid {
       grid-template-columns: repeat(2, 1fr);
     }

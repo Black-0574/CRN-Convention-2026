@@ -1,9 +1,13 @@
 ---
+import { suivreLienBoutique } from '../../lib/boutique';
+
 interface Props {
   texte: string;
   lien?: string;
 }
-const { texte, lien } = Astro.props;
+const { texte, lien: lienSaisi } = Astro.props;
+// Lien saisi dans l'admin de contenu : suivi ajouté s'il mène à la boutique (LOT A, A3/A5).
+const lien = lienSaisi ? suivreLienBoutique(lienSaisi, 'bandeau') : undefined;
 ---
 
 <div class="info-banner" id="info-banner" role="region" aria-label="Annonce">
