@@ -28,8 +28,15 @@ est marqué **À annoncer** et doit rester ainsi tant qu'aucun arbitrage n'a ét
 | Concert pour la vie — VIP | 25 000 | — |
 | Pagne officiel mixte | 10 000 | — |
 | Tee-shirt officiel | 10 000 | — |
-| Pass OR | À annoncer | — |
-| Pass DIAMANT | À annoncer | — |
+| Pass Convention Intégral | 120 000 jusqu’au 31 oct., 150 000 jusqu’au 30 nov., 180 000 ensuite | Académie (3 classes), Femme de Foi, J’ai soif, Dîner des Élites, Concert Standard ; tee-shirt inclus |
+| Pass Génération (18 – 28 ans) | 50 000 | Accès de l’Intégral, hors Dîner des Élites |
+| Pass Génération Plus (18 – 28 ans) | 100 000 | Accès de l’Intégral |
+| Pass Partenaire Or | 500 000 | Accès intégral, Concert VIP, plénières réservées, Dîner des Élites, badge Or |
+| Pass Grand Partenaire Diamant | 1 000 000 | Accès intégral, Concert VIP, Dîner des Élites, plénières premium, badge Diamant |
+
+Grille des pass (Intégral, Génération, Génération Plus, Or, Diamant) : montants et contenus du prompt
+maître « CRN Boutique », **validés par le Commanditaire le 4 novembre 2026**. Bascules de palier à
+00h00, heure de Libreville.
 
 Règle d'accès (F-CNV-021) : ticket ou pass électronique **nominatif et intransférable**, QR code
 unique scanné à chaque entrée, aucun accès verbal.

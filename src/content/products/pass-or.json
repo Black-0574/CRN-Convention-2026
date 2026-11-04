@@ -1,8 +1,8 @@
 {
-  "nom": "Pass OR",
+  "nom": "Pass Partenaire Or",
   "categorie": "pass",
-  "prixFCFA": null,
-  "description": "Contenu et tarif à annoncer.",
-  "statut": "a_annoncer",
-  "ordre": 10
+  "prixFCFA": 500000,
+  "description": "Accès intégral, Concert pour la vie — VIP, plénières réservées, Dîner des Élites, badge Or.",
+  "statut": "disponible",
+  "ordre": 13
 }

@@ -17,16 +17,20 @@ async function readJsonCollection(collection: string): Promise<Array<{ file: str
   );
 }
 
-// Règle permanente CLAUDE.md : aucune donnée inventée ; Pass OR/DIAMANT "À annoncer" jusqu'à arbitrage.
+// Règle permanente CLAUDE.md : aucune donnée inventée. Grille des pass validée par le Commanditaire
+// le 4 novembre 2026 (docs/donnees-reference.md) : exactement ces montants, rien d'autre.
 describe('intégrité des contenus — billetterie', () => {
-  it("affiche Pass OR et Pass DIAMANT comme « à annoncer », sans prix inventé", async () => {
+  it('affiche les pass au prix de la grille validée (palier en cours pour l’Intégral)', async () => {
     const products = await readJsonCollection('products');
-    const passesNonArretes = products.filter((p) => /^Pass (OR|DIAMANT)$/.test(p.data.nom));
-    expect(passesNonArretes).toHaveLength(2);
-    for (const p of passesNonArretes) {
-      expect(p.data.prixFCFA).toBeNull();
-      expect(p.data.statut).toBe('a_annoncer');
-    }
+    const prix = Object.fromEntries(products.filter((p) => p.data.categorie === 'pass').map((p) => [p.file.replace(/\.json$/, ''), p.data.prixFCFA]));
+    expect(prix).toMatchObject({
+      'pass-convention-integral': 150000,
+      'pass-generation': 50000,
+      'pass-generation-plus': 100000,
+      'pass-or': 500000,
+      'pass-diamant': 1000000,
+    });
+    for (const p of products.filter((x) => x.data.categorie === 'pass')) expect(p.data.statut).toBe('disponible');
   });
 
   it('ne conserve aucune donnée de paiement sur un produit (SEC-CNV-003)', async () => {

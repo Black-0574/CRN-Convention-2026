@@ -113,6 +113,38 @@ test('tee-shirt livré dans une église du réseau hors du Gabon, payé par cart
   await expect(page.getByText('Payé par carte bancaire', { exact: false })).toBeVisible();
 });
 
+test('Pass Partenaire Or (grille validée) : billet nominatif à QR code et kit livré à une église du réseau', async ({ page }) => {
+  await page.goto('/boutique/produits/pass-or');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pass Partenaire Or');
+  await page.getByRole('button', { name: 'Ajouter au panier' }).click();
+  await page.locator('[data-tiroir]').getByRole('link', { name: 'Commander' }).click();
+
+  await page.getByLabel('Prénom').fill('Jean');
+  await page.getByLabel('Nom', { exact: true }).fill('Mba');
+  await page.getByLabel('E-mail').fill('jean.mba@exemple.org');
+  await page.locator('[data-etape="1"]').getByLabel('Téléphone').fill('+241 60 22 22 22');
+  await page.getByRole('button', { name: 'Continuer' }).click();
+
+  const titulaire = page.locator('[data-titulaire]');
+  await expect(titulaire).toHaveCount(1);
+  await titulaire.getByRole('button', { name: /C’est moi/ }).click();
+  for (const taille of await titulaire.locator('select').all()) await taille.selectOption({ index: 1 });
+  await page.getByText('Dans une église du réseau').click();
+  await page.locator('select[name="pointLivraison"]').selectOption({ label: 'Église de démonstration — Libreville — Libreville' });
+  await page.locator('input[name="cgv"]').check();
+  await page.getByRole('button', { name: 'Valider et passer au paiement' }).click();
+
+  await expect(page.locator('[data-reservation]')).toContainText('500 000');
+  await page.getByRole('button', { name: /^Payer/ }).click();
+  await page.waitForURL(/\/paiement-simule\?/);
+  await page.getByRole('button', { name: /^Payer/ }).click();
+  await page.waitForURL(/\/boutique\/suivi\?commande=/);
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Merci, votre commande est confirmée', { timeout: 20_000 });
+  await expect(page.getByRole('link', { name: 'Télécharger (PDF)' })).toHaveCount(1);
+  await expect(page.getByText('Livraison à l’église du réseau', { exact: false })).toBeVisible();
+});
+
 test('un lien de billet falsifié est refusé', async ({ request }) => {
   const r = await request.get(`${API}/api/boutique/billets/CRN-FAUX-01?exp=9999999999&sig=faux`);
   expect(r.status()).toBe(403);

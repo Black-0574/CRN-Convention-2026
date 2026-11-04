@@ -61,8 +61,10 @@ test.describe('Parcours principal (inspiré de l’analyse Eventro, habillé CRN
 
     await page.goto('/billetterie');
     await expect(page.getByRole('heading', { name: 'Billetterie', exact: true })).toBeVisible();
-    await expect(page.getByText('Pass OR')).toBeVisible();
-    await expect(page.getByText('À annoncer').first()).toBeVisible();
+    // Grille des pass validée le 4 novembre 2026 (docs/donnees-reference.md).
+    await expect(page.getByText('Pass Partenaire Or', { exact: true })).toBeVisible();
+    const carteOr = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Pass Partenaire Or' }) });
+    await expect(carteOr).toContainText(/500\s000\sF\sCFA/);
   });
 
   test('la FAQ affirme l’accès sans VPN', async ({ page }) => {

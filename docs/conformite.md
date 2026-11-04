@@ -855,3 +855,15 @@ production (mode non proposé tant que la liste est vide — données en démons
 seulement, marquées « démonstration ») ; textes publics mis à jour (accueil de la boutique, FAQ,
 NASTY) — la FAQ en production se modifie dans le back-office. Migration de la boutique régénérée
 (`20261104_172946_boutique`, jamais déployée). **Statut : fait en local, non poussé.**
+
+## Boutique — grille des pass validée (4 novembre 2026)
+
+Le Commanditaire valide les montants et contenus du prompt maître pour les cinq pass jusque-là en
+« Prix à valider » : Pass Convention Intégral (120 000 → 150 000 → 180 000 F CFA, bascules à 00h00
+heure de Libreville, palier en cours 150 000 jusqu'au 30 novembre), Pass Génération (50 000,
+18 – 28 ans), Pass Génération Plus (100 000, 18 – 28 ans), Pass Partenaire Or (500 000), Pass Grand
+Partenaire Diamant (1 000 000). Ils sont mis en vente (import initial de la boutique, base locale),
+reportés dans `docs/donnees-reference.md` et sur la page Billetterie du site. Le repas privé des
+partenaires Diamant reste non mentionné au public (règle permanente). En production, les ventes de
+ces pass restent conditionnées aux quotas (Dîner des Élites, repas privé) que le CRN doit
+renseigner. **Statut : fait en local, non poussé.**

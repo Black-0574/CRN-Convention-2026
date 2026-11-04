@@ -7,7 +7,8 @@
  * secours versionné `src/data/boutique-mis-en-avant.json` : la section ne s'affiche jamais vide.
  *
  * F-CNV-020 : le fichier de secours ne contient que des produits au prix validé (`docs/donnees-reference.md`) ;
- * les pass dont la grille n'est pas validée (Or, Diamant, Intégral, Génération) n'y figurent pas.
+ * les pass (Intégral, Génération, Or, Diamant ; grille validée le 4 novembre 2026) sont fournis par
+ * l'API de la boutique.
  *
  * Contrat de l'API : liste de `{ slug, nom, image, prixXAF, badge, ordre, paliers? }`, `paliers`
  * étant `[{ prixXAF, debut, fin }]` (ISO 8601). Lecture au build uniquement : aucune requête du

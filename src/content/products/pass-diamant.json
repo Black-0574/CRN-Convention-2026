@@ -1,8 +1,8 @@
 {
-  "nom": "Pass DIAMANT",
+  "nom": "Pass Grand Partenaire Diamant",
   "categorie": "pass",
-  "prixFCFA": null,
-  "description": "Contenu et tarif à annoncer.",
-  "statut": "a_annoncer",
-  "ordre": 11
+  "prixFCFA": 1000000,
+  "description": "Accès intégral, Concert pour la vie — VIP, Dîner des Élites et plénières en placement premium, badge Diamant.",
+  "statut": "disponible",
+  "ordre": 14
 }
