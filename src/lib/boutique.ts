@@ -12,9 +12,18 @@
  * à respecter à l'import du catalogue dans la boutique).
  */
 
-export const BOUTIQUE_URL = 'https://boutique.crn-convention2026.events/';
+const BOUTIQUE_PRODUCTION = 'https://boutique.crn-convention2026.events/';
 
-const BOUTIQUE_HOTE = new URL(BOUTIQUE_URL).hostname;
+/**
+ * Adresse de la boutique : `PUBLIC_BOUTIQUE_URL` si elle est réglée (démonstration avec une
+ * boutique locale, préproduction), sinon la boutique de production. Lue au build et inscrite dans
+ * les pages et le code client.
+ */
+export const BOUTIQUE_URL = import.meta.env.PUBLIC_BOUTIQUE_URL?.trim() || BOUTIQUE_PRODUCTION;
+
+// Hôte avec le port : une boutique locale (localhost:4322) ne se confond pas avec un autre
+// service local.
+const BOUTIQUE_HOTE = new URL(BOUTIQUE_URL).host;
 
 /** Emplacements du site d'où part un lien vers la boutique (valeur de `utm_medium`). */
 export type EmplacementBoutique =
@@ -55,7 +64,7 @@ export function suivreLienBoutique(lien: string, emplacement: EmplacementBoutiqu
   } catch {
     return lien;
   }
-  return url.hostname === BOUTIQUE_HOTE ? avecSuivi(url, emplacement) : lien;
+  return url.host === BOUTIQUE_HOTE ? avecSuivi(url, emplacement) : lien;
 }
 
 // ——— Montants ———

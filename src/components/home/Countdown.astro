@@ -112,13 +112,16 @@ const { cibleISO, variante = 'heros', label } = Astro.props;
 
   /* Variante « carte » (fond clair) : jamais de texte or sur fond clair (règle absolue GBIS) —
      chiffres bleu nuit, sans ombre portée, corps réduit mais jamais sous 16 px. */
+  /* Quatre cadrans sur une seule ligne, même dans une carte de 3 colonnes (≈ 190 px utiles). */
   .countdown--carte {
-    gap: var(--space-2);
+    flex-wrap: nowrap;
+    gap: var(--space-1);
     padding-top: 0;
   }
 
   .countdown--carte .countdown__unit {
-    min-width: 40px;
+    min-width: 0;
+    flex: 1;
   }
 
   .countdown--carte .countdown__value {
@@ -132,6 +135,8 @@ const { cibleISO, variante = 'heros', label } = Astro.props;
     font-size: 16px;
     color: var(--crn-gris);
     text-shadow: none;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   .countdown__value--pulse {

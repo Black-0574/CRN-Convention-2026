@@ -43,6 +43,15 @@ Décisions et points à valider :
   l'accueil de la boutique plutôt qu'à l'une des deux fiches.
 - L'annonce « Ouverture de la billetterie » (25 octobre) et le pied de page gardent leur lien vers
   `/billetterie`, qui renvoie désormais vers la boutique (aucun lien mort).
+- **Adresse de la boutique configurable** : `PUBLIC_BOUTIQUE_URL` (repli sur la production) et
+  `BOUTIQUE_API_URL`, voir `.env.example`. Vérifié le 4 novembre contre la boutique locale
+  (`localhost:4322` / API `localhost:3101`) : sélection lue depuis l'API (8 cartes, Pass Convention
+  Intégral à 150 000 F CFA, prix valable jusqu'au 30 novembre, compte à rebours), liens vers
+  `localhost:4322/produits/<slug>?utm_…`. **Écart signalé** : cette sélection de l'API contient des
+  pass dont la grille n'est pas validée dans `docs/donnees-reference.md` (Pass Or 500 000, Diamant
+  1 000 000, Génération, Génération Plus, Convention Intégral) ; le site les affiche tels que la
+  boutique les publie. À ne pas mettre en production avant validation de la grille, ou à retirer du
+  « mis en avant » côté boutique.
 - `playwright.config.ts` : port surchargeable par `E2E_PORT` (4321 par défaut), pour ne pas
   réutiliser par erreur un serveur de développement déjà lancé sur 4321.
 
