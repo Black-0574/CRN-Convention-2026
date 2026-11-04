@@ -28,7 +28,7 @@ les sessions de travail sur ce dépôt.
    Libreville. Budget : page d'accueil < 1,5 Mo, JS d'accueil < 100 Ko compressé.
 10. **Aucun carrousel ni défilement automatique.** Respect de `prefers-reduced-motion`.
 
-## CRN Boutique (`boutique/`) — règles permanentes
+## Boutique de la Convention (`/boutique` du site, `backend/src/boutique/`) — règles permanentes
 
 Source : prompt maître « CRN Boutique » (2 novembre 2026). Ordre de priorité des sources : programme
 maître de la Convention → grille tarifaire validée par le Commanditaire → prompt maître → dossier
@@ -58,7 +58,8 @@ d'architecture. S'appliquent en plus des règles ci-dessus :
 ## État du projet
 
 Site officiel en production (Astro statique, contenu piloté par le back-office Payload `backend/`).
-En cours : **CRN Boutique, Palier 1** (échéance 13 novembre 2026) — cœur métier dans
-`boutique/domaine/` ; LOT A (renvois du site vers la boutique) sur une branche dédiée, non déployé
-tant que la boutique n'encaisse pas. Voir `docs/conformite.md` et
+En cours : **Boutique de la Convention, Palier 1** (échéance 13 novembre 2026), intégrée au
+site (`src/pages/boutique/`, liens LOT A vers `/boutique`) et au back-office (`backend/src/boutique/`,
+cœur métier dans `backend/src/boutique/domaine/`) ; non déployée tant qu'elle n'encaisse pas. Voir
+`docs/conformite.md`, `backend/src/boutique/README.md` et
 `C:\Users\Mael\.claude\plans\jaunty-cuddling-kahn.md` (plan validé).

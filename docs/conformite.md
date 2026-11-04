@@ -6,9 +6,10 @@ périmètre du lot indiqué), **Partiel** (couvert en partie, limite documentée
 
 ## LOT A — le site renvoie vers la Boutique de la Convention (4 novembre 2026, branche non déployée)
 
-Source : prompt maître « CRN Boutique », section LOT A ; plan validé (boutique sur
-`boutique.crn-convention2026.events`). **Ne pas fusionner dans `main` ni déployer tant que la
-boutique n'encaisse pas** : les liens mèneraient à un domaine qui ne répond pas encore.
+Source : prompt maître « CRN Boutique », section LOT A. **Mise à jour du 4 novembre (fusion)** :
+la boutique n'est plus un site séparé mais une partie du site, sous `/boutique` — les liens du
+LOT A y mènent désormais (voir « Boutique intégrée au site et au back-office » plus bas). Ne pas
+déployer tant que la boutique n'encaisse pas.
 
 | Exigence | Lot | Statut | Preuve |
 | --- | --- | --- | --- |
@@ -24,10 +25,10 @@ boutique n'encaisse pas** : les liens mèneraient à un domaine qui ne répond p
 
 Décisions et points à valider :
 
-- **Contrat avec la boutique** : `GET ${BOUTIQUE_API_URL}/api/mis-en-avant` → liste de
+- **Contrat avec la boutique** : `GET <back-office>/api/mis-en-avant` → liste de
   `{ slug, nom, image, prixXAF, badge, ordre, paliers?: [{ prixXAF, debut, fin }] }` (ou `{ docs }`),
   lue au build uniquement (aucune requête du visiteur, NF-CNV-001) ; photos recopiées dans le site
-  (`public/images/boutique/`, non versionné). Fiches produit attendues en `/produits/<slug>`, avec
+  (`public/images/boutique/`, non versionné). Fiches produit en `/boutique/produits/<slug>`, avec
   les slugs de `src/content/products/` (ex. `jai-soif`, `diner-des-elites`). Variable
   `BOUTIQUE_API_URL` à régler dans hPanel pour le build ; absente, le fichier de secours est utilisé.
 - **Aucune photo produit réelle n'existe encore** : le fichier de secours affiche un cadre neutre
@@ -43,8 +44,8 @@ Décisions et points à valider :
   l'accueil de la boutique plutôt qu'à l'une des deux fiches.
 - L'annonce « Ouverture de la billetterie » (25 octobre) et le pied de page gardent leur lien vers
   `/billetterie`, qui renvoie désormais vers la boutique (aucun lien mort).
-- **Adresse de la boutique configurable** : `PUBLIC_BOUTIQUE_URL` (repli sur la production) et
-  `BOUTIQUE_API_URL`, voir `.env.example`. Vérifié le 4 novembre contre la boutique locale
+- **Adresse de la boutique configurable** (remplacée par la fusion : la boutique est sous
+  `/boutique`, son API est lue via `PUBLIC_BOUTIQUE_API_URL`, voir `.env.example`). Vérifié le 4 novembre contre la boutique locale
   (`localhost:4322` / API `localhost:3101`) : sélection lue depuis l'API (8 cartes, Pass Convention
   Intégral à 150 000 F CFA, prix valable jusqu'au 30 novembre, compte à rebours), liens vers
   `localhost:4322/produits/<slug>?utm_…`. **Écart signalé** : cette sélection de l'API contient des
@@ -803,3 +804,32 @@ schéma de Payload 3.45 gère mal les contraintes NOT NULL nommées de PostgreSQ
 téléchargés par reprise (connexion instable) et empreinte SHA-512 vérifiée contre npm.
 **Statut : Palier 1 complet en local ; production bloquée** par les questions au CRN (VPS,
 agrégateur Mobile Money, grille validée, e-mail, CGV).
+
+## Boutique intégrée au site et au back-office (4 novembre 2026)
+
+Consigne du Commanditaire : « La boutique de la convention n'est pas un site à part, elle fait
+partie intégrante du site officiel […] Il faut faire une fusion des 2 en frontend et backend. »
+Décision validée (« Good GO ») : la boutique vit à `crn-convention2026.events/boutique` et se gère
+dans le back-office existant (Payload + SQLite chez Hostinger, sans VPS).
+
+| Élément | Avant | Après |
+| --- | --- | --- |
+| Pages publiques | `boutique/vitrine` (Astro rendu serveur, domaine séparé) | `src/pages/boutique/` du site : catalogue et fiches statiques générés au build, panier / commande / paiement / suivi dans le navigateur ; en-tête, pied de page et NASTY du site |
+| Moteur, API, back-office | `boutique/api` (Payload + PostgreSQL) | `backend/src/boutique/` dans le back-office existant (SQLite), groupes « Boutique · … », tableau des ventes en tête |
+| Cœur métier | `boutique/domaine` | `backend/src/boutique/domaine` (inchangé, 42 tests) |
+| Comptes | collection séparée | collection `users` existante, rôles ajoutés : catalogue, COM Boutique, comptabilité |
+| Contrôle d'accès | `/scan` de la vitrine | `admin…/scan` (même origine que l'API, session de l'agent) |
+| Migration | — | `backend/src/migrations/20261104_150801_boutique` (tables de la boutique, tailles d'image produit) |
+| Liens du site (LOT A) | `boutique.crn-convention2026.events` | `/boutique…` avec le même suivi `utm_*` |
+| Republication | — | une modification du catalogue ou des réglages de la boutique republie le site |
+
+Preuves (4 novembre, poste local, base SQLite réelle) : cœur métier 42/42 ; 200 commandes
+simultanées sur 50 places → 50 acceptées, 0 survente ; contrôle d'accès 6/6 ; types du back-office
+et du site sans erreur ; tests unitaires du site 27/27 ; `/boutique` et les fiches produits
+rendues dans le gabarit du site.
+
+Écarts et suites : réservation atomique réécrite pour SQLite (une instruction conditionnelle,
+SQLite sérialisant les écritures) ; les fiches statiques se mettent à jour à chaque republication
+— le prix du palier et la disponibilité font foi côté serveur à la commande. Dossier `boutique/`
+retiré du dépôt (les restes locaux non versionnés — dépendances, base PostgreSQL de test — peuvent
+être supprimés par le Commanditaire). **Statut : fusion faite en local, non poussée.**

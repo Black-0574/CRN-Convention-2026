@@ -1,0 +1,60 @@
+---
+/*
+  Textes légaux de la boutique : fournis par le CRN et saisis dans le back-office (Réglages).
+  Tant qu'ils manquent, la page le dit clairement — obligatoires avant la première vente réelle.
+*/
+import Boutique from '../../layouts/BoutiqueLayout.astro';
+import { reglages } from '../../lib/boutique-api';
+
+interface Props {
+  titre: string;
+  cle: 'cgv';
+}
+const { titre, cle } = Astro.props;
+const r = await reglages();
+const texte = r?.legal[cle] ?? null;
+const version = r?.legal.cgvVersion ?? null;
+const demo = r?.demo ?? false;
+---
+
+<Boutique title={titre} demo={demo}>
+  <div class="container legal">
+    <h1>{titre}</h1>
+    {texte ? (
+      <>
+        {version && <p class="legal__version">Version {version}</p>}
+        <div class="legal__texte">{texte}</div>
+      </>
+    ) : (
+      <p class="legal__attente">Texte à fournir par le Ministères Christ Révélé aux Nations (CRN) avant l’ouverture des ventes.</p>
+    )}
+  </div>
+</Boutique>
+
+<style>
+  .legal {
+    padding-top: var(--space-6);
+    max-width: 820px;
+  }
+
+  .legal h1 {
+    color: var(--crn-bleu-nuit);
+  }
+
+  .legal__version {
+    color: var(--crn-gris);
+  }
+
+  .legal__texte {
+    white-space: pre-line;
+  }
+
+  .legal__attente {
+    padding: var(--space-2);
+    border: 1px dashed var(--crn-or);
+    border-radius: var(--radius-card-sm);
+    background: var(--crn-blanc);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+</style>

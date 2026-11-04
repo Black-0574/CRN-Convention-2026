@@ -47,7 +47,8 @@ export default [
     // backend/package.json (son propre `npm run lint` y est à prévoir si besoin).
     // `.claude/` : copies de travail (git worktrees) des sessions parallèles, chacune lintée chez elle.
     ignores: ['dist/', '.astro/', 'node_modules/', 'playwright-report/', 'test-results/', 'backend/', '.claude/',
-      // CRN Boutique : l'API (Payload/Next) a son propre outillage (tsc), comme backend/ ; dossiers générés.
-      'boutique/api/', 'boutique/**/.astro/', 'boutique/**/dist/', 'boutique/**/node_modules/'],
+      // boutique/ : restes locaux non versionnés de l'ancienne boutique séparée (désormais dans
+      // backend/src/boutique et src/pages/boutique).
+      'boutique/'],
   },
 ];

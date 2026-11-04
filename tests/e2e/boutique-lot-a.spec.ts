@@ -1,12 +1,11 @@
 import { test, expect } from '@playwright/test';
 
-// LOT A — le site renvoie vers la Boutique de la Convention (liens suivis, A5).
-const BOUTIQUE = 'https://boutique.crn-convention2026.events/';
-
+// LOT A — le site renvoie vers sa Boutique de la Convention, sous /boutique (liens suivis, A5).
 const suivi = (href: string | null, emplacement: string) => {
   const url = new URL(href ?? '', 'http://site.test');
   return (
-    url.origin === new URL(BOUTIQUE).origin &&
+    url.origin === 'http://site.test' &&
+    (url.pathname === '/boutique' || url.pathname.startsWith('/boutique/')) &&
     url.searchParams.get('utm_source') === 'site-convention' &&
     url.searchParams.get('utm_medium') === emplacement
   );

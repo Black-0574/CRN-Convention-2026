@@ -1,0 +1,206 @@
+---
+/*
+  Gabarit de la Boutique de la Convention (/boutique) : le gabarit du site (en-tête, pied de page,
+  NASTY) avec, en plus, la barre de la boutique (rubriques, panier), le tiroir du panier et, en
+  démonstration locale, un bandeau d'avertissement. La boutique fait partie du site : même
+  navigation, mêmes styles, même domaine.
+*/
+import BaseLayout from './BaseLayout.astro';
+import TiroirPanier from '../components/boutique/TiroirPanier.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  demo?: boolean;
+}
+const {
+  title,
+  description = 'Boutique officielle de la Convention CRN 2026 : pass, billets nominatifs et articles officiels, paiement Mobile Money.',
+  demo = false,
+} = Astro.props;
+const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} · Boutique`;
+---
+
+<BaseLayout title={titre} description={description}>
+  {demo && (
+    <div class="b-demo" role="note">
+      Démonstration locale — paiements simulés ; les produits marqués « Aperçu » attendent la validation de leur tarif par le CRN.
+    </div>
+  )}
+  <div class="b-barre">
+    <div class="container b-barre__inner">
+      <a class="b-barre__titre" href="/boutique">La Boutique de la Convention</a>
+      <nav class="b-barre__nav" aria-label="Rubriques de la boutique">
+        <a href="/boutique#pass">Pass</a>
+        <a href="/boutique#tickets">Tickets</a>
+        <a href="/boutique#articles">Articles</a>
+      </nav>
+      <button type="button" class="b-barre__panier" data-ouvrir-panier aria-label="Ouvrir le panier, 0 article" data-libelle-panier>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9Z" /><path d="M9 10V6a3 3 0 0 1 6 0v4" /></svg>
+        <span>Panier</span>
+        <span class="b-barre__compteur" data-compteur-panier hidden>0</span>
+      </button>
+    </div>
+  </div>
+
+  <slot />
+
+  <div class="container b-legal">
+    <a href="/boutique/cgv">Conditions générales de vente</a>
+    <a href="/mentions-legales">Mentions légales</a>
+    <a href="/confidentialite">Confidentialité</a>
+    <span>Paiement sécurisé par Mobile Money.</span>
+  </div>
+
+  <TiroirPanier />
+</BaseLayout>
+
+<script>
+  import { nombreArticles, ouvrirPanier, surChangement } from '../lib/boutique-panier';
+
+  // Mesure (LOT A, A5) : emplacement du site d'où vient le visiteur (utm_source / utm_medium),
+  // gardé pour la session et joint à la commande.
+  try {
+    const recherche = new URLSearchParams(location.search);
+    if (recherche.has('utm_source')) {
+      const provenance = new URLSearchParams();
+      for (const cle of ['utm_source', 'utm_medium', 'utm_campaign']) {
+        const valeur = recherche.get(cle);
+        if (valeur) provenance.set(cle, valeur.slice(0, 80));
+      }
+      sessionStorage.setItem('crn-provenance', provenance.toString());
+    }
+  } catch {
+    /* stockage indisponible : la vente n'est simplement pas attribuée */
+  }
+
+  const compteur = document.querySelector<HTMLElement>('[data-compteur-panier]');
+  const bouton = document.querySelector<HTMLButtonElement>('[data-libelle-panier]');
+  const majCompteur = () => {
+    const n = nombreArticles();
+    if (compteur) {
+      compteur.textContent = String(n);
+      compteur.hidden = n === 0;
+    }
+    bouton?.setAttribute('aria-label', `Ouvrir le panier, ${n} article${n > 1 ? 's' : ''}`);
+  };
+  majCompteur();
+  surChangement(majCompteur);
+  document.querySelectorAll('[data-ouvrir-panier]').forEach((b) => b.addEventListener('click', ouvrirPanier));
+</script>
+
+<style is:global>
+  /* L'attribut hidden l'emporte toujours, même sur un élément stylé en grid ou flex. */
+  [hidden] {
+    display: none !important;
+  }
+</style>
+
+<style>
+  .b-demo {
+    background: var(--crn-or-lumiere);
+    color: var(--crn-noir);
+    text-align: center;
+    padding: 8px var(--gutter-mobile);
+    font-size: var(--text-s);
+    font-weight: 700;
+  }
+
+  .b-barre {
+    background: var(--crn-blanc);
+    border-bottom: 1px solid var(--crn-gris-clair);
+  }
+
+  .b-barre__inner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px var(--space-2);
+    padding-block: 10px;
+  }
+
+  .b-barre__titre {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+    margin-right: auto;
+  }
+
+  .b-barre__nav {
+    display: flex;
+    gap: var(--space-2);
+    order: 3;
+    width: 100%;
+  }
+
+  .b-barre__nav a {
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+    text-decoration: none;
+    min-height: var(--tap-target-min);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .b-barre__nav a:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 768px) {
+    .b-barre__nav {
+      order: 0;
+      width: auto;
+    }
+  }
+
+  .b-barre__panier {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--tap-target-min);
+    padding: 0 18px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--crn-or-lumiere);
+    background: linear-gradient(135deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-blanc);
+    font-family: var(--font-labeur);
+    font-weight: 700;
+    font-size: var(--text-s);
+    cursor: pointer;
+  }
+
+  .b-barre__panier:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .b-barre__compteur {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: var(--radius-pill);
+    background: var(--crn-or);
+    color: var(--crn-noir);
+    font-size: 16px;
+  }
+
+  .b-legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px var(--space-3);
+    margin-top: var(--space-6);
+    padding-block: var(--space-2);
+    border-top: 1px solid var(--crn-gris-clair);
+    color: var(--crn-gris);
+  }
+
+  .b-legal a {
+    color: var(--crn-bleu-nuit);
+  }
+</style>

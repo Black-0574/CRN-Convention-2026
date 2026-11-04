@@ -1,7 +1,7 @@
 /**
  * Sélection « mis en avant » de la boutique, affichée sur l'accueil (LOT A, A2).
  *
- * Lue au build depuis `${BOUTIQUE_API_URL}/api/mis-en-avant` (drapeau « mis en avant » et ordre
+ * Lue au build depuis `<back-office>/api/mis-en-avant` (drapeau « mis en avant » et ordre
  * réglés dans le back-office de la boutique). Si la variable est absente, si l'API ne répond pas
  * dans le délai, renvoie une erreur ou une liste vide ou invalide, on retombe sur le fichier de
  * secours versionné `src/data/boutique-mis-en-avant.json` : la section ne s'affiche jamais vide.
@@ -16,6 +16,11 @@
  */
 import secours from '../data/boutique-mis-en-avant.json';
 import type { Palier } from './boutique';
+import { API_BOUTIQUE } from './boutique-adresse';
+
+// Back-office lu au build : réglé explicitement (démonstration locale), ou celui de production
+// lors d'un build de production (PAYLOAD_API_URL réglée) ; sinon (CI, tests) fichier de secours.
+const API_PAR_DEFAUT = import.meta.env.PUBLIC_BOUTIQUE_API_URL?.trim() || (process.env.PAYLOAD_API_URL ? API_BOUTIQUE : undefined);
 
 export interface ProduitMisEnAvant {
   slug: string;
@@ -92,7 +97,7 @@ export interface OptionsChargement {
 
 /** Sélection à afficher : celle de l'API si elle est exploitable, sinon le fichier de secours. */
 export async function chargerMisEnAvant({
-  apiUrl = process.env.BOUTIQUE_API_URL,
+  apiUrl = API_PAR_DEFAUT,
   fetcher = fetch,
   journal = (m) => console.warn(m),
 }: OptionsChargement = {}): Promise<{ produits: ProduitMisEnAvant[]; source: 'api' | 'secours' }> {

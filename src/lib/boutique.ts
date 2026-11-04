@@ -1,29 +1,22 @@
 /**
  * Liens du site vers la Boutique de la Convention (LOT A ; F-CNV-022, billetterie) — point unique
- * de vérité.
+ * de vérité. La boutique fait partie du site : elle vit sous `/boutique` (catalogue, fiches
+ * `/boutique/produits/<slug>`, commande, suivi), sur le même domaine.
  *
  * A5 (mesure) : chaque lien porte `utm_source=site-convention&utm_medium=<emplacement>`, pour
- * attribuer les ventes de la boutique à l'endroit du site qui les a amenées. Aucun lien vers la
- * boutique ne s'écrit à la main ailleurs dans le site : il passe par `lienBoutique` /
- * `lienProduit`, ou par `suivreLienBoutique` pour un lien saisi dans l'admin de contenu (bandeau).
+ * attribuer les ventes à l'endroit du site qui les a amenées. Aucun lien vers la boutique ne
+ * s'écrit à la main ailleurs dans le site : il passe par `lienBoutique` / `lienProduit`, ou par
+ * `suivreLienBoutique` pour un lien saisi dans l'admin de contenu (bandeau).
  *
- * Fiche produit : `/produits/<slug>` sur la boutique, où `<slug>` est l'identifiant du produit
- * dans le catalogue de la boutique — les mêmes que les fichiers de `src/content/products/` (contrat
- * à respecter à l'import du catalogue dans la boutique).
+ * `<slug>` : identifiant du produit dans le catalogue de la boutique (back-office), le même que les
+ * fichiers de `src/content/products/`.
  */
 
-const BOUTIQUE_PRODUCTION = 'https://boutique.crn-convention2026.events/';
+/** Racine de la boutique dans le site. */
+export const BOUTIQUE_CHEMIN = '/boutique';
 
-/**
- * Adresse de la boutique : `PUBLIC_BOUTIQUE_URL` si elle est réglée (démonstration avec une
- * boutique locale, préproduction), sinon la boutique de production. Lue au build et inscrite dans
- * les pages et le code client.
- */
-export const BOUTIQUE_URL = import.meta.env.PUBLIC_BOUTIQUE_URL?.trim() || BOUTIQUE_PRODUCTION;
-
-// Hôte avec le port : une boutique locale (localhost:4322) ne se confond pas avec un autre
-// service local.
-const BOUTIQUE_HOTE = new URL(BOUTIQUE_URL).host;
+/** Hôtes du site : un lien absolu saisi dans l'admin vers la boutique y est reconnu. */
+const HOTES_SITE = new Set(['crn-convention2026.events', 'www.crn-convention2026.events']);
 
 /** Emplacements du site d'où part un lien vers la boutique (valeur de `utm_medium`). */
 export type EmplacementBoutique =
@@ -37,34 +30,44 @@ export type EmplacementBoutique =
   | 'nasty'
   | 'bandeau';
 
-function avecSuivi(url: URL, emplacement: EmplacementBoutique): string {
+function avecSuivi(url: URL, emplacement: EmplacementBoutique): URL {
   url.searchParams.set('utm_source', 'site-convention');
   url.searchParams.set('utm_medium', emplacement);
-  return url.toString();
+  return url;
 }
 
-/** Accueil de la boutique (ou un chemin de la boutique), avec suivi de l'emplacement. */
-export function lienBoutique(emplacement: EmplacementBoutique, chemin = '/'): string {
-  return avecSuivi(new URL(chemin, BOUTIQUE_URL), emplacement);
+const estCheminBoutique = (chemin: string) => chemin === BOUTIQUE_CHEMIN || chemin.startsWith(`${BOUTIQUE_CHEMIN}/`);
+
+// Base fictive pour manipuler des chemins relatifs avec l'API URL.
+const BASE = 'https://crn-convention2026.events';
+const relatif = (url: URL) => `${url.pathname}${url.search}${url.hash}`;
+
+/** Accueil de la boutique (ou une page de la boutique), avec suivi de l'emplacement. */
+export function lienBoutique(emplacement: EmplacementBoutique, chemin = ''): string {
+  const page = chemin.replace(/^\/+/, '');
+  return relatif(avecSuivi(new URL(page ? `${BOUTIQUE_CHEMIN}/${page}` : BOUTIQUE_CHEMIN, BASE), emplacement));
 }
 
 /** Fiche produit de la boutique, avec suivi de l'emplacement. */
 export function lienProduit(slug: string, emplacement: EmplacementBoutique): string {
-  return lienBoutique(emplacement, `/produits/${encodeURIComponent(slug)}`);
+  return lienBoutique(emplacement, `produits/${encodeURIComponent(slug)}`);
 }
 
 /**
- * Lien saisi librement (admin de contenu, ex. bandeau) : s'il vise la boutique, on y ajoute le
- * suivi ; tout autre lien (page du site, autre domaine) est rendu tel quel.
+ * Lien saisi librement (admin de contenu, ex. bandeau) : s'il vise la boutique (`/boutique…`,
+ * relatif ou sur le domaine du site), on y ajoute le suivi ; tout autre lien est rendu tel quel.
  */
 export function suivreLienBoutique(lien: string, emplacement: EmplacementBoutique): string {
   let url: URL;
   try {
-    url = new URL(lien);
+    url = new URL(lien, BASE);
   } catch {
     return lien;
   }
-  return url.host === BOUTIQUE_HOTE ? avecSuivi(url, emplacement) : lien;
+  const estRelatif = lien.startsWith('/');
+  if ((!estRelatif && !HOTES_SITE.has(url.hostname)) || !estCheminBoutique(url.pathname)) return lien;
+  avecSuivi(url, emplacement);
+  return estRelatif ? relatif(url) : url.toString();
 }
 
 // ——— Montants ———

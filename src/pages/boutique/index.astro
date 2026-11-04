@@ -1,0 +1,200 @@
+---
+import CompteARebours from '../../components/boutique/CompteARebours.astro';
+import InteractionsCartes from '../../components/boutique/InteractionsCartes.astro';
+import Rangee from '../../components/boutique/Rangee.astro';
+import Boutique from '../../layouts/BoutiqueLayout.astro';
+import { catalogue, type VueProduit } from '../../lib/boutique-api';
+import { dernierJour, formaterXAF } from '../../lib/boutique-format';
+
+const c = await catalogue();
+const produits: VueProduit[] = c?.produits ?? [];
+const demo = c?.demo ?? false;
+const indisponible = c === null;
+
+const parOrdre = (a: VueProduit, b: VueProduit) => a.ordre - b.ordre;
+const pass = produits.filter((p) => p.type === 'pass').sort(parOrdre);
+const tickets = produits.filter((p) => p.type === 'ticket').sort(parOrdre);
+const articles = produits.filter((p) => p.type === 'physique' || p.type === 'numerique').sort(parOrdre);
+
+// Compte à rebours n° 1 : prochaine bascule tarifaire réelle (le premier pass à paliers).
+const aPaliers = produits.find((p) => p.prochaineBascule && p.prixXAF !== null);
+const palierCourant = aPaliers?.paliers.find((pa) => new Date(pa.debut) <= new Date() && new Date() < new Date(pa.fin));
+// Compte à rebours n° 2 : ouverture de la Convention (dimanche 6 décembre, 9h, Libreville).
+const OUVERTURE = '2026-12-06T09:00:00+01:00';
+---
+
+<Boutique title="Accueil" demo={demo}>
+  <section class="heros">
+    <div class="container heros__inner">
+      <div>
+        <p class="heros__surtitre">Boutique officielle</p>
+        <h1 class="heros__titre">Vos pass et vos articles de la Convention</h1>
+        <p class="heros__accroche">Billets nominatifs envoyés par e-mail, paiement par Airtel Money ou Moov Money, articles à retirer sur place. Du 6 au 13 décembre 2026, à Libreville.</p>
+        <div class="heros__actions">
+          <a class="button heros__cta heros__cta--principal" href="#pass">Voir les pass</a>
+          <a class="button button--secondary heros__cta heros__cta--clair" href="#tickets">Tickets à l’unité</a>
+        </div>
+      </div>
+      <div class="heros__echeances">
+        {aPaliers && palierCourant && (
+          <div class="heros__echeance">
+            <CompteARebours
+              cible={aPaliers.prochaineBascule!}
+              libelle={`${aPaliers.nom} : ${formaterXAF(palierCourant.prixXAF)} jusqu’au ${dernierJour(palierCourant.fin)}`}
+              echu="Nouveau tarif en vigueur."
+              sombre
+            />
+          </div>
+        )}
+        <div class="heros__echeance">
+          <CompteARebours cible={OUVERTURE} libelle="Ouverture de la Convention" echu="La Convention est ouverte." sombre />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container">
+    {indisponible && (
+      <p class="alerte" role="status">La boutique est momentanément indisponible. Merci de réessayer dans quelques instants.</p>
+    )}
+    <div id="pass"><Rangee id="pass-liste" surtitre="Billetterie" titre="Les pass de la Convention" produits={pass} /></div>
+    <div id="tickets"><Rangee id="tickets-liste" surtitre="Billetterie" titre="Tickets à l’unité" produits={tickets} /></div>
+    <div id="articles"><Rangee id="articles-liste" surtitre="Articles officiels" titre="Tee-shirt et pagne de la Convention" produits={articles} /></div>
+
+    <section class="engagements" aria-label="Nos engagements">
+      <div><h2>Billets nominatifs</h2><p>Un billet par personne, avec un QR code unique scanné à chaque entrée. Pièce d’identité exigée.</p></div>
+      <div><h2>Paiement Mobile Money</h2><p>Airtel Money ou Moov Money : vous validez le paiement sur votre téléphone.</p></div>
+      <div><h2>Retrait sur place</h2><p>Les articles et les kits des pass se retirent sur le lieu de la Convention.</p></div>
+    </section>
+  </div>
+  <InteractionsCartes />
+</Boutique>
+
+<style>
+  /* Ancres #pass, #tickets, #articles : le titre reste visible sous l’en-tête collant du site. */
+  #pass,
+  #tickets,
+  #articles {
+    scroll-margin-top: 112px;
+  }
+
+  .heros {
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-blanc);
+    padding-block: var(--space-6);
+    border-bottom: 3px solid var(--crn-or);
+  }
+
+  .heros__inner {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .heros__surtitre {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    color: var(--crn-or-lumiere);
+  }
+
+  .heros__titre {
+    margin: 8px 0 var(--space-2);
+    font-size: var(--text-h1-mobile);
+    line-height: 1.1;
+    color: var(--crn-blanc);
+    max-width: 18ch;
+  }
+
+  .heros__accroche {
+    max-width: 52ch;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .heros__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: var(--space-2);
+  }
+
+  /* Sur fond bleu nuit : bouton principal blanc, texte bleu nuit (jamais d’or en aplat, GBIS). */
+  .heros__cta--principal {
+    background: var(--crn-blanc);
+    color: var(--crn-bleu-nuit);
+    border: 1.5px solid var(--crn-blanc);
+  }
+
+  .heros__cta--principal:hover {
+    background: var(--crn-creme);
+  }
+
+  .heros__cta--clair {
+    color: var(--crn-blanc);
+    border-color: var(--crn-blanc);
+  }
+
+  .heros__echeances {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+
+  .heros__echeance {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(217, 196, 138, 0.35);
+    border-radius: var(--radius-card-sm);
+    padding: var(--space-2);
+  }
+
+  @media (min-width: 900px) {
+    .heros__inner {
+      grid-template-columns: 1.4fr 1fr;
+      align-items: center;
+    }
+
+    .heros__titre {
+      font-size: var(--text-h1);
+    }
+  }
+
+  .alerte {
+    margin-top: var(--space-3);
+    padding: var(--space-2);
+    border: 1px solid var(--crn-or);
+    border-radius: var(--radius-card-sm);
+    background: var(--crn-blanc);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .engagements {
+    margin-top: var(--space-10);
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .engagements > div {
+    background: var(--crn-blanc);
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-card-sm);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .engagements h2 {
+    margin: 0 0 6px;
+    font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .engagements p {
+    margin: 0;
+    color: var(--crn-gris);
+  }
+
+  @media (min-width: 768px) {
+    .engagements {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

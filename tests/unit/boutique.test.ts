@@ -17,24 +17,23 @@ const INSECABLE = ' ';
 
 // LOT A, A5 — liens traçables du site vers la boutique.
 describe('liens vers la boutique (A5)', () => {
-  it('ajoute la source et l’emplacement à l’accueil de la boutique', () => {
-    expect(lienBoutique('en-tete')).toBe(
-      'https://boutique.crn-convention2026.events/?utm_source=site-convention&utm_medium=en-tete',
-    );
+  it('ajoute la source et l’emplacement à l’accueil de la boutique, dans le site', () => {
+    expect(lienBoutique('en-tete')).toBe('/boutique?utm_source=site-convention&utm_medium=en-tete');
   });
 
   it('mène à la fiche produit avec suivi', () => {
-    const url = new URL(lienProduit('jai-soif', 'accueil-plateformes'));
-    expect(url.origin).toBe('https://boutique.crn-convention2026.events');
-    expect(url.pathname).toBe('/produits/jai-soif');
+    const url = new URL(lienProduit('jai-soif', 'accueil-plateformes'), 'https://crn-convention2026.events');
+    expect(url.pathname).toBe('/boutique/produits/jai-soif');
     expect(url.searchParams.get('utm_source')).toBe('site-convention');
     expect(url.searchParams.get('utm_medium')).toBe('accueil-plateformes');
   });
 
   it('suit un lien saisi dans l’admin seulement s’il vise la boutique', () => {
-    expect(suivreLienBoutique('https://boutique.crn-convention2026.events/', 'bandeau')).toContain('utm_medium=bandeau');
+    expect(suivreLienBoutique('/boutique/produits/jai-soif', 'bandeau')).toBe('/boutique/produits/jai-soif?utm_source=site-convention&utm_medium=bandeau');
+    expect(suivreLienBoutique('https://www.crn-convention2026.events/boutique', 'bandeau')).toContain('utm_medium=bandeau');
     expect(suivreLienBoutique('/programme', 'bandeau')).toBe('/programme');
-    expect(suivreLienBoutique('https://example.org/', 'bandeau')).toBe('https://example.org/');
+    expect(suivreLienBoutique('/boutiques-amies', 'bandeau')).toBe('/boutiques-amies');
+    expect(suivreLienBoutique('https://example.org/boutique', 'bandeau')).toBe('https://example.org/boutique');
   });
 });
 

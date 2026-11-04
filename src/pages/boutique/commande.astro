@@ -1,0 +1,588 @@
+---
+/*
+  Tunnel de commande en 3 étapes, sans rechargement de page (F01) :
+  1. Vos coordonnées (compte express : aucune création de mot de passe) ;
+  2. Titulaires (un par billet, F02) et retrait des articles ; consentement facultatif non pré-coché ;
+  3. Paiement Mobile Money (Airtel Money ou Moov Money), validation sur le téléphone.
+  La commande est créée au passage à l'étape 3 : stock et places sont alors réservés 15 minutes
+  (F03), prix garanti pendant ce délai.
+*/
+import Boutique from '../../layouts/BoutiqueLayout.astro';
+import { reglages as lireReglages, type Reglages } from '../../lib/boutique-api';
+
+let r: Reglages | null;
+try {
+  r = await lireReglages();
+} catch {
+  r = null;
+}
+const lieu = r?.lieuRetrait ?? 'Lieu à annoncer';
+const horaires = r?.horairesRetrait ?? 'horaires à annoncer';
+---
+
+<Boutique title="Commande" demo={r?.demo ?? false}>
+  <div class="container tunnel">
+    <h1>Votre commande</h1>
+    <ol class="etapes" aria-label="Étapes de la commande">
+      <li data-indicateur="1" aria-current="step">1. Coordonnées</li>
+      <li data-indicateur="2">2. Titulaires et retrait</li>
+      <li data-indicateur="3">3. Paiement</li>
+    </ol>
+
+    <div class="tunnel__grille">
+      <div>
+        <p class="alerte" role="alert" data-erreur hidden></p>
+
+        <!-- Étape 1 -->
+        <form class="etape" data-etape="1" novalidate>
+          <h2>Vos coordonnées</h2>
+          <p class="aide">Pas de compte à créer : vos billets et le suivi de commande vous sont envoyés par e-mail.</p>
+          <div class="champs champs--deux">
+            <label>Prénom<input name="prenom" autocomplete="given-name" required /></label>
+            <label>Nom<input name="nom" autocomplete="family-name" required /></label>
+            <label>E-mail<input name="email" type="email" autocomplete="email" required /></label>
+            <label>Téléphone<input name="telephone" type="tel" autocomplete="tel" placeholder="+241 …" required /></label>
+          </div>
+          <button type="submit" class="button button--primary">Continuer</button>
+        </form>
+
+        <!-- Étape 2 -->
+        <form class="etape" data-etape="2" hidden novalidate>
+          <h2>Titulaires et retrait</h2>
+          <p class="aide">Chaque billet est nominatif et non transférable : indiquez la personne qui l’utilisera (pièce d’identité exigée à l’entrée).</p>
+          <div data-titulaires></div>
+          <div class="retrait" data-bloc-retrait hidden>
+            <h3>Retrait des articles</h3>
+            <p>Retrait sur le lieu de la Convention (comptoir COM Boutique) : <strong>{lieu}</strong>, {horaires}.</p>
+          </div>
+          <label class="case">
+            <input type="checkbox" name="consentement" />
+            <span>{r?.consentement?.texte ?? 'J’accepte d’être recontacté par le CRN au sujet de ses activités (facultatif).'}</span>
+          </label>
+          <label class="case">
+            <input type="checkbox" name="cgv" required />
+            <span>J’ai lu et j’accepte les <a href="/boutique/cgv" target="_blank">conditions générales de vente</a>.</span>
+          </label>
+          <div class="actions">
+            <button type="button" class="button button--secondary" data-retour="1">Retour</button>
+            <button type="submit" class="button button--primary" data-valider-commande>Valider et passer au paiement</button>
+          </div>
+        </form>
+
+        <!-- Étape 3 -->
+        <div class="etape" data-etape="3" hidden>
+          <h2>Paiement Mobile Money</h2>
+          <div class="reservation" data-reservation></div>
+          <form data-formulaire-paiement novalidate>
+            <fieldset class="operateurs">
+              <legend>Opérateur</legend>
+              <label class="operateur"><input type="radio" name="operateur" value="airtel" checked /><span>Airtel Money</span></label>
+              <label class="operateur"><input type="radio" name="operateur" value="moov" /><span>Moov Money</span></label>
+            </fieldset>
+            <label class="champ-seul">Numéro Mobile Money<input name="telephone" type="tel" inputmode="tel" placeholder="+241 …" required /></label>
+            <button type="submit" class="button button--primary" data-payer>Payer</button>
+          </form>
+          <div class="attente" data-attente hidden>
+            <p class="attente__titre">Validez le paiement sur votre téléphone</p>
+            <p>Une demande de paiement vient d’être envoyée à votre numéro. Saisissez votre code secret pour confirmer ; cette page se met à jour toute seule.</p>
+            <div class="simulation" data-simulation hidden>
+              <p><strong>Simulation (démonstration locale)</strong> — aucun paiement réel. Choisissez la réponse de l’opérateur :</p>
+              <div class="actions">
+                <button type="button" class="button button--primary" data-simuler="valider">Valider le paiement</button>
+                <button type="button" class="button button--secondary" data-simuler="refuser">Refuser</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="recap" aria-labelledby="recap-titre">
+        <h2 id="recap-titre">Récapitulatif</h2>
+        <ul data-recap-lignes></ul>
+        <p class="recap__total"><span>Total</span> <strong data-recap-total></strong></p>
+        <p class="aide" data-recap-euros></p>
+      </aside>
+    </div>
+  </div>
+  <script type="application/json" data-lieu-retrait set:html={JSON.stringify({ lieu, horaires })} />
+</Boutique>
+
+<script>
+  import { formaterEUR, formaterXAF } from '../../lib/boutique-format';
+  import { API_BOUTIQUE } from '../../lib/boutique-adresse';
+  import { lirePanier, vider, type LignePanier } from '../../lib/boutique-panier';
+
+  const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const panier = lirePanier();
+  const erreur = $('[data-erreur]');
+  const etat: { client?: Record<string, string>; numero?: string; jeton?: string } = {};
+  const echapper = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+  if (panier.length === 0) location.replace('/');
+
+  // ——— Récapitulatif ———
+  const total = panier.reduce((s, l) => s + l.prixXAF * l.quantite, 0);
+  $('[data-recap-lignes]').innerHTML = panier.map((l) => `<li><span>${l.quantite} × ${echapper(l.nom)}${l.variante !== 'Unique' ? ` — ${echapper(l.variante)}` : ''}</span><span>${formaterXAF(l.prixXAF * l.quantite)}</span></li>`).join('');
+  $('[data-recap-total]').textContent = formaterXAF(total);
+  $('[data-recap-euros]').textContent = `soit environ ${formaterEUR(total)} (parité fixe 1 € = 655,957 F CFA)`;
+
+  const montrerErreur = (message: string | null) => {
+    erreur.hidden = !message;
+    erreur.textContent = message ?? '';
+    if (message) erreur.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  };
+
+  const allerA = (n: number) => {
+    document.querySelectorAll<HTMLElement>('[data-etape]').forEach((e) => (e.hidden = e.dataset.etape !== String(n)));
+    document.querySelectorAll<HTMLElement>('[data-indicateur]').forEach((i) => {
+      if (i.dataset.indicateur === String(n)) i.setAttribute('aria-current', 'step');
+      else i.removeAttribute('aria-current');
+    });
+    montrerErreur(null);
+    const titre = document.querySelector<HTMLElement>(`[data-etape="${n}"] h2`);
+    titre?.setAttribute('tabindex', '-1');
+    titre?.focus();
+  };
+
+  const valider = (form: HTMLFormElement) => {
+    if (form.checkValidity()) return true;
+    const premier = form.querySelector<HTMLInputElement>(':invalid');
+    montrerErreur(premier ? `Veuillez compléter : ${premier.closest('label')?.firstChild?.textContent?.trim() ?? 'le formulaire'}.` : 'Formulaire incomplet.');
+    premier?.focus();
+    return false;
+  };
+
+  // ——— Étape 1 ———
+  $<HTMLFormElement>('[data-etape="1"]').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    if (!valider(form)) return;
+    etat.client = Object.fromEntries(new FormData(form)) as Record<string, string>;
+    construireTitulaires();
+    allerA(2);
+  });
+
+  // ——— Étape 2 : un bloc par billet ———
+  function blocTitulaire(l: LignePanier, indexLigne: number, n: number) {
+    const id = `t-${indexLigne}-${n}`;
+    const tailles = l.kitTailles
+      .map((k) => `<label>Taille du ${echapper(k.nom.toLowerCase())} inclus<select name="${id}-taille" required><option value="">Choisir</option>${k.tailles.map((t) => `<option>${echapper(t)}</option>`).join('')}</select></label>`)
+      .join('');
+    const age = l.ageMin ? `<label>Date de naissance<input name="${id}-naissance" type="date" required></label><p class="aide">Réservé aux ${l.ageMin}–${l.ageMax} ans au 6 décembre 2026 (déclaratif).</p>` : '';
+    return `<fieldset class="titulaire" data-titulaire data-ligne="${indexLigne}" data-id="${id}">
+      <legend>${echapper(l.nom)}${l.variante !== 'Unique' ? ` — ${echapper(l.variante)}` : ''} · billet ${n + 1}/${l.quantite}</legend>
+      ${indexLigne === premiereLigneNominative && n === 0 ? '<button type="button" class="moi" data-moi>C’est moi : reprendre mes coordonnées</button>' : ''}
+      <div class="champs champs--deux">
+        <label>Prénom<input name="${id}-prenom" required></label>
+        <label>Nom<input name="${id}-nom" required></label>
+        <label>Téléphone<input name="${id}-telephone" type="tel" required></label>
+        <label>E-mail<input name="${id}-email" type="email" required></label>
+        ${tailles}${age}
+      </div>
+    </fieldset>`;
+  }
+  const premiereLigneNominative = panier.findIndex((l) => l.nominatif);
+
+  function construireTitulaires() {
+    const conteneur = $('[data-titulaires]');
+    if (conteneur.childElementCount) return;
+    conteneur.innerHTML = panier.flatMap((l, i) => (l.nominatif ? Array.from({ length: l.quantite }, (_, n) => blocTitulaire(l, i, n)) : [])).join('');
+    $('[data-bloc-retrait]').hidden = !panier.some((l) => !l.nominatif || l.kitTailles.length > 0);
+    conteneur.querySelector('[data-moi]')?.addEventListener('click', (e) => {
+      const bloc = (e.currentTarget as HTMLElement).closest<HTMLElement>('[data-titulaire]')!;
+      const id = bloc.dataset.id;
+      for (const champ of ['prenom', 'nom', 'telephone', 'email']) {
+        const input = bloc.querySelector<HTMLInputElement>(`[name="${id}-${champ}"]`);
+        if (input) input.value = etat.client?.[champ] ?? '';
+      }
+    });
+  }
+
+  document.querySelector('[data-retour="1"]')!.addEventListener('click', () => allerA(1));
+
+  $<HTMLFormElement>('[data-etape="2"]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    if (!valider(form)) return;
+    const champs = new FormData(form);
+    const titulaires = [...form.querySelectorAll<HTMLElement>('[data-titulaire]')].map((bloc) => {
+      const id = bloc.dataset.id!;
+      const v = (n: string) => String(champs.get(`${id}-${n}`) ?? '');
+      return { ligne: Number(bloc.dataset.ligne), prenom: v('prenom'), nom: v('nom'), telephone: v('telephone'), email: v('email'), ...(v('naissance') ? { dateNaissance: v('naissance') } : {}), ...(v('taille') ? { tailleTeeShirt: v('taille') } : {}) };
+    });
+    const parametres = new URLSearchParams(sessionStorageLire('crn-provenance'));
+    const bouton = form.querySelector<HTMLButtonElement>('[data-valider-commande]')!;
+    bouton.disabled = true;
+    bouton.textContent = 'Réservation en cours…';
+    try {
+      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client: etat.client,
+          lignes: panier.map((l) => ({ varianteId: l.varianteId, quantite: l.quantite })),
+          titulaires,
+          consentement: champs.get('consentement') === 'on',
+          cgvAcceptees: champs.get('cgv') === 'on',
+          provenance: { source: parametres.get('utm_source') ?? undefined, emplacement: parametres.get('utm_medium') ?? undefined, campagne: parametres.get('utm_campaign') ?? undefined },
+        }),
+      });
+      const donnees = await res.json();
+      if (!res.ok) throw new Error(donnees.erreur ?? 'Commande impossible.');
+      etat.numero = donnees.numero;
+      etat.jeton = donnees.jetonSuivi;
+      if (donnees.totalXAF !== total) {
+        $('[data-recap-total]').textContent = formaterXAF(donnees.totalXAF);
+      }
+      afficherReservation(donnees.reservationExpireA, donnees.totalXAF);
+      const tel = $<HTMLInputElement>('[data-formulaire-paiement] [name="telephone"]');
+      tel.value = etat.client?.telephone ?? '';
+      allerA(3);
+    } catch (err) {
+      montrerErreur((err as Error).message);
+    } finally {
+      bouton.disabled = false;
+      bouton.textContent = 'Valider et passer au paiement';
+    }
+  });
+
+  function sessionStorageLire(cle: string) {
+    try {
+      return sessionStorage.getItem(cle) ?? '';
+    } catch {
+      return '';
+    }
+  }
+
+  // ——— Étape 3 : réservation (échéance réelle) et paiement ———
+  function afficherReservation(expire: string, montant: number) {
+    const bloc = $('[data-reservation]');
+    const tic = () => {
+      const reste = Math.max(0, new Date(expire).getTime() - Date.now());
+      const m = Math.floor(reste / 60000);
+      const s = Math.floor((reste % 60000) / 1000);
+      bloc.innerHTML = reste > 0
+        ? `<p>Commande <strong>${etat.numero}</strong> — <strong>${formaterXAF(montant)}</strong>. Vos places et articles sont réservés encore <strong>${m} min ${String(s).padStart(2, '0')} s</strong> : le prix est garanti pendant ce délai.</p>`
+        : `<p><strong>Le délai de réservation est dépassé.</strong> Les places ont été rendues à la vente : <a href="/boutique/commande">recommencez votre commande</a>.</p>`;
+      return reste > 0;
+    };
+    tic();
+    const id = setInterval(() => !tic() && clearInterval(id), 1000);
+  }
+
+  $<HTMLFormElement>('[data-formulaire-paiement]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    if (!valider(form)) return;
+    const champs = new FormData(form);
+    const bouton = form.querySelector<HTMLButtonElement>('[data-payer]')!;
+    bouton.disabled = true;
+    try {
+      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/paiement?t=${etat.jeton}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ operateur: champs.get('operateur'), telephone: champs.get('telephone') }),
+      });
+      const donnees = await res.json();
+      if (!res.ok) throw new Error(donnees.erreur ?? 'Paiement impossible.');
+      form.hidden = true;
+      $('[data-attente]').hidden = false;
+      $('[data-simulation]').hidden = !donnees.simulation;
+      suivre();
+    } catch (err) {
+      montrerErreur((err as Error).message);
+      bouton.disabled = false;
+    }
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-simuler]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      b.disabled = true;
+      await fetch(`${API_BOUTIQUE}/api/boutique/bac-a-sable/${etat.numero}/${b.dataset.simuler}?t=${etat.jeton}`, { method: 'POST' });
+    }),
+  );
+
+  // Suivi : la page de commande prend le relais dès que le paiement aboutit ou échoue.
+  function suivre() {
+    const id = setInterval(async () => {
+      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}?t=${etat.jeton}`);
+      if (!res.ok) return;
+      const c = await res.json();
+      if (c.statut === 'payee') {
+        clearInterval(id);
+        vider();
+        location.href = `/boutique/suivi?commande=${encodeURIComponent(etat.numero!)}&t=${encodeURIComponent(etat.jeton!)}`;
+      } else if (c.statut !== 'en_attente') {
+        clearInterval(id);
+        location.href = `/boutique/suivi?commande=${encodeURIComponent(etat.numero!)}&t=${encodeURIComponent(etat.jeton!)}`;
+      }
+    }, 2000);
+  }
+</script>
+
+<style is:global>
+  .tunnel {
+    padding-top: var(--space-3);
+  }
+
+  .tunnel h1 {
+    color: var(--crn-bleu-nuit);
+    font-size: var(--text-h2-mobile);
+  }
+
+  .etapes {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0;
+    margin: 0 0 var(--space-3);
+  }
+
+  .etapes li {
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--crn-gris-clair);
+    color: var(--crn-gris);
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .etapes li[aria-current='step'] {
+    background: var(--crn-bleu-nuit);
+    border-color: var(--crn-bleu-nuit);
+    color: var(--crn-blanc);
+  }
+
+  .tunnel__grille {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 960px) {
+    .tunnel__grille {
+      grid-template-columns: 1.6fr 1fr;
+      align-items: start;
+    }
+    .recap {
+      position: sticky;
+      top: 100px;
+    }
+  }
+
+  .etape,
+  .recap {
+    background: var(--crn-blanc);
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-card);
+    padding: var(--space-3);
+  }
+
+  .etape h2,
+  .recap h2 {
+    margin-top: 0;
+    color: var(--crn-bleu-nuit);
+    font-size: var(--text-h3-mobile);
+  }
+
+  .etape h2:focus {
+    outline: none;
+  }
+
+  .aide {
+    color: var(--crn-gris);
+    font-size: 16px;
+  }
+
+  .champs {
+    display: grid;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  @media (min-width: 640px) {
+    .champs--deux {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .etape label,
+  .champ-seul {
+    display: grid;
+    gap: 6px;
+    font-weight: 700;
+  }
+
+  .etape input:not([type='checkbox']):not([type='radio']),
+  .etape select {
+    min-height: var(--tap-target-min);
+    border: 1.5px solid var(--crn-gris-clair);
+    border-radius: var(--radius-control);
+    padding: 0 12px;
+    font: inherit;
+    font-weight: 400;
+    background: var(--crn-blanc);
+  }
+
+  .etape input:focus-visible,
+  .etape select:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 1px;
+  }
+
+  .titulaire {
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-card-sm);
+    padding: var(--space-2);
+    margin: 0 0 var(--space-2);
+  }
+
+  .titulaire legend {
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    padding: 0 6px;
+  }
+
+  .moi {
+    margin-bottom: var(--space-2);
+    background: none;
+    border: 1px dashed var(--crn-or);
+    border-radius: var(--radius-control);
+    padding: 8px 12px;
+    color: var(--crn-bleu-nuit);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .retrait {
+    background: var(--crn-creme);
+    border-radius: var(--radius-card-sm);
+    padding: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .retrait h3 {
+    margin: 0 0 6px;
+    font-size: var(--text-h4-mobile);
+  }
+
+  .case {
+    display: flex !important;
+    grid-template-columns: none;
+    align-items: flex-start;
+    gap: 12px !important;
+    font-weight: 400 !important;
+    margin-bottom: var(--space-2);
+  }
+
+  .case input {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--crn-bleu-nuit);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .operateurs {
+    border: none;
+    padding: 0;
+    margin: 0 0 var(--space-2);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .operateurs legend {
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .operateur {
+    display: flex !important;
+    align-items: center;
+    gap: 10px !important;
+    min-height: var(--tap-target-min);
+    padding: 8px 16px;
+    border: 1.5px solid var(--crn-gris-clair);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+  }
+
+  .operateur:has(input:checked) {
+    border-color: var(--crn-bleu-nuit);
+    box-shadow: inset 0 0 0 1px var(--crn-bleu-nuit);
+  }
+
+  .champ-seul {
+    margin-bottom: var(--space-2);
+    max-width: 360px;
+  }
+
+  .reservation {
+    background: var(--crn-creme);
+    border-left: 3px solid var(--crn-or);
+    padding: 12px 16px;
+    border-radius: 0 var(--radius-control) var(--radius-control) 0;
+    margin-bottom: var(--space-2);
+  }
+
+  .reservation p {
+    margin: 0;
+  }
+
+  .attente__titre {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .simulation {
+    margin-top: var(--space-2);
+    padding: var(--space-2);
+    border: 1px dashed var(--crn-or);
+    border-radius: var(--radius-card-sm);
+    background: var(--crn-creme);
+  }
+
+  .alerte {
+    margin: 0 0 var(--space-2);
+    padding: var(--space-2);
+    border: 1.5px solid var(--crn-or);
+    border-radius: var(--radius-card-sm);
+    background: var(--crn-blanc);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .recap ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-2);
+    display: grid;
+    gap: 8px;
+  }
+
+  .recap li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 16px;
+  }
+
+  .recap__total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    border-top: 1px solid var(--crn-gris-clair);
+    padding-top: 12px;
+    margin: 0;
+  }
+</style>
