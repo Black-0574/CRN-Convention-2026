@@ -27,6 +27,13 @@ jobs:
       - name: Tests unitaires
         run: npm run test
 
+      # Cœur métier de la CRN Boutique (paliers, montants, jetons, droits, quotas, paiements) :
+      # mêmes versions de Vitest et TypeScript que le site, sans installation séparée.
+      - name: CRN Boutique — cœur métier (types et tests)
+        run: |
+          npx tsc --noEmit -p boutique/domaine/tsconfig.json
+          npx vitest run --root boutique/domaine
+
       - name: Installer les navigateurs Playwright
         run: npx playwright install --with-deps chromium
 

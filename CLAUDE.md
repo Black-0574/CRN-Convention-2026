@@ -28,6 +28,24 @@ les sessions de travail sur ce dépôt.
    Libreville. Budget : page d'accueil < 1,5 Mo, JS d'accueil < 100 Ko compressé.
 10. **Aucun carrousel ni défilement automatique.** Respect de `prefers-reduced-motion`.
 
+## CRN Boutique (`boutique/`) — règles permanentes
+
+Source : prompt maître « CRN Boutique » (2 novembre 2026). Ordre de priorité des sources : programme
+maître de la Convention → grille tarifaire validée par le Commanditaire → prompt maître → dossier
+d'architecture. S'appliquent en plus des règles ci-dessus :
+
+- Les sources de vérité et les corrections obligatoires du prompt priment sur le dossier.
+- Aucune donnée inventée ; **aucun produit actif sans prix validé** (grille validée).
+- Toute ambiguïté se signale par écrit avant de coder.
+- Aucune modification du site officiel sans test de non-régression.
+- Typographie française dans tous les textes affichés : espaces insécables avant « : ; ! ? » et dans
+  les guillemets « », apostrophe typographique.
+- Montants : F CFA sans décimales, espace fine comme séparateur de milliers (150 000 F CFA) ; euros à
+  la parité fixe 1 € = 655,957 F CFA, arrondis à l'affichage.
+- Heure de référence : Africa/Libreville (UTC+1, sans heure d'été) pour toutes les dates, bascules
+  tarifaires et horodatages.
+- Dépendances épinglées à une version exacte publiée depuis au moins 14 jours.
+
 ## Commandes utiles
 
 - `npm run dev` — serveur de développement
@@ -39,6 +57,8 @@ les sessions de travail sur ce dépôt.
 
 ## État du projet
 
-Lot en cours : **L2** (version minimale de l'état 1 — accueil, programme, billetterie, infos
-pratiques, FAQ), architecture Astro statique. Voir `docs/conformite.md` pour le détail des exigences
-couvertes et `C:\Users\Mael\.claude\plans\jaunty-cuddling-kahn.md` pour le plan d'architecture validé.
+Site officiel en production (Astro statique, contenu piloté par le back-office Payload `backend/`).
+En cours : **CRN Boutique, Palier 1** (échéance 13 novembre 2026) — cœur métier dans
+`boutique/domaine/` ; LOT A (renvois du site vers la boutique) sur une branche dédiée, non déployé
+tant que la boutique n'encaisse pas. Voir `docs/conformite.md` et
+`C:\Users\Mael\.claude\plans\jaunty-cuddling-kahn.md` (plan validé).

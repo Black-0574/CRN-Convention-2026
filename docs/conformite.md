@@ -688,3 +688,32 @@ F-CNV-050 à 054 (écosystème, hors F-CNV-012), F-CNV-060 à 063 (administratio
   au moment du build, mais ne se déclenchent pas seules en production tant qu'aucun déclencheur
   programmé (cron CI, ou admin L3) n'est en place.
 - Lien de billetterie et moyens de paiement non branchés (attente ARB-CONV-01 et ARB-PAGE-08).
+
+## CRN Boutique — Palier 1, cœur métier (4 novembre 2026)
+
+Plan validé par le Commanditaire (`C:\Users\Mael\.claude\plans\jaunty-cuddling-kahn.md`) :
+Payload 3 + PostgreSQL (moteur, API, back-office) et Astro SSR (vitrine), conteneurisés sur VPS
+derrière Cloudflare. Bloqué en attente du CRN : hébergement (VPS), grille tarifaire validée,
+programme maître, agrégateur Mobile Money, CGV, e-mail transactionnel (questions 1 à 10 du plan).
+
+Livré sans dépendre de ces réponses — `boutique/domaine/` (pur, sans réseau ni base, réutilisé tel
+quel par l'API) :
+- **Heure de Libreville** (`temps.ts`) : bornes à 00h00 UTC+1, dates impossibles refusées.
+- **Montants** (`montants.ts`) : XAF entiers, espace fine des milliers, « 150 000 F CFA » ; euros
+  à 655,957 arrondis.
+- **Paliers tarifaires** (`paliers.ts`) : palier en vigueur, prochaine bascule (compte à rebours),
+  prix garanti pendant la réservation puis palier à la confirmation, contrôle de cohérence.
+- **Quotas** (`quotas.ts`, F03) : réservation 15 min, confirmation, libération ; règle identique
+  à l'instruction SQL atomique prévue en base.
+- **Jetons de billet** (`jetons.ts`) : 128 bits + HMAC-SHA256, aucune donnée personnelle, seule
+  l'empreinte est stockée, comparaison à temps constant.
+- **Droits d'accès par plateforme** (`droits.ts`, correction n° 5) : un droit par séance, second
+  scan refusé avec heure et poste du premier passage, tout scan journalisé.
+- **Paiements** (`paiements.ts`, correction n° 8) : interface `PaymentProvider`, traitement des
+  webhooks idempotent, robuste au désordre, argent reçu après expiration → « à vérifier » (jamais
+  de survente silencieuse) ; prestataire « bac à sable » signé HMAC pour tests et préproduction.
+
+Preuve : 42 tests (`npx vitest run --root boutique/domaine`) — bascule à 23h59 puis 00h00
+(Libreville), 200 demandes pour 50 places → 50 acceptées, webhooks doublon / désordre / signature
+invalide, double scan refusé, jetons altérés rejetés ; types stricts OK ; ajoutés à la CI. Règles
+permanentes de la boutique copiées dans `CLAUDE.md`. **Statut : en cours (Palier 1).**

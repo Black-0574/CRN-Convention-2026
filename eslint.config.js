@@ -45,6 +45,7 @@ export default [
   {
     // backend/ est un projet Next.js/Payload séparé (lot L3), avec son propre outillage — voir
     // backend/package.json (son propre `npm run lint` y est à prévoir si besoin).
-    ignores: ['dist/', '.astro/', 'node_modules/', 'playwright-report/', 'test-results/', 'backend/'],
+    // `.claude/` : copies de travail (git worktrees) des sessions parallèles, chacune lintée chez elle.
+    ignores: ['dist/', '.astro/', 'node_modules/', 'playwright-report/', 'test-results/', 'backend/', '.claude/'],
   },
 ];
