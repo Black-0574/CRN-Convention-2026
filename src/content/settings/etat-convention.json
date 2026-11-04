@@ -9,7 +9,7 @@
   },
   "bandeau": {
     "actif": false,
-    "texte": "Billetterie ouverte — prenez votre pass pour la Convention CRN 2026, du 6 au 13 décembre à Libreville.",
-    "lien": "/billetterie"
+    "texte": "La Boutique de la Convention est ouverte — pass, tickets et articles officiels de la Convention CRN 2026, du 6 au 13 décembre à Libreville.",
+    "lien": "https://boutique.crn-convention2026.events/"
   }
 }

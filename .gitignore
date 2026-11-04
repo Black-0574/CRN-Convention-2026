@@ -3,6 +3,9 @@ dist/
 .astro/
 # photos copiées depuis le back-office au build (src/lib/cms-content.ts)
 public/images/cms/
+# photos de la sélection « mis en avant » recopiées depuis la boutique au build
+# (src/lib/boutique-mis-en-avant.ts)
+public/images/boutique/
 
 # deps
 node_modules/

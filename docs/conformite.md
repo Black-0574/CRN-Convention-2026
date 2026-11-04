@@ -4,6 +4,50 @@ Tableau de traçabilité exigence → lot → statut → preuve. Statuts : **Cou
 périmètre du lot indiqué), **Partiel** (couvert en partie, limite documentée), **Hors scope L2**
 (prévu à un lot ultérieur, non traité ici). Mis à jour à chaque lot livré.
 
+## LOT A — le site renvoie vers la Boutique de la Convention (4 novembre 2026, branche non déployée)
+
+Source : prompt maître « CRN Boutique », section LOT A ; plan validé (boutique sur
+`boutique.crn-convention2026.events`). **Ne pas fusionner dans `main` ni déployer tant que la
+boutique n'encaisse pas** : les liens mèneraient à un domaine qui ne répond pas encore.
+
+| Exigence | Lot | Statut | Preuve |
+| --- | --- | --- | --- |
+| A1 — pilule d'en-tête « Accédez à la / Boutique de la Convention », « La boutique » sous 768 px, aria-label complet, focus visible | LOT A | Couvert | `Header.astro` ; `tests/e2e/boutique-lot-a.spec.ts` (libellés 360/1440 px, focus, aucun débordement à 320, 360, 414, 768, 1024, 1280, 1440 px) |
+| A2 — section « La Boutique de la Convention » (6 à 8 cartes, F CFA + euros à 655,957, badge, « Voir le produit », « Accéder à toute la boutique ») | LOT A | Couvert | `BoutiqueVitrine.astro`, `src/lib/boutique-mis-en-avant.ts` ; unitaires (repli API absente/en erreur/vide/injoignable, validation, ≤ 8 cartes) ; e2e (cartes, formats, liens) |
+| A2 — carrousel tactile et pastilles sur mobile, grille 3 puis 4 colonnes, aucun défilement automatique | LOT A | Couvert | e2e : pastilles, `scrollLeft` inchangé sans action, 4 colonnes à 1440 px |
+| A2 — compte à rebours du palier en cours, seulement si l'API fournit des paliers | LOT A | Couvert (mécanisme) | `Countdown.astro` (plusieurs instances, variante « carte »), `palierEnCours` testé à 23 h 59 / 00 h 00 Libreville ; inactif tant que la boutique ne publie pas de paliers |
+| A3 — « Prendre mon ticket » vers la fiche produit ; héros, diaspora, Académie, NASTY, bandeau vers la boutique ; `/billetterie` devient une page d'information | LOT A | Couvert | `index.astro`, `Hero.astro`, `diaspora.astro`, `academie.astro`, `ChatWidget.astro`, `InfoBanner.astro`, `billetterie.astro` ; e2e (liens suivis, plus aucun `#billetterie-a-configurer`) |
+| A4 — FAQ « Comment acheter un pass ou un billet ? » et base de NASTY | LOT A | Couvert (fichiers) | `src/content/faq/*.json`, `backend/src/seed/content.json`, `backend/src/lib/nasty.ts` ; e2e FAQ. **La FAQ et le bandeau en ligne vivent dans l'admin de contenu** : y reporter les deux réponses et le bandeau au moment de la bascule |
+| A5 — liens traçables `utm_source=site-convention&utm_medium=<emplacement>` | LOT A | Couvert | `src/lib/boutique.ts` (seul point de construction des liens) ; unitaires et e2e |
+| F-CNV-020 / F-CNV-022 — grille tarifaire, billetterie sans lien mort | LOT A | Couvert | Fichier de secours limité aux 8 produits au prix validé de `docs/donnees-reference.md` (test unitaire qui compare les prix) ; Pass OR/DIAMANT « À annoncer », Pass Intégral et Génération absents |
+| F-CNV-021 — règles d'accès (nominatif, QR code) | LOT A | Couvert | `AccessRules.astro` en tête de `/billetterie`, FAQ, NASTY |
+
+Décisions et points à valider :
+
+- **Contrat avec la boutique** : `GET ${BOUTIQUE_API_URL}/api/mis-en-avant` → liste de
+  `{ slug, nom, image, prixXAF, badge, ordre, paliers?: [{ prixXAF, debut, fin }] }` (ou `{ docs }`),
+  lue au build uniquement (aucune requête du visiteur, NF-CNV-001) ; photos recopiées dans le site
+  (`public/images/boutique/`, non versionné). Fiches produit attendues en `/produits/<slug>`, avec
+  les slugs de `src/content/products/` (ex. `jai-soif`, `diner-des-elites`). Variable
+  `BOUTIQUE_API_URL` à régler dans hPanel pour le build ; absente, le fichier de secours est utilisé.
+- **Aucune photo produit réelle n'existe encore** : le fichier de secours affiche un cadre neutre
+  marqué « Visuel à venir » (règle 4), jamais une image générée.
+- **Paiement par carte** : la FAQ annonçait « Airtel Money, Moov Money et carte bancaire » ; le
+  Palier 1 de la boutique n'encaisse que le Mobile Money → réponse corrigée (« carte bancaire
+  annoncée sur la boutique »). Retrait des articles : lieu et horaires « à annoncer ». Livraison :
+  « annoncée sur la boutique ».
+- **Diaspora** : la carte « Donner en ligne » mène désormais à la boutique (consigne LOT A), mais
+  son texte parle de dons par carte, que la boutique ne propose pas au Palier 1 — texte ou cible à
+  arbitrer.
+- **Concert pour la vie** (deux catégories, Standard et VIP) : « Prendre mon ticket » mène à
+  l'accueil de la boutique plutôt qu'à l'une des deux fiches.
+- L'annonce « Ouverture de la billetterie » (25 octobre) et le pied de page gardent leur lien vers
+  `/billetterie`, qui renvoie désormais vers la boutique (aucun lien mort).
+- `playwright.config.ts` : port surchargeable par `E2E_PORT` (4321 par défaut), pour ne pas
+  réutiliser par erreur un serveur de développement déjà lancé sur 4321.
+
+**Statut : Couvert sur la branche ; mise en production subordonnée à l'ouverture de la boutique.**
+
 ## Lot L3 — habillage du back-office (1er novembre 2026) — français, charte GBIS v2.1
 
 Demande du Commanditaire : back-office en français, design et ergonomie plus soignés, alignés sur

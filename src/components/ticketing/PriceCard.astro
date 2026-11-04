@@ -1,27 +1,33 @@
 ---
+import { formatEUR, formatXAF } from '../../lib/boutique';
+
 interface Props {
   nom: string;
   prixFCFA: number | null;
   description: string;
+  /** Fiche produit de la boutique (LOT A, A3). */
   lienAchat?: string;
   statut: 'disponible' | 'complet' | 'a_annoncer';
   featured?: boolean;
 }
 const { nom, prixFCFA, description, lienAchat, statut, featured = false } = Astro.props;
 
-const prixAffiche = prixFCFA === null ? 'À annoncer' : `${prixFCFA.toLocaleString('fr-FR')} F CFA`;
+const prixAffiche = prixFCFA === null ? 'À annoncer' : formatXAF(prixFCFA);
 ---
 
 <article class={`price-card ${featured ? 'price-card--featured' : ''}`}>
   {featured && <span class="price-card__flag">Recommandé</span>}
   <div class="price-card__head">
-    <h3 class="price-card__name">{nom}</h3>
+    <h4 class="price-card__name">{nom}</h4>
     {statut === 'complet' && <span class="price-card__badge">Complet</span>}
   </div>
-  <p class="price-card__price">{prixAffiche}</p>
+  <p class="price-card__price">
+    {prixAffiche}
+    {prixFCFA !== null && <span class="price-card__eur">soit {formatEUR(prixFCFA)}</span>}
+  </p>
   {statut !== 'a_annoncer' && <p class="price-card__description">{description}</p>}
   {statut === 'disponible' && lienAchat && (
-    <a class={`button price-card__cta ${featured ? 'price-card__cta--on-dark' : 'button--secondary'}`} href={lienAchat}>Prendre ce pass</a>
+    <a class={`button price-card__cta ${featured ? 'price-card__cta--on-dark' : 'button--secondary'}`} href={lienAchat} aria-label={`Voir dans la boutique\u00a0: ${nom}`}>Voir dans la boutique</a>
   )}
   {statut === 'complet' && <p class="price-card__note">Ce produit est actuellement complet.</p>}
   {statut === 'a_annoncer' && <p class="price-card__note">Contenu et tarif à annoncer.</p>}
@@ -108,6 +114,18 @@ const prixAffiche = prixFCFA === null ? 'À annoncer' : `${prixFCFA.toLocaleStri
 
   .price-card--featured .price-card__price {
     color: var(--crn-or-lumiere);
+  }
+
+  .price-card__eur {
+    display: block;
+    font-family: var(--font-labeur);
+    font-weight: 400;
+    font-size: var(--text-s);
+    color: var(--color-text-muted);
+  }
+
+  .price-card--featured .price-card__eur {
+    color: rgba(255, 255, 255, 0.8);
   }
 
   .price-card__description {

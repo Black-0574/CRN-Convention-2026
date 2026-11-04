@@ -1,8 +1,7 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
-import Button from '../components/shared/Button.astro';
 import SectionHeading from '../components/shared/SectionHeading.astro';
 import IconCallout from '../components/shared/IconCallout.astro';
 import Icon from '../components/shared/Icon.astro';
@@ -12,12 +11,14 @@ import StatsBand from '../components/home/StatsBand.astro';
 import FilmTeaser from '../components/home/FilmTeaser.astro';
 import ThemeBanner from '../components/home/ThemeBanner.astro';
 import PlatformCard from '../components/home/PlatformCard.astro';
+import BoutiqueVitrine from '../components/home/BoutiqueVitrine.astro';
 import SpeakerCard from '../components/speakers/SpeakerCard.astro';
 import ProgramPreview from '../components/program/ProgramPreview.astro';
 import FaqAccordion from '../components/shared/FaqAccordion.astro';
 import AnnouncementCard from '../components/shared/AnnouncementCard.astro';
 import { isPublished } from '../lib/state';
 import { getAnnonceMeta } from '../lib/announcements';
+import { lienBoutique, lienProduit } from '../lib/boutique';
 
 const formatAnnonceDate = (iso: string) =>
   new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
@@ -27,13 +28,15 @@ const now = new Date();
 const speakersAll = await getCollection('speakers');
 const speakersPublished = speakersAll.filter((s) => isPublished(now, s.data.datePublication));
 
+// LOT A, A3 : « Prendre mon ticket » mène à la fiche produit de la boutique (lien suivi, A5) ; le
+// Concert pour la vie a deux catégories (Standard, VIP) : il mène à l'accueil de la boutique.
 const plateformes = [
   { titre: 'Académie des Sciences Divines', date: '8 – 10 décembre', lieu: 'Église Centrale', href: '/academie', icone: 'book' as const },
-  { titre: 'Femme de Foi — Live', date: '12 décembre', lieu: 'Église Centrale', href: '/billetterie', icone: 'heart' as const },
-  { titre: "J'ai soif", date: '12 décembre', lieu: 'Église Centrale', href: '/billetterie', icone: 'heart' as const },
-  { titre: 'Concert pour la vie', date: '13 décembre', lieu: 'Nomad', href: '/billetterie', icone: 'music' as const },
+  { titre: 'Femme de Foi — Live', date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('femme-de-foi-live', 'accueil-plateformes'), icone: 'heart' as const },
+  { titre: "J'ai soif", date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('jai-soif', 'accueil-plateformes'), icone: 'heart' as const },
+  { titre: 'Concert pour la vie', date: '13 décembre', lieu: 'Nomad', href: lienBoutique('accueil-plateformes'), icone: 'music' as const },
   { titre: 'Culte unique & ordination', date: '13 décembre', lieu: 'Nomad', href: '/programme', icone: 'crown' as const },
-  { titre: 'Dîner des Élites', date: '12 décembre', lieu: 'Lieu à annoncer', href: '/billetterie', icone: 'building' as const },
+  { titre: 'Dîner des Élites', date: '12 décembre', lieu: 'Lieu à annoncer', href: lienProduit('diner-des-elites', 'accueil-plateformes'), icone: 'building' as const },
 ];
 
 const joursProgramme = (await getCollection('program')).sort((a, b) => a.data.ordre - b.data.ordre);
@@ -55,9 +58,6 @@ const joursPreview = joursProgramme.map((j) => ({
 
 const faqsPreview = (await getCollection('faq')).sort((a, b) => a.data.ordre - b.data.ordre).slice(0, 3);
 const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.data.ordre - b.data.ordre);
-
-const settings = await getEntry('settings', 'etat-convention');
-const billetterieOuverture = settings?.data.bascules.campagneDebut;
 ---
 
 <BaseLayout
@@ -169,7 +169,7 @@ const billetterieOuverture = settings?.data.bascules.campagneDebut;
   </script>
 
   <Section id="plateformes-phares" tone="alt" ariaLabel="Plateformes phares">
-    <SectionHeading eyebrow="Plateformes phares" title="Des temps forts pour tous" lienLabel="Voir la billetterie" lienHref="/billetterie" inverse />
+    <SectionHeading eyebrow="Plateformes phares" title="Des temps forts pour tous" lienLabel="Accéder à la boutique" lienHref={lienBoutique('accueil-plateformes')} inverse />
     <div class="platform-grid" data-reveal-group>
       {plateformes.map((p) => (
         <PlatformCard titre={p.titre} date={p.date} lieu={p.lieu} href={p.href} icone={p.icone} />
@@ -177,16 +177,10 @@ const billetterieOuverture = settings?.data.bascules.campagneDebut;
     </div>
   </Section>
 
-  <Section id="billetterie-apercu" tone="feature" ariaLabel="Billetterie">
-    {billetterieOuverture && (
-      <p class="ticketing-badge">Ouverture le 25 octobre 2026</p>
-    )}
-    <SectionHeading eyebrow="Billetterie" title="Choisissez votre pass" lienLabel="Voir la grille complète" lienHref="/billetterie" inverse />
-    <p class="ticketing-intro">
-      Académie, plateformes, Concert pour la vie, pass et boutique : la grille tarifaire complète et
-      les règles d'accès par QR code sont sur la page Billetterie.
-    </p>
-    <Button href="/billetterie" variant="secondary">Voir la billetterie</Button>
+  <!-- LOT A, A2 : remplace « Billetterie — Choisissez votre pass ». -->
+  <Section id="boutique-apercu" tone="feature" ariaLabel="La Boutique de la Convention">
+    <SectionHeading eyebrow="Boutique officielle" title="Vos pass et vos articles de la Convention" inverse />
+    <BoutiqueVitrine />
   </Section>
 
   <Section id="action-sociale-apercu" tone="alt" ariaLabel="Action sociale et diaspora">
@@ -285,30 +279,9 @@ const billetterieOuverture = settings?.data.bascules.campagneDebut;
     font-size: 32px;
   }
 
-  /* Même fond (toile sombre « feature ») que « Le thème de la Convention » ; adaptation des
-     écritures et du bouton, clairs sur fond clair à l'origine. */
-  :global(#billetterie-apercu .section-heading__eyebrow) {
+  /* Même taille d'étiquette que les autres sections de l'accueil sur fond sombre. */
+  :global(#boutique-apercu .section-heading__eyebrow) {
     font-size: 32px;
-  }
-
-  :global(#billetterie-apercu .ticketing-badge) {
-    color: var(--crn-blanc);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-
-  :global(#billetterie-apercu .ticketing-intro) {
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  :global(#billetterie-apercu .button--secondary) {
-    color: var(--crn-blanc);
-    border-color: var(--crn-blanc);
-  }
-
-  :global(#billetterie-apercu .button--secondary:hover) {
-    background: rgba(217, 196, 138, 0.14);
-    color: var(--crn-or-lumiere);
-    border-color: var(--crn-or-lumiere);
   }
 
   /* Même fond bleu nuit uni que « Plateformes phares » ; les pavés gardent leur fond clair et
@@ -455,17 +428,6 @@ const billetterieOuverture = settings?.data.bascules.campagneDebut;
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-3);
-  }
-
-  .ticketing-badge {
-    display: inline-block;
-    font-size: var(--text-s);
-    font-weight: 700;
-    color: var(--crn-bleu-nuit);
-    border: 1px solid var(--crn-bleu-nuit);
-    border-radius: var(--radius-control);
-    padding: 2px 10px;
-    margin-bottom: var(--space-1);
   }
 
   .callout-grid {

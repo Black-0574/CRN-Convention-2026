@@ -1,0 +1,367 @@
+---
+/*
+  LOT A, A2 — « La Boutique de la Convention » sur l'accueil : sélection « mis en avant » lue au
+  build depuis l'API de la boutique, fichier de secours sinon (src/lib/boutique-mis-en-avant.ts).
+  Mobile : carrousel à glissement tactile natif (scroll-snap) et pastilles ; dès 768 px, grille de
+  3 puis 4 colonnes. Aucun défilement automatique (règle 10). Compte à rebours uniquement si l'API
+  fournit des paliers tarifaires datés (échéance réelle, jamais d'effet d'aubaine).
+*/
+import Countdown from './Countdown.astro';
+import Icon from '../shared/Icon.astro';
+import { chargerMisEnAvant } from '../../lib/boutique-mis-en-avant';
+import { dernierJourPalier, formatEUR, formatXAF, lienBoutique, lienProduit, palierEnCours } from '../../lib/boutique';
+
+const { produits } = await chargerMisEnAvant();
+const now = new Date();
+const cartes = produits.map((p) => {
+  const palier = palierEnCours(p.paliers, now);
+  return { ...p, palier, prix: palier?.prixXAF ?? p.prixXAF };
+});
+---
+
+<div class="boutique-vitrine">
+  <p class="boutique-vitrine__accroche">
+    Pass, tickets et articles officiels de la Convention, réunis dans un seul panier.
+  </p>
+
+  <ul class="boutique-vitrine__liste" id="boutique-vitrine-liste">
+    {cartes.map((c, i) => (
+      <li
+        class="produit-carte"
+        id={`boutique-produit-${i + 1}`}
+        data-prix-base={c.prixXAF}
+        data-paliers={c.paliers ? JSON.stringify(c.paliers) : undefined}
+      >
+        <div class="produit-carte__visuel">
+          {c.image ? (
+            <img src={c.image} alt="" width="480" height="360" loading="lazy" decoding="async" />
+          ) : (
+            <div class="produit-carte__cadre">
+              <Icon name="bag" size={36} />
+              <span>Visuel à venir</span>
+            </div>
+          )}
+          {c.badge && <span class="produit-carte__badge">{c.badge}</span>}
+        </div>
+        <div class="produit-carte__corps">
+          <h3 class="produit-carte__nom">{c.nom}</h3>
+          <p class="produit-carte__prix">
+            <span class="produit-carte__xaf" data-prix-xaf>{formatXAF(c.prix)}</span>
+            <span class="produit-carte__eur" data-prix-eur>soit {formatEUR(c.prix)}</span>
+          </p>
+          {c.paliers && (
+            <div class="produit-carte__palier" data-palier hidden={!c.palier}>
+              <p class="produit-carte__palier-texte">
+                Prix valable jusqu’au <span data-palier-fin>{c.palier ? dernierJourPalier(c.palier) : ''}</span> inclus
+              </p>
+              <Countdown cibleISO={c.palier?.fin ?? ''} variante="carte" label="Temps restant avant le prochain palier tarifaire" />
+            </div>
+          )}
+          <a class="button button--secondary produit-carte__cta" href={lienProduit(c.slug, 'accueil-boutique')} aria-label={`Voir le produit\u00a0: ${c.nom}`}>
+            Voir le produit <Icon name="arrow-right" size={16} />
+          </a>
+        </div>
+      </li>
+    ))}
+  </ul>
+
+  <div class="boutique-vitrine__pastilles" role="group" aria-label="Produits de la boutique" hidden>
+    {cartes.map((c, i) => (
+      <button type="button" class="boutique-vitrine__pastille" data-pastille={i} aria-controls={`boutique-produit-${i + 1}`} aria-current={i === 0 ? 'true' : undefined}>
+        <span class="visually-hidden">{`Produit ${i + 1} sur ${cartes.length}\u00a0: ${c.nom}`}</span>
+      </button>
+    ))}
+  </div>
+
+  <div class="boutique-vitrine__actions">
+    <a class="button boutique-vitrine__tout" href={lienBoutique('accueil-boutique')}>
+      Accéder à toute la boutique <Icon name="arrow-right" size={16} />
+    </a>
+  </div>
+</div>
+
+<script>
+  import { dernierJourPalier, formatEUR, formatXAF, palierEnCours, type Palier } from '../../lib/boutique';
+
+  // Palier en cours recalculé dans le navigateur : le site est statique, une bascule tarifaire
+  // peut survenir entre deux publications (prix, date et compte à rebours suivent alors seuls).
+  const majPaliers = () => {
+    document.querySelectorAll<HTMLElement>('.produit-carte[data-paliers]').forEach((carte) => {
+      const paliers = JSON.parse(carte.dataset.paliers ?? '[]') as Palier[];
+      const palier = palierEnCours(paliers, new Date());
+      const prix = palier?.prixXAF ?? Number(carte.dataset.prixBase);
+      const xaf = carte.querySelector('[data-prix-xaf]');
+      const eur = carte.querySelector('[data-prix-eur]');
+      if (xaf) xaf.textContent = formatXAF(prix);
+      if (eur) eur.textContent = `soit ${formatEUR(prix)}`;
+      const bloc = carte.querySelector<HTMLElement>('[data-palier]');
+      if (!bloc) return;
+      bloc.hidden = !palier;
+      if (!palier) return;
+      const fin = bloc.querySelector('[data-palier-fin]');
+      if (fin) fin.textContent = dernierJourPalier(palier);
+      const minuteur = bloc.querySelector<HTMLElement>('[data-countdown]');
+      if (minuteur) minuteur.dataset.cible = palier.fin;
+    });
+  };
+  majPaliers();
+  if (document.querySelector('.produit-carte[data-paliers]')) setInterval(majPaliers, 30_000);
+
+  // Pastilles du carrousel mobile : un appui amène la carte correspondante ; la pastille active
+  // suit le glissement tactile. Aucun défilement automatique.
+  const liste = document.getElementById('boutique-vitrine-liste');
+  const groupe = document.querySelector<HTMLElement>('.boutique-vitrine__pastilles');
+  const pastilles = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-pastille]'));
+  if (liste && groupe && pastilles.length > 1) {
+    groupe.hidden = false;
+    const cartes = Array.from(liste.children) as HTMLElement[];
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const decalage = (i: number) => (cartes[i]?.offsetLeft ?? 0) - (cartes[0]?.offsetLeft ?? 0);
+
+    pastilles.forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        liste.scrollTo({ left: decalage(i), behavior: reduit ? 'auto' : 'smooth' });
+      });
+    });
+
+    let attente = 0;
+    liste.addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(attente);
+        attente = requestAnimationFrame(() => {
+          const pas = decalage(1) || 1;
+          const fin = liste.scrollLeft + liste.clientWidth >= liste.scrollWidth - 2;
+          const actif = fin ? cartes.length - 1 : Math.round(liste.scrollLeft / pas);
+          pastilles.forEach((btn, i) => {
+            if (i === actif) btn.setAttribute('aria-current', 'true');
+            else btn.removeAttribute('aria-current');
+          });
+        });
+      },
+      { passive: true },
+    );
+  }
+</script>
+
+<style>
+  .boutique-vitrine__accroche {
+    max-width: 60ch;
+    margin: calc(-1 * var(--space-1)) 0 var(--space-3);
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  /* Mobile : carrousel horizontal, glissement inertiel natif, carte suivante visible en bord
+     d'écran pour signaler le défilement. La liste déborde jusqu'aux bords de l'écran. */
+  .boutique-vitrine__liste {
+    list-style: none;
+    margin: 0 calc(-1 * var(--gutter-mobile));
+    padding: 4px var(--gutter-mobile) var(--space-2);
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter-mobile);
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .boutique-vitrine__liste::-webkit-scrollbar {
+    display: none;
+  }
+
+  .produit-carte {
+    flex: 0 0 min(82%, 320px);
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    background: var(--crn-blanc);
+    border: 1px solid var(--crn-gris-clair);
+    border-top: 3px solid var(--crn-or);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: transform var(--transition-standard), box-shadow var(--transition-standard);
+  }
+
+  .produit-carte:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+  }
+
+  .produit-carte__visuel {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--crn-creme);
+  }
+
+  .produit-carte__visuel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .produit-carte:hover .produit-carte__visuel img {
+    transform: scale(1.05);
+  }
+
+  /* Cadre neutre marqué quand la boutique ne fournit pas de photo réelle (règle 4 : jamais
+     d'image inventée) : pictogramme or sur bleu nuit, mention explicite. */
+  .produit-carte__cadre {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-or-lumiere);
+    font-size: var(--text-s);
+  }
+
+  /* Badge sobre : crème et bleu nuit, jamais de couleur d'alerte. */
+  .produit-carte__badge {
+    position: absolute;
+    top: var(--space-1);
+    left: var(--space-1);
+    max-width: calc(100% - var(--space-2));
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-pill);
+    padding: 2px 12px;
+    font-size: var(--text-s);
+    font-weight: 700;
+  }
+
+  .produit-carte__corps {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-2) var(--space-3);
+  }
+
+  .produit-carte__nom {
+    margin: 0;
+    font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .produit-carte__prix {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--space-1);
+  }
+
+  .produit-carte__xaf {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .produit-carte__eur {
+    font-size: var(--text-s);
+    color: var(--crn-gris);
+  }
+
+  .produit-carte__palier {
+    border-top: 1px solid var(--crn-gris-clair);
+    padding-top: var(--space-1);
+  }
+
+  .produit-carte__palier[hidden] {
+    display: none;
+  }
+
+  .produit-carte__palier-texte {
+    margin: 0 0 4px;
+    font-size: var(--text-s);
+    color: var(--crn-noir);
+  }
+
+  .produit-carte__cta {
+    margin-top: auto;
+    width: 100%;
+  }
+
+  .boutique-vitrine__pastilles {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-1);
+  }
+
+  .boutique-vitrine__pastilles[hidden] {
+    display: none;
+  }
+
+  /* Pastille visible de 8 px, active étirée à 24 px en or ; zone d'appui de 32 × 44 px. */
+  .boutique-vitrine__pastille {
+    width: 32px;
+    height: var(--tap-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .boutique-vitrine__pastille::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.55);
+    transition: width var(--transition-standard), background-color var(--transition-standard);
+  }
+
+  .boutique-vitrine__pastille[aria-current='true']::before {
+    width: 24px;
+    background: var(--crn-or);
+  }
+
+  .boutique-vitrine__actions {
+    margin-top: var(--space-3);
+  }
+
+  /* Bouton principal sur la toile sombre : blanc, texte bleu nuit — jamais l'or en aplat. */
+  .boutique-vitrine__tout {
+    background: var(--crn-blanc);
+    color: var(--crn-bleu-nuit);
+    box-shadow: 0 10px 24px -10px rgba(16, 16, 16, 0.6);
+  }
+
+  .boutique-vitrine__tout:hover {
+    background: var(--crn-creme);
+    transform: translateY(-1px);
+  }
+
+  @media (min-width: 768px) {
+    .boutique-vitrine__liste {
+      margin: 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      overflow: visible;
+    }
+
+    .boutique-vitrine__pastilles,
+    .boutique-vitrine__pastilles:not([hidden]) {
+      display: none;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .boutique-vitrine__liste {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>
