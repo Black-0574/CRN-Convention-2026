@@ -1,0 +1,2 @@
+# Page « introuvable » du site (src/pages/404.astro, publiée en 404.html) au lieu de celle de l’hébergeur.
+ErrorDocument 404 /404.html
