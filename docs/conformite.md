@@ -1221,3 +1221,28 @@ Cadrage des photos de héros décalé à droite (`object-position: 70 %`) : leur
 droite, et sur mobile le héros étroit n'en montrait que le centre. Contraste remesuré sur les
 17 héros à 375 px et sur les galeries à 1280 px : tout au-dessus des seuils (étiquette ≥ 4,6:1,
 titre ≥ 4,2:1, chapô ≥ 5,4:1). **Statut : fait en local, non poussé.**
+
+## Mise en ligne du 5 novembre 2026 (demande du Commanditaire)
+
+Tout le travail de la branche `boutique-palier-1` est en production (`main` = `e02bf9a`) :
+habillage visuel, boutique (vitrine et catalogue), héros animé, orateurs, galeries.
+
+- **Avant le déploiement** : les 6 migrations exécutées dans l'ordre sur une base vierge (dont
+  `20261104_172946_boutique`, jamais jouée jusque-là en local où le schéma est poussé), démarrage
+  simulé en mode production (import du catalogue, profils des orateurs), build complet du site
+  (64 pages).
+- **Ventes fermées** : sans prestataire de paiement réel configuré, l'import n'ouvre pas les ventes
+  (`ventesOuvertes = false` vérifié en ligne). La boutique est consultable ; au moment de commander,
+  « Les ventes sont momentanément fermées ». Le CRN coche « Ventes ouvertes » (Réglages de la
+  boutique) une fois l'agrégateur raccordé.
+- **Ordre** : back-office d'abord (migrations au démarrage, catalogue servi en ~3 min), puis site
+  (son build lit le catalogue). Back-office redémarré une fois le site en ligne, pour remplacer les
+  5 photos d'orateurs ; site republié ensuite pour les afficher.
+- **Page 404** : `public/.htaccess` (`ErrorDocument 404 /404.html`) — l'hébergeur servait sa propre
+  page ; vérifié en ligne.
+- **Vérifié en ligne** : accueil, boutique (rayons, fiches), orateurs (ordre, biographies,
+  nouvelles photos), galeries, actualités, page 404.
+- **À savoir pour les prochains déploiements** : le dépôt du back-office porte un commit vide de
+  redémarrage absent du dépôt principal ; le prochain envoi suivra la procédure du README (`--force`).
+  La republication automatique du site après une modification dans l'admin ne s'est pas déclenchée
+  (`SITE_REBUILD_GITHUB_TOKEN` / `SITE_REBUILD_GITHUB_REPO` à vérifier dans hPanel).
