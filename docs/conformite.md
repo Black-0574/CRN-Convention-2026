@@ -993,8 +993,16 @@ Emplacements :
 | Fiche produit et panier des mêmes tickets | `boutique/produits/[slug].astro` | idem |
 | B-02 Cartes de `/billetterie` | `PriceCard.astro`, `billetterie.astro` | idem, par groupe |
 
-Une photo saisie dans le back-office reste prioritaire sur ces visuels. Les pass gardent le cadre
-neutre marqué « CRN » (jeu PS non fourni).
+Une photo saisie dans le back-office reste prioritaire sur ces visuels.
+
+**Visuels des pass (jeu PS, fourni le 5 novembre 2026)** : Pass Convention Intégral, Pass
+Génération (18 – 28 ans), Pass Génération Plus, Pass Partenaire Or, Pass Grand Partenaire Diamant —
+badge ou carte du pass mis en scène, aucun visage (règle 4 respectée sans dérogation). Maîtres
+WebP carrés 1200 × 1200 (`src/assets/images/pass/`, 160 à 200 Ko, recadrés à l'affichage), reliés
+par le slug du produit dans `src/lib/visuels-plateformes.ts` (`VISUELS_PASS`). Mêmes emplacements
+que les tickets : lignes BQ-07 (boutique, rayon Billetterie, accueil), fiche produit et panier,
+cartes B-02 du groupe « Pass » de `/billetterie`. Vérifié en local (boutique, `/billetterie`, fiche
+`pass-diamant`). Ces visuels ne valident aucun tarif.
 
 **DÉROGATION à la règle permanente n° 4** (« aucun visage généré par IA ») : les visuels
 « Femme de Foi — Live » et « J'ai soif » montrent des visages générés par IA. Conflit signalé par

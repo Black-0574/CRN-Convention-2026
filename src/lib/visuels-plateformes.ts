@@ -8,6 +8,9 @@
   choisie par le Commanditaire le 5 novembre 2026 (docs/conformite.md) : « Femme de Foi — Live »
   (PL-02) et « J'ai soif » (PL-03) montrent des visages générés. Elle ne vaut que pour ces deux
   visuels ; orateurs et artistes restent en photos réelles.
+
+  Visuels des pass (jeu PS), fournis le 5 novembre 2026 : badge ou carte du pass mis en scène,
+  sans personne. Ils ne valident aucun tarif : un pass « Prix à valider » reste hors vente.
 */
 import type { ImageMetadata } from 'astro';
 import academie from '../assets/images/plateformes/academie.webp';
@@ -20,6 +23,11 @@ import femmeDeFoi from '../assets/images/plateformes/femme-de-foi-live.webp';
 import jaiSoif from '../assets/images/plateformes/jai-soif.webp';
 import matin from '../assets/images/plateformes/matin-de-gloire.webp';
 import plenieres from '../assets/images/plateformes/plenieres.webp';
+import passDiamant from '../assets/images/pass/pass-diamant.webp';
+import passGeneration from '../assets/images/pass/pass-generation.webp';
+import passGenerationPlus from '../assets/images/pass/pass-generation-plus.webp';
+import passIntegral from '../assets/images/pass/pass-convention-integral.webp';
+import passOr from '../assets/images/pass/pass-or.webp';
 
 export interface VisuelPlateforme {
   image: ImageMetadata;
@@ -39,7 +47,15 @@ export const VISUELS = {
   atmosphere: { image: atmosphere, alt: 'Pupitre sur une scène baignée de brume et de lumière' },
 } satisfies Record<string, VisuelPlateforme>;
 
-/** Tickets de la boutique (slug du produit) → visuel de la plateforme. */
+export const VISUELS_PASS = {
+  integral: { image: passIntegral, alt: 'Badge « Pass Convention Intégral » bleu nuit et or, avec QR code, au bout d’un cordon, sur du velours' },
+  generation: { image: passGeneration, alt: 'Badge « Pass Génération (18 – 28 ans) » bleu nuit et or, posé sur un bureau près d’un carnet et d’un stylo' },
+  generationPlus: { image: passGenerationPlus, alt: 'Badge « Pass Génération Plus » bleu nuit et or, à côté d’un tee-shirt plié et d’un sac en tissu' },
+  or: { image: passOr, alt: 'Carte dorée « Pass Partenaire Or » dans un écrin de velours bleu nuit' },
+  diamant: { image: passDiamant, alt: 'Carte « Pass Grand Partenaire Diamant » ornée de cristaux, dans un écrin de velours bleu nuit' },
+} satisfies Record<string, VisuelPlateforme>;
+
+/** Pass et tickets de la boutique (slug du produit) → visuel du pass ou de la plateforme. */
 const PAR_PRODUIT: Record<string, VisuelPlateforme> = {
   'academie-une-classe': VISUELS.academie,
   'pass-academie-integral': VISUELS.academie,
@@ -48,9 +64,14 @@ const PAR_PRODUIT: Record<string, VisuelPlateforme> = {
   'diner-des-elites': VISUELS.diner,
   'concert-standard': VISUELS.concertStandard,
   'concert-vip': VISUELS.concertVip,
+  'pass-convention-integral': VISUELS_PASS.integral,
+  'pass-generation': VISUELS_PASS.generation,
+  'pass-generation-plus': VISUELS_PASS.generationPlus,
+  'pass-or': VISUELS_PASS.or,
+  'pass-diamant': VISUELS_PASS.diamant,
 };
 
-/** Visuel d'un ticket de la boutique sans photo propre (pass et articles : aucun). */
+/** Visuel d'un pass ou d'un ticket de la boutique sans photo propre (articles : aucun). */
 export function visuelProduit(slug: string): VisuelPlateforme | undefined {
   return PAR_PRODUIT[slug];
 }
