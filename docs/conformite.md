@@ -1010,3 +1010,19 @@ cartes B-02 du groupe « Pass » de `/billetterie`. Vérifié en local (boutique
 seulement ; les 8 autres ne montrent aucun visage (lieux, objets, personnes de dos), et orateurs,
 artistes et lieux restent en photos réelles. Mention ajoutée à la règle n° 4 de `CLAUDE.md`. Textes alternatifs : descriptifs sur la fiche
 produit, vides là où le titre voisin nomme déjà la plateforme. **Statut : fait en local, non poussé.**
+
+## Boutique — pins, huile d'onction, polo et casquette au rayon « Articles officiels » (5 novembre 2026)
+
+Demande du Commanditaire du 5 novembre 2026. **Aucun prix fourni** : conformément à la règle
+« aucun produit actif sans prix validé », choix du Commanditaire « Prix à valider ».
+
+| Point | Statut | Preuve |
+| --- | --- | --- |
+| Pins officiel, Huile d'onction, Casquette officielle (modèle unique), Polo officiel (S à XXL, choix du Commanditaire) au rayon « Articles officiels » | Fait | `ajouterArticlesAnnonces` (`backend/src/boutique/seed.ts`), appelé par l'import initial ; base déjà importée : `npm --prefix backend run ajouter-articles` (n'ajoute que les slugs absents) |
+| Hors vente tant que le prix n'est pas saisi | Fait | « Prix à valider » : invisibles en production (`estVisible`) ; en aperçu local, « À annoncer », « Ouverture des ventes à annoncer », aucun formulaire d'achat (vérifié sur `/boutique/articles` et `/boutique/produits/polo-officiel`) |
+| Articles de kit sans prix (stylo, bloc-notes, gourde, ventilateurs) toujours absents du catalogue | Fait | `catalogue()` (`backend/src/boutique/lib/catalogue.ts`) : un produit sans prix n'est écarté que s'il entre dans un kit ; vérifié sur l'API `/api/boutique/catalogue` |
+| Photos | À fournir | Cadre neutre « CRN — Photo à venir » (règle 4) |
+
+**Pour les mettre en vente** : dans l'admin, Boutique · Catalogue → Produits, ajouter un palier dans « Prix (paliers datés) », décocher
+« Prix à valider », cocher « Actif », renseigner les stocks et ajouter une photo réelle.
+**Statut : fait en local, non poussé.**
