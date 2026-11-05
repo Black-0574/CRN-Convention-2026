@@ -80,6 +80,7 @@ const speakers = defineCollection({
     nom: z.string(),
     fonction: z.string().optional(), // titre affiché sous le nom sur la fiche
     categorie: z.enum(['hote', 'international', 'national', 'prophetique', 'plateforme']),
+    ordre: z.number().optional(), // ordre d'affichage dans la catégorie (src/lib/orateurs.ts)
     bio: z.string().optional(),
     reseauxSociaux,
     photo: z.string().optional(), // chemin public ; absent => cadre neutre

@@ -1,6 +1,9 @@
 {
   "nom": "Silas Makangu",
+  "fonction": "Professeur des Universités – Expert en géopolitique et géostratégie",
   "categorie": "international",
-  "datePublication": "2026-10-31",
-  "photo": "/images/orateurs/silas-makangu.webp"
+  "ordre": 2,
+  "bio": "Leadership, stratégie et responsabilité au service des communautés.\n\nLe Docteur Silas Mimile Makangu évolue à la croisée de l’enseignement supérieur, du conseil stratégique et de l’engagement ecclésial. Professeur des Universités, il est expert en géopolitique et géostratégie, et intervient également comme consultant en leadership, management stratégique et communication politique.\n\nIl est Directeur Général de l’International Leadership Institute (I.L.I), une structure dédiée à la formation et à l’accompagnement en leadership. À travers cette responsabilité, il contribue au développement des capacités de celles et ceux qui exercent ou aspirent à exercer des fonctions d’influence et de responsabilité.\n\nAuteur prolifique, il compte plusieurs ouvrages à son actif, parmi lesquels « Bâtisseurs des Nations », « Leadership au Féminin » et « Le Chef ». Ses publications témoignent de son intérêt pour la construction des nations, la place des femmes dans le leadership et les exigences liées à l’exercice de l’autorité.\n\nHomme d’Église, il dirige l’Église Cité Rama, située à Kinshasa-Gombe. Son profil réunit ainsi réflexion universitaire, accompagnement des leaders, production intellectuelle et responsabilité pastorale.\n\nÀ travers ses interventions, il apporte un regard qui relie les enjeux du leadership aux défis du management, de la communication et de la construction collective.",
+  "photo": "/images/orateurs/silas-makangu-2.webp",
+  "datePublication": "2026-10-31"
 }

@@ -126,6 +126,7 @@ export async function loadSpeakers(): Promise<Entry[]> {
         nom: d.nom,
         fonction: d.fonction || undefined,
         categorie: d.categorie,
+        ordre: d.ordre ?? undefined,
         bio: d.bio,
         reseauxSociaux: reseauxSociaux(d.reseauxSociaux),
         photo: await photoUrl(d.photo),

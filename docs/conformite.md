@@ -1145,3 +1145,67 @@ une seule fois, ni carrousel ni défilement ; avec `prefers-reduced-motion`, auc
 tout est visible d'emblée (règle dédiée, les délais n'étant pas couverts par la règle globale).
 Non-régression : typecheck, lint, e2e `parcours-et-domaines` et `boutique-lot-a` (4 tests A2 du
 fichier de secours en échec connu). **Statut : fait en local, non poussé.**
+
+## Orateurs — biographies et fonctions (5 novembre 2026)
+
+Source : `Biographies_orateurs_Convention_CRN_2026.md` (Téléchargements), 8 portraits. Texte repris
+tel quel (aucune donnée ajoutée), seulement remis en forme : paragraphes reconstitués à partir des
+lignes coupées du PDF, espaces de justification supprimés, typographie française (insécables avant
+« : ; ! ? » et dans « »). Une coquille de conversion corrigée : « année académique 1990- / - Il
+poursuit » → « 1990-1991. Il poursuit » (l'année « 1991. » avait été lue comme une puce).
+
+| Orateur (identifiant) | Fonction affichée sous le nom | Biographie |
+| --- | --- | --- |
+| mike-jocktane | Fondateur et Président Directeur International des Ministères Christ Révélé aux Nations | Citation + 6 paragraphes |
+| nadia-jocktane | Prophétesse-Évangéliste | Citation + 6 paragraphes |
+| robert-ondoa | Rhematologue – Docteur de la Loi – Enseignant | Accroche + 6 paragraphes |
+| francois-rabenkogo | Vicaire Général National des Ministères CRN | Accroche + 7 paragraphes |
+| michel-ambouroue | Évêque des Ministères CRN – Responsable de l'Église Métropolitaine de Paris et de la Direction Occident | Accroche + 7 paragraphes |
+| wilson-ndi | Presiding Bishop – Garden of Life Ministries Worldwide | Accroche + 6 paragraphes |
+| silas-makangu | Professeur des Universités – Expert en géopolitique et géostratégie | Accroche + 5 paragraphes |
+| jek-kalombo | Diplomate ecclésiastique – Prédicateur de la Bonne Nouvelle | Accroche + 5 paragraphes |
+
+Carelle Ambouroué et Patricia Piebi ne figurent pas dans le document : fiche inchangée
+(« Biographie à paraître »). Les noms affichés sont inchangés (le document emploie les noms
+complets et titres : « Monseigneur Mike Steeve Jocktane », « Évêque Dr Robert Ondoa Enyegue »,
+« Évêque Dr Ndi Wilson Njinwi », « Docteur Silas Mimile Makangu »…) — à harmoniser dans l'admin si
+souhaité.
+
+**Mise en production** : en production, le contenu des orateurs vit dans le back-office. Fichiers
+de référence du site (`src/content/speakers/`) et import initial (`backend/src/seed/content.json`,
+qui reprend désormais aussi la fonction) mis à jour ; au démarrage, le back-office complète les
+biographies et fonctions **encore vides** (`completerProfilsOrateurs`, jamais d'écrasement d'une
+saisie de l'admin). Vérifié sur la base locale : 8 profils complétés, second démarrage sans effet ;
+fiche `/orateurs/mike-jocktane` contrôlée. **Statut : fait en local, non poussé.**
+
+## Orateurs — photos remplacées et ordre d'affichage (5 novembre 2026)
+
+**Photos** (fichiers fournis, nommés par orateur ; photos réelles, règle 4 respectée) : Carelle
+Ambouroué, Nadia Jocktane, Jek Kalombo, Robert Ondoa, Silas Makangu. Recadrées au format des autres
+portraits (3:4, 600 × 800, haut de l'image conservé), sous un nouveau nom `<identifiant>-2.webp`
+(pas d'ancienne version servie depuis le cache) ; les 5 anciennes photos du site sont retirées.
+
+**Ordre de gauche à droite**, demandé par le Commanditaire, sur `/orateurs` et dans la rangée de
+l'accueil :
+- orateurs nationaux : Mike Jocktane, Nadia Jocktane, François Rabenkogo, Michel Ambouroué,
+  Carelle Ambouroué ;
+- orateurs internationaux : Robert Ondoa, Silas Makangu, Wilson Ndi, Patricia Piebi, Jek Kalombo.
+
+Conséquence assumée de ce regroupement : changement de catégorie pour Mike Jocktane (« Hôte » →
+national), Carelle Ambouroué (plateforme → national), Patricia Piebi (plateforme → international),
+Jek Kalombo (prophétique → international) ; leur étiquette sur la fiche suit la catégorie.
+
+Réalisation : champ « Ordre d'affichage » (`ordre`) ajouté aux orateurs (site : schéma, chargeur,
+`src/lib/orateurs.ts` qui trie nationaux → internationaux → autres catégories, puis ordre, puis nom ;
+back-office : champ en barre latérale, migration `20261105_203919_orateurs_ordre`).
+
+**Mise en production** (le contenu vit dans le back-office) : au démarrage, `organiserOrateurs` pose
+catégorie et ordre une seule fois (orateurs dont l'ordre est vide, c'est-à-dire juste après la
+migration), puis remplace la photo des 5 orateurs **seulement si c'est encore la photo d'origine**
+(`<identifiant>.webp`), retenté à chaque démarrage. La photo est téléchargée depuis le site public :
+**déployer le site avant le back-office** (sinon elle sera prise au démarrage suivant). Testé sur la
+base locale : ordre et catégories posés, 5 photos remplacées, second démarrage sans effet.
+Biographies (orateurs et artistes, `ProfilDetails.astro`) justifiées avec césure automatique, à la
+demande du Commanditaire.
+Non-régression : typecheck, lint, unitaires, e2e `parcours-et-domaines`. **Statut : fait en local,
+non poussé.**

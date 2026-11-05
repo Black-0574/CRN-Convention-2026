@@ -1,6 +1,7 @@
 {
   "nom": "Carelle Ambouroué",
-  "categorie": "plateforme",
-  "datePublication": "2026-10-31",
-  "photo": "/images/orateurs/carelle-ambouroue.webp"
+  "categorie": "national",
+  "ordre": 5,
+  "photo": "/images/orateurs/carelle-ambouroue-2.webp",
+  "datePublication": "2026-10-31"
 }

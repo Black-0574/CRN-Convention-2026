@@ -13,6 +13,7 @@ import ThemeBanner from '../components/home/ThemeBanner.astro';
 import PlatformCard from '../components/home/PlatformCard.astro';
 import BoutiqueVitrine from '../components/home/BoutiqueVitrine.astro';
 import SpeakerCard from '../components/speakers/SpeakerCard.astro';
+import { trierOrateurs } from '../lib/orateurs';
 import ProgramPreview from '../components/program/ProgramPreview.astro';
 import FaqAccordion from '../components/shared/FaqAccordion.astro';
 import CadreOr from '../components/shared/CadreOr.astro';
@@ -31,7 +32,7 @@ const formatAnnonceDate = (iso: string) =>
 const now = new Date();
 
 const speakersAll = await getCollection('speakers');
-const speakersPublished = speakersAll.filter((s) => isPublished(now, s.data.datePublication));
+const speakersPublished = trierOrateurs(speakersAll.filter((s) => isPublished(now, s.data.datePublication)));
 
 // LOT A, A3 : « Prendre mon ticket » mène à la fiche produit de la boutique (lien suivi, A5) ; le
 // Concert pour la vie a deux catégories (Standard, VIP) : il mène à l'accueil de la boutique.

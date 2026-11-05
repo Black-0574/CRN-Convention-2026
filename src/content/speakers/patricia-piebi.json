@@ -1,6 +1,7 @@
 {
   "nom": "Patricia Piebi",
-  "categorie": "plateforme",
-  "datePublication": "2026-10-31",
-  "photo": "/images/orateurs/patricia-piebi.webp"
+  "categorie": "international",
+  "ordre": 4,
+  "photo": "/images/orateurs/patricia-piebi.webp",
+  "datePublication": "2026-10-31"
 }

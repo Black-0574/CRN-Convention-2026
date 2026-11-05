@@ -5,14 +5,14 @@ import Section from '../../components/shared/Section.astro';
 import PageHero from '../../components/shared/PageHero.astro';
 import imageHeros from '../../assets/images/heros/orateurs.webp';
 import SpeakerCard from '../../components/speakers/SpeakerCard.astro';
+import { ORDRE_CATEGORIES, trierOrateurs } from '../../lib/orateurs';
 import { isPublished } from '../../lib/state';
 
 const now = new Date();
 const speakersAll = await getCollection('speakers');
-const speakersPublished = speakersAll.filter((s) => isPublished(now, s.data.datePublication));
+const speakersPublished = trierOrateurs(speakersAll.filter((s) => isPublished(now, s.data.datePublication)));
 
-const ordreCategories = ['hote', 'international', 'national', 'prophetique', 'plateforme'] as const;
-const labelsCategories: Record<(typeof ordreCategories)[number], string> = {
+const labelsCategories: Record<(typeof ORDRE_CATEGORIES)[number], string> = {
   hote: 'Hôte',
   international: 'Orateurs internationaux',
   national: 'Orateurs nationaux',
@@ -20,7 +20,7 @@ const labelsCategories: Record<(typeof ordreCategories)[number], string> = {
   plateforme: 'Intervenantes de plateforme',
 };
 
-const groupes = ordreCategories
+const groupes = ORDRE_CATEGORIES
   .map((categorie) => ({
     categorie,
     label: labelsCategories[categorie],

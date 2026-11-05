@@ -135,10 +135,14 @@ const reseaux = {
   }
 
   /* Retours à la ligne simples conservés à l'intérieur d'un paragraphe. */
+  /* Biographies justifiées (demande du Commanditaire) ; césure automatique (page en lang="fr")
+     pour éviter les grands blancs entre les mots sur les lignes courtes du mobile. */
   .profil-detail__bio p {
     white-space: pre-line;
     max-width: 68ch;
     margin: 0 0 var(--space-2) 0;
+    text-align: justify;
+    hyphens: auto;
   }
 
   .profil-detail__placeholder {
