@@ -1209,3 +1209,15 @@ Biographies (orateurs et artistes, `ProfilDetails.astro`) justifiées avec césu
 demande du Commanditaire.
 Non-régression : typecheck, lint, unitaires, e2e `parcours-et-domaines`. **Statut : fait en local,
 non poussé.**
+
+## Multimédia — héros des trois galeries (5 novembre 2026)
+
+Visuels fournis par le Commanditaire (« Galerie photos », « Galerie vidéo », « Galerie audio »),
+générés à partir des prompts remis le même jour : appareil photo et tirages, caméra devant la
+scène, micro de studio et console ; aucun visage (opérateur de dos, salle floue). Posés en héros de
+`/multimedia/galerie-photos`, `-videos` et `-audios` (`heros/galerie-*.webp`, 69 à 118 Ko).
+
+Cadrage des photos de héros décalé à droite (`object-position: 70 %`) : leur sujet est composé à
+droite, et sur mobile le héros étroit n'en montrait que le centre. Contraste remesuré sur les
+17 héros à 375 px et sur les galeries à 1280 px : tout au-dessus des seuils (étiquette ≥ 4,6:1,
+titre ≥ 4,2:1, chapô ≥ 5,4:1). **Statut : fait en local, non poussé.**
