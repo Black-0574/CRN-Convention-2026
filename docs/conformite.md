@@ -1124,3 +1124,24 @@ les photos :
 Non-régression : typecheck, lint, unitaires, e2e `parcours-et-domaines` et `boutique-lot-a` en série
 (audit réseau, axe, débordements verts ; 4 tests A2 du fichier de secours en échec connu).
 **Statut : fait en local, non poussé.**
+
+## Accueil — séquence d'ouverture animée du héros (5 novembre 2026)
+
+Demande du Commanditaire : à l'ouverture, le fond seul ; puis l'orateur entre par la droite ; puis
+les écritures de gauche apparaissent en zoom sortant. `src/components/home/Hero.astro`, CSS pur
+(aucune bibliothèque, aucun JavaScript ajouté : budget JS de l'accueil inchangé, règle 9).
+
+| Temps | Élément | Mouvement |
+| --- | --- | --- |
+| 0 s | Fond (immeuble) | Visible dès la première image (aucun fondu : reste l'élément peint en premier), zoom arrière continu 1,08 → 1 sur 2,6 s ; un reflet doré balaie l'immeuble une fois (0,2 → 1,8 s) |
+| 0,25 s | Orateur | Entrée depuis la droite (45 % de sa largeur) jusqu'à sa place, 1,1 s, courbe « expo out » |
+| 0,95 → 1,47 s | Étiquette, titre, date et lieu, texte, compte à rebours, boutons | Zoom sortant (1,18 → 1) avec léger flou qui se dissipe, en cascade tous les 0,1 s, 0,85 s chacun |
+| 1,9 s | Bouton « Voir le film » | Surgit (léger rebond), puis son halo pulsé démarre à 2,55 s |
+
+Vérifié en figeant les animations à 0 / 0,3 / 0,65 / 1 / 1,25 / 1,6 / 2 / 2,7 s (opacités et
+transformations calculées) : enchaînement conforme, aucun débordement horizontal à 375 px, aucun
+style retenu après la séquence (effets de survol intacts). **Règle 10** : animation d'entrée jouée
+une seule fois, ni carrousel ni défilement ; avec `prefers-reduced-motion`, aucune animation et
+tout est visible d'emblée (règle dédiée, les délais n'étant pas couverts par la règle globale).
+Non-régression : typecheck, lint, e2e `parcours-et-domaines` et `boutique-lot-a` (4 tests A2 du
+fichier de secours en échec connu). **Statut : fait en local, non poussé.**
