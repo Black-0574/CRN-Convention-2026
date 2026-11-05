@@ -232,7 +232,7 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
     width: 44px;
     height: 44px;
     border-radius: 50% 50% 50% 14px;
-    background: linear-gradient(135deg, var(--crn-or) 0%, var(--crn-or-profond) 100%);
+    background: var(--crn-or);
     color: var(--crn-bleu-nuit-profond);
     text-decoration: none;
     border: 2px solid var(--crn-blanc);
@@ -252,10 +252,10 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
      règle globale, qui neutralise animation-duration). */
   @keyframes hero-video-pulse {
     0%, 100% {
-      box-shadow: 0 10px 20px -10px rgba(16, 16, 16, 0.55), 0 0 0 0 rgba(217, 196, 138, 0.5);
+      box-shadow: 0 10px 20px -10px rgba(16, 16, 16, 0.55), 0 0 0 0 rgba(184, 150, 62, 0.5);
     }
     50% {
-      box-shadow: 0 10px 20px -10px rgba(16, 16, 16, 0.55), 0 0 0 10px rgba(217, 196, 138, 0);
+      box-shadow: 0 10px 20px -10px rgba(16, 16, 16, 0.55), 0 0 0 10px rgba(184, 150, 62, 0);
     }
   }
 
@@ -347,11 +347,11 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
      soulèvement et halo doré pour plus d'allure. */
   .hero__actions :global(.button--secondary:hover),
   .hero__actions :global(.button--secondary:focus-visible) {
-    background: rgba(217, 196, 138, 0.14);
-    color: var(--crn-or-lumiere);
-    border-color: var(--crn-or-lumiere);
+    background: rgba(184, 150, 62, 0.14);
+    color: var(--crn-or);
+    border-color: var(--crn-or);
     transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 14px 28px -14px rgba(217, 196, 138, 0.55);
+    box-shadow: 0 14px 28px -14px rgba(184, 150, 62, 0.55);
   }
 
   .hero__actions :global(.button--secondary:hover .icon),
@@ -415,12 +415,12 @@ const cibleISO = '2026-12-06T09:00:00+01:00';
       border-radius: 50% 50% 50% 10%;
       flex-direction: column;
       gap: 3px;
-      box-shadow: 0 14px 28px -12px rgba(16, 16, 16, 0.55), 0 0 0 4px rgba(217, 196, 138, 0.12);
+      box-shadow: 0 14px 28px -12px rgba(16, 16, 16, 0.55), 0 0 0 4px rgba(184, 150, 62, 0.12);
     }
 
     .hero__video-cta:hover,
     .hero__video-cta:focus-visible {
-      box-shadow: 0 18px 34px -10px rgba(16, 16, 16, 0.65), 0 0 0 5px rgba(217, 196, 138, 0.2);
+      box-shadow: 0 18px 34px -10px rgba(16, 16, 16, 0.65), 0 0 0 5px rgba(184, 150, 62, 0.2);
     }
 
     .hero__video-cta .hero__video-label {

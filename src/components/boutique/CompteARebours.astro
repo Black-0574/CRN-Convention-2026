@@ -52,8 +52,11 @@ const { cible, libelle, echu = 'Échéance atteinte.', sombre = false } = Astro.
         zone.replaceChildren(nouveau);
         return;
       }
-      // Bascule verticale : l'ancien chiffre sort par le haut, le nouveau entre par le bas.
-      const ancien = zone.firstElementChild as HTMLElement | null;
+      // Bascule verticale : l'ancien chiffre sort par le haut, le nouveau entre par le bas. Seul le
+      // chiffre affiché sort ; les restes d'une bascule pas encore nettoyée (minuteries ralenties
+      // dans un onglet en arrière-plan) sont retirés tout de suite, sinon ils s'empilent.
+      const ancien = zone.lastElementChild as HTMLElement | null;
+      while (zone.firstElementChild && zone.firstElementChild !== ancien) zone.firstElementChild.remove();
       nouveau.classList.add('car__chiffre--entree');
       zone.append(nouveau);
       ancien?.classList.add('car__chiffre--sortie');
@@ -92,7 +95,7 @@ const { cible, libelle, echu = 'Échéance atteinte.', sombre = false } = Astro.
   }
 
   .car--sombre .car__libelle {
-    color: var(--crn-or-lumiere);
+    color: var(--crn-or);
   }
 
   .car__cadrans {
@@ -127,7 +130,7 @@ const { cible, libelle, echu = 'Échéance atteinte.', sombre = false } = Astro.
     font-family: var(--font-titrage);
     font-weight: 700;
     font-size: 28px;
-    color: var(--crn-or-lumiere);
+    color: var(--crn-or);
     transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1), opacity 360ms ease;
   }
 

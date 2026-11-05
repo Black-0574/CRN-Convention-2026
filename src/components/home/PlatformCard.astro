@@ -1,6 +1,8 @@
 ---
+import { Image } from 'astro:assets';
 import Icon from '../shared/Icon.astro';
 import Button from '../shared/Button.astro';
+import type { VisuelPlateforme } from '../../lib/visuels-plateformes';
 
 interface Props {
   titre: string;
@@ -8,11 +10,29 @@ interface Props {
   lieu: string;
   href: string;
   icone: 'book' | 'heart' | 'music' | 'crown' | 'building' | 'people';
+  /** Bandeau image en tête de carte (A-08) ; null : cadre neutre marqué, en attente du visuel. */
+  visuel?: VisuelPlateforme | null;
 }
-const { titre, date, lieu, href, icone } = Astro.props;
+const { titre, date, lieu, href, icone, visuel } = Astro.props;
 ---
 
 <article class="platform-card">
+  {visuel !== undefined && (
+    <div class="platform-card__visuel">
+      {visuel ? (
+        <Image
+          src={visuel.image}
+          alt=""
+          widths={[400, 640, 800]}
+          sizes="(min-width: 1224px) 380px, (min-width: 768px) 30vw, 92vw"
+          class="platform-card__photo"
+          loading="lazy"
+        />
+      ) : (
+        <span class="platform-card__sigle" aria-hidden="true">CRN</span>
+      )}
+    </div>
+  )}
   <span class="platform-card__icon"><Icon name={icone} size={26} /></span>
   <h3 class="platform-card__title">{titre}</h3>
   <p class="platform-card__meta">
@@ -44,10 +64,60 @@ const { titre, date, lieu, href, icone } = Astro.props;
     transition: transform var(--transition-standard), box-shadow var(--transition-standard), border-color var(--transition-standard);
   }
 
+  /* Bandeau image pleine largeur en tête de carte, coins hauts arrondis comme la carte ; le
+     médaillon de l'icône chevauche son bord inférieur. */
+  .platform-card__visuel {
+    position: relative;
+    align-self: stretch;
+    aspect-ratio: 16 / 9;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) -40px;
+    border-radius: calc(var(--radius-card) - 3px) calc(var(--radius-card) - 3px) 0 0;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .platform-card__photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .platform-card:hover .platform-card__photo {
+    transform: scale(1.05);
+  }
+
+  .platform-card__sigle {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 25px;
+    letter-spacing: 0.12em;
+    color: var(--crn-or);
+    border: 1px solid var(--crn-or);
+    padding: 6px 14px;
+  }
+
+  .platform-card__visuel + .platform-card__icon {
+    margin-left: var(--space-1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .platform-card__photo {
+      transition: none;
+    }
+
+    .platform-card:hover .platform-card__photo {
+      transform: none;
+    }
+  }
+
   .platform-card:hover {
     transform: translateY(-6px);
     box-shadow: var(--shadow-lift), 0 0 0 1px rgba(184, 150, 62, 0.3);
-    border-color: var(--crn-or-lumiere) var(--crn-or-lumiere) var(--crn-or) var(--crn-or);
+    border-color: var(--crn-or) var(--crn-or) var(--crn-or) var(--crn-or);
   }
 
   /* Médaillon bleu nuit / or (même famille que les initiales orateur), gage de prestance sur un
@@ -78,8 +148,8 @@ const { titre, date, lieu, href, icone } = Astro.props;
 
   .platform-card:hover .platform-card__icon {
     transform: translateY(-3px) rotate(-6deg) scale(1.06);
-    color: var(--crn-or-lumiere);
-    border-color: var(--crn-or-lumiere);
+    color: var(--crn-or);
+    border-color: var(--crn-or);
     box-shadow: 0 14px 26px -10px rgba(26, 44, 91, 0.55), 0 0 0 6px rgba(184, 150, 62, 0.22);
   }
 

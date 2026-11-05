@@ -14,10 +14,9 @@ const { titre, cle } = Astro.props;
 const r = await reglages();
 const texte = r?.legal[cle] ?? null;
 const version = r?.legal.cgvVersion ?? null;
-const demo = r?.demo ?? false;
 ---
 
-<Boutique title={titre} demo={demo}>
+<Boutique title={titre}>
   <div class="container legal">
     <h1>{titre}</h1>
     {texte ? (

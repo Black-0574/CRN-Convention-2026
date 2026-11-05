@@ -8,9 +8,9 @@
   /* Couleurs du socle (§03) */
   --crn-noir: #101010;
   --crn-blanc: #ffffff;
+  /* Un seul or sur tout le site : l'or vieilli #B8963E (décision du Commanditaire, 5 novembre
+     2026). L'or lumière (#D9C48A) et l'or profond (#8A6E22) de la palette ne sont plus employés. */
   --crn-or: #b8963e;
-  --crn-or-lumiere: #d9c48a;
-  --crn-or-profond: #8a6e22;
   --crn-bleu-nuit: #1a2c5b;
   --crn-bleu-nuit-profond: #16244a;
   --crn-creme: #f7f5f0;
@@ -26,7 +26,6 @@
   --color-text-inverse: var(--crn-blanc);
   --color-text-muted: var(--crn-gris);
   --color-accent: var(--crn-or);
-  --color-accent-deep: var(--crn-or-profond);
   --color-border: var(--crn-gris-clair);
   --color-focus: var(--crn-or);
 

@@ -1,0 +1,420 @@
+---
+/*
+  Bannière de l'accueil de la boutique en diaporama : un volet par rayon (Pass, Tickets, Articles),
+  chacun avec son titre, son texte, son prix d'appel et son bouton.
+
+  DÉROGATION à la règle permanente n° 10 (« aucun carrousel ni défilement automatique »), signalée
+  par écrit puis choisie par le Commanditaire le 5 novembre 2026 (docs/conformite.md). Garde-fous :
+  - défilement toutes les 6 s, avec bouton Pause visible et premier dans l'ordre du clavier
+    (WCAG 2.2.2) ;
+  - mis en attente au survol, au focus clavier et quand l'onglet est caché ; arrêté pour de bon dès
+    que le visiteur choisit un volet (onglet, flèche, glissement) ;
+  - aucun défilement automatique ni animation si prefers-reduced-motion ;
+  - motif « carrousel à onglets » de l'APG WAI-ARIA ; volets empilés dans la même cellule de
+    grille, d'où une hauteur stable (aucun saut de mise en page entre deux volets).
+  Sans JavaScript, seul le premier volet s'affiche, sans les commandes.
+*/
+export interface Volet {
+  id: string;
+  onglet: string;
+  titre: string;
+  texte: string;
+  prixAppel: string | null;
+  bouton: { libelle: string; href: string };
+}
+
+interface Props {
+  titrePage: string;
+  volets: Volet[];
+}
+const { titrePage, volets } = Astro.props;
+const DUREE_MS = 6000;
+---
+
+<section class="diapo" aria-roledescription="carrousel" aria-label="La boutique en bref" data-diapo data-duree={DUREE_MS}>
+  <h1 class="visually-hidden">{titrePage}</h1>
+  <div class="container diapo__inner">
+    {volets.length > 1 && (
+      <div class="diapo__commandes" data-commandes hidden>
+        <button type="button" class="diapo__pause" data-pause aria-label="Arrêter le défilement automatique">
+          <svg class="diapo__pause-icone" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+          <svg class="diapo__lecture-icone" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5Z" /></svg>
+        </button>
+        <div class="diapo__onglets" role="tablist" aria-label="Choisir un rayon">
+          {volets.map((v, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`diapo-onglet-${v.id}`}
+              class="diapo__onglet"
+              aria-controls={`diapo-volet-${v.id}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              data-onglet={i}
+            >
+              {v.onglet}
+              <span class="diapo__progression" aria-hidden="true"></span>
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <div class="diapo__volets" aria-live="off" data-volets>
+      {volets.map((v, i) => (
+        <div
+          class:list={['diapo__volet', { 'diapo__volet--actif': i === 0 }]}
+          id={`diapo-volet-${v.id}`}
+          role="tabpanel"
+          aria-roledescription="diapositive"
+          aria-label={`${i + 1} sur ${volets.length} : ${v.onglet}`}
+          aria-labelledby={volets.length > 1 ? `diapo-onglet-${v.id}` : undefined}
+          data-volet={i}
+          hidden={i > 0}
+        >
+          <h2 class="diapo__titre">{v.titre}</h2>
+          <p class="diapo__texte">{v.texte}</p>
+          {v.prixAppel && <p class="diapo__prix">À partir de <strong>{v.prixAppel}</strong></p>}
+          <a class="button diapo__bouton" href={v.bouton.href}>{v.bouton.libelle}</a>
+        </div>
+      ))}
+    </div>
+
+    {volets.length > 1 && (
+      <div class="diapo__fleches" data-fleches hidden>
+        <button type="button" class="diapo__fleche" data-precedent aria-label="Volet précédent">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6" /></svg>
+        </button>
+        <button type="button" class="diapo__fleche" data-suivant aria-label="Volet suivant">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+        </button>
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-diapo]').forEach((diapo) => {
+    const volets = [...diapo.querySelectorAll<HTMLElement>('[data-volet]')];
+    const onglets = [...diapo.querySelectorAll<HTMLButtonElement>('[data-onglet]')];
+    const zone = diapo.querySelector<HTMLElement>('[data-volets]')!;
+    const pause = diapo.querySelector<HTMLButtonElement>('[data-pause]');
+    if (volets.length < 2 || !pause) return;
+
+    const duree = Number(diapo.dataset.duree) || 6000;
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let actuel = 0;
+    let arrete = reduit; // arrêt voulu par le visiteur (ou animations réduites)
+    let suspendu = document.hidden; // survol, focus ou onglet caché
+    let minuterie: number | undefined;
+
+    // Avec JavaScript, tous les volets sont dans le flux (empilés) : la hauteur ne bouge plus.
+    volets.forEach((v, i) => {
+      v.hidden = false;
+      v.inert = i !== actuel;
+      v.setAttribute('aria-hidden', String(i !== actuel));
+    });
+    diapo.querySelectorAll<HTMLElement>('[data-commandes], [data-fleches]').forEach((el) => (el.hidden = false));
+    diapo.classList.add('diapo--pret');
+
+    const afficher = (i: number, focus = false) => {
+      actuel = (i + volets.length) % volets.length;
+      volets.forEach((v, j) => {
+        const actif = j === actuel;
+        v.classList.toggle('diapo__volet--actif', actif);
+        v.inert = !actif;
+        v.setAttribute('aria-hidden', String(!actif));
+      });
+      onglets.forEach((o, j) => {
+        const actif = j === actuel;
+        o.setAttribute('aria-selected', String(actif));
+        o.tabIndex = actif ? 0 : -1;
+      });
+      if (focus) onglets[actuel]?.focus();
+      relancer();
+    };
+
+    const enMarche = () => !arrete && !suspendu;
+    const relancer = () => {
+      window.clearTimeout(minuterie);
+      diapo.classList.remove('diapo--en-marche');
+      if (!enMarche()) return;
+      void diapo.offsetWidth; // redémarre l'animation de la barre de progression
+      diapo.classList.add('diapo--en-marche');
+      minuterie = window.setTimeout(() => afficher(actuel + 1), duree);
+    };
+
+    const majPause = () => {
+      pause.setAttribute('aria-label', arrete ? 'Reprendre le défilement automatique' : 'Arrêter le défilement automatique');
+      diapo.classList.toggle('diapo--arrete', arrete);
+      // Annonce des volets aux lecteurs d'écran seulement quand rien ne défile seul.
+      zone.setAttribute('aria-live', arrete ? 'polite' : 'off');
+    };
+
+    // Choix du visiteur : le défilement automatique s'arrête pour de bon.
+    const choisir = (i: number, focus = false) => {
+      arrete = true;
+      majPause();
+      afficher(i, focus);
+    };
+
+    pause.addEventListener('click', () => {
+      arrete = !arrete;
+      majPause();
+      relancer();
+    });
+    onglets.forEach((o, i) => {
+      o.addEventListener('click', () => choisir(i));
+      o.addEventListener('keydown', (e) => {
+        const cibles: Record<string, number> = { ArrowRight: actuel + 1, ArrowLeft: actuel - 1, Home: 0, End: volets.length - 1 };
+        const cible = cibles[e.key];
+        if (cible !== undefined) {
+          e.preventDefault();
+          choisir(cible, true);
+        }
+      });
+    });
+    diapo.querySelector('[data-precedent]')?.addEventListener('click', () => choisir(actuel - 1));
+    diapo.querySelector('[data-suivant]')?.addEventListener('click', () => choisir(actuel + 1));
+
+    // Glissement horizontal au doigt.
+    let departX: number | null = null;
+    let departY = 0;
+    zone.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse') return;
+      departX = e.clientX;
+      departY = e.clientY;
+    });
+    zone.addEventListener('pointerup', (e) => {
+      if (departX === null) return;
+      const dx = e.clientX - departX;
+      const dy = e.clientY - departY;
+      departX = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) choisir(actuel + (dx < 0 ? 1 : -1));
+    });
+    zone.addEventListener('pointercancel', () => (departX = null));
+
+    // Mise en attente (sans arrêt définitif) au survol, au focus et quand l'onglet est caché.
+    const suspendre = (oui: boolean) => {
+      suspendu = oui;
+      relancer();
+    };
+    diapo.addEventListener('mouseenter', () => suspendre(true));
+    diapo.addEventListener('mouseleave', () => suspendre(diapo.contains(document.activeElement)));
+    diapo.addEventListener('focusin', () => suspendre(true));
+    diapo.addEventListener('focusout', (e) => {
+      if (!diapo.contains(e.relatedTarget as Node | null)) suspendre(diapo.matches(':hover'));
+    });
+    document.addEventListener('visibilitychange', () => suspendre(document.hidden));
+
+    majPause();
+    relancer();
+  });
+</script>
+
+<style>
+  .diapo {
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-blanc);
+    /* Place réservée en bas pour la barre de recherche, posée à cheval sur le filet or. */
+    padding-block: var(--space-3) calc(var(--space-6) + 56px);
+    border-bottom: 3px solid var(--crn-or);
+  }
+
+  .diapo__inner {
+    position: relative;
+  }
+
+  /* Commandes : pause puis onglets des rayons. */
+  .diapo__commandes {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: var(--space-3);
+  }
+
+  .diapo__onglets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .diapo__onglet {
+    position: relative;
+    overflow: hidden;
+    min-height: var(--tap-target-min);
+    padding: 0 18px;
+    border: 1.5px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--crn-blanc);
+    font: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color var(--transition-standard), color var(--transition-standard), border-color var(--transition-standard);
+  }
+
+  .diapo__onglet:hover {
+    border-color: var(--crn-blanc);
+  }
+
+  /* Onglet actif : blanc, texte bleu nuit (jamais de blanc sur or). */
+  .diapo__onglet[aria-selected='true'] {
+    background: var(--crn-blanc);
+    border-color: var(--crn-blanc);
+    color: var(--crn-bleu-nuit);
+  }
+
+  /* Barre de progression or sous l'onglet actif, tant que le diaporama tourne. */
+  .diapo__progression {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    background: var(--crn-or);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  .diapo--en-marche .diapo__onglet[aria-selected='true'] .diapo__progression {
+    animation: diapo-progression 6s linear forwards;
+  }
+
+  @keyframes diapo-progression {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .diapo__pause,
+  .diapo__fleche {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: var(--tap-target-min);
+    height: var(--tap-target-min);
+    border: 1.5px solid rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--crn-blanc);
+    cursor: pointer;
+    transition: border-color var(--transition-standard), background-color var(--transition-standard);
+  }
+
+  .diapo__pause:hover,
+  .diapo__fleche:hover {
+    border-color: var(--crn-blanc);
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  .diapo__onglet:focus-visible,
+  .diapo__pause:focus-visible,
+  .diapo__fleche:focus-visible,
+  .diapo__bouton:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  .diapo__lecture-icone,
+  .diapo--arrete .diapo__pause-icone {
+    display: none;
+  }
+
+  .diapo--arrete .diapo__lecture-icone {
+    display: block;
+  }
+
+  /* Volets empilés dans la même cellule : la bannière garde la hauteur du plus grand. */
+  .diapo__volets {
+    display: grid;
+    touch-action: pan-y;
+  }
+
+  .diapo__volet {
+    grid-area: 1 / 1;
+    max-width: 640px;
+  }
+
+  .diapo--pret .diapo__volet {
+    opacity: 0;
+    transform: translateX(24px);
+    visibility: hidden;
+    transition: opacity 500ms ease, transform 500ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 500ms;
+  }
+
+  .diapo--pret .diapo__volet--actif {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition: opacity 500ms ease, transform 500ms cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
+  }
+
+  .diapo__titre {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-h1-mobile);
+    line-height: 1.1;
+    color: var(--crn-blanc);
+    max-width: 18ch;
+  }
+
+  .diapo__texte {
+    margin: 0;
+    max-width: 52ch;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .diapo__prix {
+    margin: 12px 0 0;
+    color: var(--crn-or);
+  }
+
+  .diapo__prix strong {
+    font-size: 1.15em;
+  }
+
+  /* Sur fond bleu nuit : bouton blanc, texte bleu nuit (jamais d'or en aplat, GBIS). */
+  .diapo__bouton {
+    margin-top: var(--space-3);
+    background: var(--crn-blanc);
+    color: var(--crn-bleu-nuit);
+    border: 1.5px solid var(--crn-blanc);
+  }
+
+  .diapo__bouton:hover {
+    background: var(--crn-creme);
+  }
+
+  .diapo__fleches {
+    display: flex;
+    gap: 8px;
+    margin-top: var(--space-3);
+  }
+
+  @media (min-width: 900px) {
+    .diapo__titre {
+      font-size: var(--text-h1);
+    }
+
+    /* Flèches à droite, centrées sur la hauteur des volets. */
+    .diapo__fleches {
+      position: absolute;
+      right: var(--gutter-desktop);
+      bottom: 0;
+      margin: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .diapo--pret .diapo__volet,
+    .diapo--pret .diapo__volet--actif {
+      transform: none;
+      transition: none;
+    }
+
+    .diapo__progression {
+      display: none;
+    }
+  }
+</style>

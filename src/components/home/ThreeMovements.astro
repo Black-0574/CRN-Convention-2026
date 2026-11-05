@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import CadreOr from '../shared/CadreOr.astro';
 import Icon from '../shared/Icon.astro';
 import SectionHeading from '../shared/SectionHeading.astro';
 import imageTrone from '../../assets/images/mouvement-trone.webp';
@@ -57,6 +58,7 @@ const mouvements = [
 
   <div class="movements__grid" data-reveal-group>
     {mouvements.map((m) => (
+      <CadreOr>
       <article class="movements__card">
         <div class="movements__band">
           <Image src={m.image} alt="" width={640} height={400} class="movements__photo" />
@@ -68,6 +70,7 @@ const mouvements = [
           <p class="movements__text">{m.texte}</p>
         </div>
       </article>
+      </CadreOr>
     ))}
   </div>
 </div>

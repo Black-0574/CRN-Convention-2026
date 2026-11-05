@@ -15,6 +15,9 @@ import BoutiqueVitrine from '../components/home/BoutiqueVitrine.astro';
 import SpeakerCard from '../components/speakers/SpeakerCard.astro';
 import ProgramPreview from '../components/program/ProgramPreview.astro';
 import FaqAccordion from '../components/shared/FaqAccordion.astro';
+import CadreOr from '../components/shared/CadreOr.astro';
+import { getImage } from 'astro:assets';
+import { VISUELS, visuelSeance } from '../lib/visuels-plateformes';
 import AnnouncementCard from '../components/shared/AnnouncementCard.astro';
 import { isPublished } from '../lib/state';
 import { getAnnonceMeta } from '../lib/announcements';
@@ -31,16 +34,24 @@ const speakersPublished = speakersAll.filter((s) => isPublished(now, s.data.date
 // LOT A, A3 : « Prendre mon ticket » mène à la fiche produit de la boutique (lien suivi, A5) ; le
 // Concert pour la vie a deux catégories (Standard, VIP) : il mène à l'accueil de la boutique.
 const plateformes = [
-  { titre: 'Académie des Sciences Divines', date: '8 – 10 décembre', lieu: 'Église Centrale', href: '/academie', icone: 'book' as const },
-  { titre: 'Femme de Foi — Live', date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('femme-de-foi-live', 'accueil-plateformes'), icone: 'heart' as const },
-  { titre: "J'ai soif", date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('jai-soif', 'accueil-plateformes'), icone: 'heart' as const },
-  { titre: 'Concert pour la vie', date: '13 décembre', lieu: 'Nomad', href: lienBoutique('accueil-plateformes'), icone: 'music' as const },
-  { titre: 'Culte unique & ordination', date: '13 décembre', lieu: 'Nomad', href: '/programme', icone: 'crown' as const },
-  { titre: 'Dîner des Élites', date: '12 décembre', lieu: 'Lieu à annoncer', href: lienProduit('diner-des-elites', 'accueil-plateformes'), icone: 'building' as const },
+  { titre: 'Académie des Sciences Divines', date: '8 – 10 décembre', lieu: 'Église Centrale', href: '/academie', icone: 'book' as const, visuel: VISUELS.academie },
+  { titre: 'Femme de Foi — Live', date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('femme-de-foi-live', 'accueil-plateformes'), icone: 'heart' as const, visuel: VISUELS.femmeDeFoi },
+  { titre: "J'ai soif", date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('jai-soif', 'accueil-plateformes'), icone: 'heart' as const, visuel: VISUELS.jaiSoif },
+  { titre: 'Concert pour la vie', date: '13 décembre', lieu: 'Nomad', href: lienBoutique('accueil-plateformes'), icone: 'music' as const, visuel: VISUELS.concertStandard },
+  { titre: 'Culte unique & ordination', date: '13 décembre', lieu: 'Nomad', href: '/programme', icone: 'crown' as const, visuel: VISUELS.culte },
+  { titre: 'Dîner des Élites', date: '12 décembre', lieu: 'Lieu à annoncer', href: lienProduit('diner-des-elites', 'accueil-plateformes'), icone: 'building' as const, visuel: VISUELS.diner },
 ];
 
 const joursProgramme = (await getCollection('program')).sort((a, b) => a.data.ordre - b.data.ordre);
 const speakerName = (slug: string) => speakersAll.find((s) => s.id === slug)?.data.nom ?? slug;
+// Vignette de la plateforme de chaque séance (A-05), une seule déclinaison par visuel.
+const vignettes = new Map(
+  await Promise.all(Object.values(VISUELS).map(async (v) => [v, (await getImage({ src: v.image, width: 256, format: 'webp' })).src] as const)),
+);
+const vignetteSeance = (titre: string) => {
+  const v = visuelSeance(titre);
+  return v ? (vignettes.get(v) ?? null) : null;
+};
 const joursPreview = joursProgramme.map((j) => ({
   date: j.data.date,
   labelCourt: j.data.label.replace(/^\w+\s/, '').replace(/\s—.*$/, ''),
@@ -53,6 +64,7 @@ const joursPreview = joursProgramme.map((j) => ({
       lieu: s.lieu,
       intervenantsNoms: s.intervenants.map(speakerName),
       noteIntervenant: s.noteIntervenant,
+      visuel: vignetteSeance(s.titre),
     })),
 }));
 
@@ -172,7 +184,7 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
     <SectionHeading eyebrow="Plateformes phares" title="Des temps forts pour tous" lienLabel="Accéder à la boutique" lienHref={lienBoutique('accueil-plateformes')} inverse />
     <div class="platform-grid" data-reveal-group>
       {plateformes.map((p) => (
-        <PlatformCard titre={p.titre} date={p.date} lieu={p.lieu} href={p.href} icone={p.icone} />
+        <CadreOr><PlatformCard titre={p.titre} date={p.date} lieu={p.lieu} href={p.href} icone={p.icone} visuel={p.visuel} /></CadreOr>
       ))}
     </div>
   </Section>
@@ -185,20 +197,20 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
 
   <Section id="action-sociale-apercu" tone="alt" ariaLabel="Action sociale et diaspora">
     <div class="callout-grid" data-reveal-group>
-      <IconCallout
+      <CadreOr><IconCallout
         icone="heart"
         titre="Action sociale"
         texte="Collecte de vivres et de vêtements du 9 au 27 novembre, distribution le 5 décembre."
         lienLabel="En savoir plus"
         lienHref="/action-sociale"
-      />
-      <IconCallout
+      /></CadreOr>
+      <CadreOr><IconCallout
         icone="wifi"
         titre="Suivre à distance"
         texte="Donnez en ligne et rejoignez la session diaspora du 19 décembre, où que vous soyez."
         lienLabel="En savoir plus"
         lienHref="/diaspora"
-      />
+      /></CadreOr>
     </div>
   </Section>
 
@@ -310,7 +322,7 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
 
   :global(#faq-actualites-apercu .faq-item[open]) {
     background: linear-gradient(165deg, var(--crn-blanc) 0%, var(--crn-creme) 100%);
-    border-color: var(--crn-or-lumiere) var(--crn-or-lumiere) var(--crn-or) var(--crn-or);
+    border-color: var(--crn-or) var(--crn-or) var(--crn-or) var(--crn-or);
     box-shadow: var(--shadow-lift), 0 0 0 1px rgba(184, 150, 62, 0.3);
   }
 
@@ -326,8 +338,8 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
   }
 
   :global(#faq-actualites-apercu .faq-item[open] .faq-item__icon) {
-    color: var(--crn-or-lumiere);
-    border-color: var(--crn-or-lumiere);
+    color: var(--crn-or);
+    border-color: var(--crn-or);
   }
 
   :global(#faq-actualites-apercu .faq-item__answer),

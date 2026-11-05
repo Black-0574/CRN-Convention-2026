@@ -5,13 +5,31 @@
   Mobile : carrousel à glissement tactile natif (scroll-snap) et pastilles ; dès 768 px, grille de
   3 puis 4 colonnes. Aucun défilement automatique (règle 10). Compte à rebours uniquement si l'API
   fournit des paliers tarifaires datés (échéance réelle, jamais d'effet d'aubaine).
+
+  Alignée sur l'accueil de la boutique (choix du Commanditaire, 5 novembre 2026) : quand le
+  catalogue est lu au build, deux blocs — « Billetterie » (lignes rendez-vous : dates, lieu, accès,
+  prix, Réserver) et « Articles officiels » (cartes à cadre or) — avec un bouton vers chaque page
+  de rayon. Sinon (catalogue injoignable, CI), les cartes « mis en avant » du fichier de secours :
+  la section n'est jamais vide.
 */
 import Countdown from './Countdown.astro';
+import CadreOr from '../shared/CadreOr.astro';
 import Icon from '../shared/Icon.astro';
+import CarteArticle from '../boutique/CarteArticle.astro';
+import LigneBillet from '../boutique/LigneBillet.astro';
 import { chargerMisEnAvant } from '../../lib/boutique-mis-en-avant';
 import { dernierJourPalier, formatEUR, formatXAF, lienBoutique, lienProduit, palierEnCours } from '../../lib/boutique';
+import { catalogue } from '../../lib/boutique-api';
+import { estBillet, parOrdre } from '../../lib/boutique-rayons';
 
-const { produits } = await chargerMisEnAvant();
+const BILLETS_ACCUEIL = 4;
+const ARTICLES_ACCUEIL = 4;
+const c = await catalogue();
+const billets = (c?.produits ?? []).filter(estBillet).sort(parOrdre).slice(0, BILLETS_ACCUEIL);
+const articles = (c?.produits ?? []).filter((p) => !estBillet(p)).sort(parOrdre).slice(0, ARTICLES_ACCUEIL);
+const alignee = billets.length + articles.length > 0;
+
+const { produits } = alignee ? { produits: [] } : await chargerMisEnAvant();
 const now = new Date();
 const cartes = produits.map((p) => {
   const palier = palierEnCours(p.paliers, now);
@@ -24,6 +42,43 @@ const cartes = produits.map((p) => {
     Pass, tickets et articles officiels de la Convention, réunis dans un seul panier.
   </p>
 
+  {alignee ? (
+    <>
+      {billets.length > 0 && (
+        <section class="vitrine-rubrique" aria-labelledby="vitrine-billetterie">
+          <div class="vitrine-rubrique__entete">
+            <div>
+              <p class="vitrine-rubrique__surtitre"><Icon name="ticket" size={18} /> Pass et tickets nominatifs</p>
+              <h3 class="vitrine-rubrique__titre" id="vitrine-billetterie">Billetterie</h3>
+            </div>
+            <a class="button vitrine-rubrique__lien" href={lienBoutique('accueil-boutique', 'billetterie')}>
+              Toute la billetterie <Icon name="arrow-right" size={16} />
+            </a>
+          </div>
+          <div class="vitrine-rubrique__billets">
+            {billets.map((p) => <CadreOr><LigneBillet produit={p} suivi="accueil-boutique" /></CadreOr>)}
+          </div>
+        </section>
+      )}
+      {articles.length > 0 && (
+        <section class="vitrine-rubrique" aria-labelledby="vitrine-articles">
+          <div class="vitrine-rubrique__entete">
+            <div>
+              <p class="vitrine-rubrique__surtitre"><Icon name="bag" size={18} /> Livrés dans le réseau CRN</p>
+              <h3 class="vitrine-rubrique__titre" id="vitrine-articles">Articles officiels</h3>
+            </div>
+            <a class="button vitrine-rubrique__lien" href={lienBoutique('accueil-boutique', 'articles')}>
+              Tous les articles <Icon name="arrow-right" size={16} />
+            </a>
+          </div>
+          <div class="vitrine-rubrique__articles">
+            {articles.map((p) => <CarteArticle produit={p} suivi="accueil-boutique" simple />)}
+          </div>
+        </section>
+      )}
+    </>
+  ) : (
+  <>
   <ul class="boutique-vitrine__liste" id="boutique-vitrine-liste">
     {cartes.map((c, i) => (
       <li
@@ -72,6 +127,8 @@ const cartes = produits.map((p) => {
       </button>
     ))}
   </div>
+  </>
+  )}
 
   <div class="boutique-vitrine__actions">
     <a class="button boutique-vitrine__tout" href={lienBoutique('accueil-boutique')}>
@@ -151,6 +208,79 @@ const cartes = produits.map((p) => {
     color: rgba(255, 255, 255, 0.88);
   }
 
+  /* Blocs alignés sur l'accueil de la boutique, sur le fond bleu nuit de la section : titres
+     blancs, surtitre or lumière (jamais d'or sur fond clair), boutons blancs à texte bleu nuit. */
+  .vitrine-rubrique + .vitrine-rubrique {
+    margin-top: var(--space-6);
+  }
+
+  .vitrine-rubrique__entete {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid rgba(184, 150, 62, 0.35);
+  }
+
+  .vitrine-rubrique__surtitre {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px;
+    color: var(--crn-or);
+    font-style: italic;
+  }
+
+  .vitrine-rubrique__titre {
+    margin: 0;
+    color: var(--crn-blanc);
+    font-size: var(--text-h3-mobile);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .vitrine-rubrique__lien {
+    flex: none;
+    background: var(--crn-blanc);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .vitrine-rubrique__lien:hover {
+    background: var(--crn-creme);
+  }
+
+  .vitrine-rubrique__billets {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .vitrine-rubrique__articles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  @media (max-width: 479px) {
+    .vitrine-rubrique__articles {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .vitrine-rubrique__titre {
+      font-size: var(--text-h3);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .vitrine-rubrique__articles {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
   /* Mobile : carrousel horizontal, glissement inertiel natif, carte suivante visible en bord
      d'écran pour signaler le défilement. La liste déborde jusqu'aux bords de l'écran. */
   .boutique-vitrine__liste {
@@ -217,7 +347,7 @@ const cartes = produits.map((p) => {
     justify-content: center;
     gap: var(--space-1);
     background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
-    color: var(--crn-or-lumiere);
+    color: var(--crn-or);
     font-size: var(--text-s);
   }
 

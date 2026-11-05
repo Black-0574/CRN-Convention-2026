@@ -1,9 +1,9 @@
 ---
 /*
   Gabarit de la Boutique de la Convention (/boutique) : le gabarit du site (en-tête, pied de page,
-  NASTY) avec, en plus, la barre de la boutique (rubriques, panier), le tiroir du panier et, en
-  démonstration locale, un bandeau d'avertissement. La boutique fait partie du site : même
-  navigation, mêmes styles, même domaine.
+  NASTY) avec, en plus, la barre de la boutique (rubriques, panier), fixée sous l'en-tête au
+  défilement, et le tiroir du panier. La boutique fait partie du site : même navigation, mêmes
+  styles, même domaine.
 */
 import BaseLayout from './BaseLayout.astro';
 import TiroirPanier from '../components/boutique/TiroirPanier.astro';
@@ -11,33 +11,26 @@ import TiroirPanier from '../components/boutique/TiroirPanier.astro';
 interface Props {
   title: string;
   description?: string;
-  demo?: boolean;
 }
 const {
   title,
   description = 'Boutique officielle de la Convention CRN 2026 : pass et billets nominatifs à QR code, articles officiels livrés dans le réseau, paiement Mobile Money ou carte.',
-  demo = false,
 } = Astro.props;
 const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} · Boutique`;
 ---
 
 <BaseLayout title={titre} description={description}>
-  {demo && (
-    <div class="b-demo" role="note">
-      Démonstration locale — paiements simulés ; les produits marqués « Aperçu » attendent la validation de leur tarif par le CRN.
-    </div>
-  )}
   <div class="b-barre">
     <div class="container b-barre__inner">
-      <a class="b-barre__titre" href="/boutique">La Boutique de la Convention</a>
+      <a class="b-barre__titre" href="/boutique">La Boutique officielle de la Convention 2026</a>
       <nav class="b-barre__nav" aria-label="Rubriques de la boutique">
-        <a href="/boutique#pass">Pass</a>
-        <a href="/boutique#tickets">Tickets</a>
-        <a href="/boutique#articles">Articles</a>
+        <a href="/boutique/billetterie?categorie=pass">Pass</a>
+        <a href="/boutique/billetterie?categorie=tickets">Tickets</a>
+        <a href="/boutique/articles">Articles</a>
       </nav>
       <button type="button" class="b-barre__panier" data-ouvrir-panier aria-label="Ouvrir le panier, 0 article" data-libelle-panier>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9Z" /><path d="M9 10V6a3 3 0 0 1 6 0v4" /></svg>
-        <span>Panier</span>
+        <span class="b-barre__panier-libelle">Panier</span>
         <span class="b-barre__compteur" data-compteur-panier hidden>0</span>
       </button>
     </div>
@@ -86,6 +79,14 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} �
   };
   majCompteur();
   surChangement(majCompteur);
+
+  // Hauteur réelle de la barre (elle passe sur deux lignes sur mobile), pour les ancres des rubriques.
+  const barre = document.querySelector<HTMLElement>('.b-barre');
+  if (barre) {
+    const majHauteur = () => document.documentElement.style.setProperty('--b-barre-h', `${barre.offsetHeight}px`);
+    majHauteur();
+    if ('ResizeObserver' in window) new ResizeObserver(majHauteur).observe(barre);
+  }
   document.querySelectorAll('[data-ouvrir-panier]').forEach((b) => b.addEventListener('click', ouvrirPanier));
 </script>
 
@@ -97,18 +98,16 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} �
 </style>
 
 <style>
-  .b-demo {
-    background: var(--crn-or-lumiere);
-    color: var(--crn-noir);
-    text-align: center;
-    padding: 8px var(--gutter-mobile);
-    font-size: var(--text-s);
-    font-weight: 700;
-  }
-
+  /* Filet or vieilli entre l'en-tête du site et la barre de la boutique ; la barre reste fixée
+     sous l'en-tête (lui-même fixé en haut, hauteur réelle dans --site-header-h) et le contenu
+     défile dessous. */
   .b-barre {
     background: var(--crn-blanc);
+    border-top: 1px solid var(--crn-or);
     border-bottom: 1px solid var(--crn-gris-clair);
+    position: sticky;
+    top: var(--site-header-h, 72px);
+    z-index: 90;
   }
 
   .b-barre__inner {
@@ -122,10 +121,24 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} �
   .b-barre__titre {
     font-family: var(--font-titrage);
     font-weight: 700;
-    font-size: 20px;
+    font-size: 16px;
+    line-height: 1.25;
+    /* Capitales par la feuille de style : le texte reste lu normalement par les lecteurs d'écran. */
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
     color: var(--crn-bleu-nuit);
     text-decoration: none;
     margin-right: auto;
+    /* Sur mobile, le titre passe sur deux lignes à côté du panier plutôt que de le repousser dessous. */
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 768px) {
+    .b-barre__titre {
+      font-size: 20px;
+      flex: 0 1 auto;
+    }
   }
 
   .b-barre__nav {
@@ -157,19 +170,31 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} �
 
   .b-barre__panier {
     position: relative;
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     min-height: var(--tap-target-min);
     padding: 0 18px;
     border-radius: var(--radius-pill);
-    border: 1.5px solid var(--crn-or-lumiere);
+    border: 1.5px solid var(--crn-or);
     background: linear-gradient(135deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
     color: var(--crn-blanc);
     font-family: var(--font-labeur);
     font-weight: 700;
     font-size: var(--text-s);
     cursor: pointer;
+  }
+
+  /* Très petits écrans : l'icône et le compteur suffisent (le bouton garde son nom accessible). */
+  @media (max-width: 359px) {
+    .b-barre__panier {
+      padding: 0 12px;
+    }
+
+    .b-barre__panier-libelle {
+      display: none;
+    }
   }
 
   .b-barre__panier:focus-visible {
@@ -196,8 +221,11 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} �
     gap: 8px var(--space-3);
     margin-top: var(--space-6);
     padding-block: var(--space-2);
-    border-top: 1px solid var(--crn-gris-clair);
+    /* Même filet or que celui de la bande « Écosystème digital CRN » juste en dessous. */
+    border-top: 2px solid var(--crn-or);
     color: var(--crn-gris);
+    /* Plus discret que le texte courant, au minimum de la charte (rien sous 16 px, règle n° 7). */
+    font-size: 16px;
   }
 
   .b-legal a {

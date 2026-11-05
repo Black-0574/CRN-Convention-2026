@@ -68,7 +68,7 @@ const Tag = href ? 'a' : 'div';
   .speaker-card:hover .speaker-card__ring,
   .speaker-card:focus-visible .speaker-card__ring {
     transform: translateY(-4px);
-    border-color: var(--crn-or-lumiere);
+    border-color: var(--crn-or);
   }
 
   /* Cadre en attente de photo réelle : dégradé bleu nuit (plutôt qu'un aplat) et initiales en
@@ -109,7 +109,7 @@ const Tag = href ? 'a' : 'div';
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--crn-or) 0%, var(--crn-or-profond) 100%);
+    background: var(--crn-or);
     color: var(--crn-blanc);
     border: 2px solid var(--crn-blanc);
     box-shadow: var(--shadow-card);

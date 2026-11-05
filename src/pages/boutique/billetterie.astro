@@ -1,0 +1,18 @@
+---
+// Rayon Billetterie de la boutique : pass et tickets à l'unité, avec filtres.
+import ListeCatalogue from '../../components/boutique/ListeCatalogue.astro';
+import Boutique from '../../layouts/BoutiqueLayout.astro';
+import { catalogue } from '../../lib/boutique-api';
+import { estBillet } from '../../lib/boutique-rayons';
+
+const c = await catalogue();
+---
+
+<Boutique title="Billetterie" description="Billetterie de la Convention CRN 2026 : pass et tickets à l’unité, nominatifs avec QR code, payables par Mobile Money ou carte.">
+  <ListeCatalogue
+    titre="Billetterie"
+    intro="Pass pour toute la Convention et tickets à l’unité : chaque billet est nominatif, avec un QR code envoyé par e-mail dès le paiement et scanné à l’entrée de chaque site."
+    produits={(c?.produits ?? []).filter(estBillet)}
+    indisponible={c === null}
+  />
+</Boutique>

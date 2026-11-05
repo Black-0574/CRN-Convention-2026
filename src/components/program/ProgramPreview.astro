@@ -8,6 +8,8 @@ interface SessionLite {
   lieu: string;
   intervenantsNoms: string[];
   noteIntervenant?: string;
+  /** Adresse de la vignette de la plateforme (A-05), ou null : icône calendrier. */
+  visuel: string | null;
 }
 interface DayLite {
   date: string;
@@ -43,6 +45,7 @@ const { jours } = Astro.props;
     <div class="program-preview__card">
       <div class="program-preview__thumb" aria-hidden="true">
         <Icon name="calendar" size={32} />
+        <img class="program-preview__visuel" data-field="visuel" alt="" width="256" height="144" hidden />
       </div>
       <div class="program-preview__body">
         <p class="program-preview__title" data-field="titre">—</p>
@@ -69,6 +72,7 @@ const { jours } = Astro.props;
     const titleEl = root.querySelector('[data-field="titre"]');
     const horaireEl = root.querySelector('[data-field="horaire"]');
     const lieuEl = root.querySelector('[data-field="lieu"]');
+    const visuelEl = root.querySelector('[data-field="visuel"]');
     const prevBtn = root.querySelector('[data-action="prev"]');
     const nextBtn = root.querySelector('[data-action="next"]');
 
@@ -91,6 +95,11 @@ const { jours } = Astro.props;
       if (titleEl) titleEl.textContent = session ? session.titre : 'Aucune séance publiée';
       if (horaireEl) horaireEl.textContent = session ? `${session.heureDebut} – ${session.heureFin}` : '—';
       if (lieuEl) lieuEl.textContent = session ? lieuDetail(session) : '—';
+      if (visuelEl) {
+        const src = session?.visuel;
+        if (src) visuelEl.setAttribute('src', src);
+        visuelEl.hidden = !src;
+      }
       tabs.forEach((t, i) => t.setAttribute('aria-selected', String(i === dayIndex)));
 
       // Anime les flèches pour signaler qu'il y a plusieurs séances à parcourir ce jour-là.
@@ -234,6 +243,20 @@ const { jours } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Vignette de la plateforme : recouvre l'icône, dans le même médaillon or. */
+  .program-preview__visuel {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+
+  .program-preview__visuel[hidden] {
+    display: none;
   }
 
   .program-preview__thumb::after {

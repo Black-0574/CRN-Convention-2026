@@ -4,6 +4,7 @@ import Section from '../components/shared/Section.astro';
 import Button from '../components/shared/Button.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import InfoCard from '../components/shared/InfoCard.astro';
+import CadreOr from '../components/shared/CadreOr.astro';
 import { lienBoutique } from '../lib/boutique';
 ---
 
@@ -20,25 +21,25 @@ import { lienBoutique } from '../lib/boutique';
 
   <Section tone="default" ariaLabel="Diaspora">
     <div class="diaspora-grid" data-reveal-group>
-      <InfoCard>
+      <CadreOr><InfoCard>
         <h2 class="diaspora-card__title">Suivre à distance</h2>
         <p>Le direct et le programme du jour seront accessibles depuis cette page pendant la Convention (6 – 13 décembre).</p>
         <Button href="/programme" variant="secondary">Voir le programme</Button>
-      </InfoCard>
-      <InfoCard>
+      </InfoCard></CadreOr>
+      <CadreOr><InfoCard>
         <h2 class="diaspora-card__title">Donner en ligne</h2>
         <p>Soutenez la Convention et l'action sociale par carte bancaire, depuis où que vous soyez.</p>
         <Button href={lienBoutique('diaspora')} variant="secondary">Accéder à la boutique</Button>
-      </InfoCard>
-      <InfoCard>
+      </InfoCard></CadreOr>
+      <CadreOr><InfoCard>
         <h2 class="diaspora-card__title">Académie à distance</h2>
         <p>Suivez l'Académie des Sciences Divines depuis la diaspora, selon les modalités confirmées avant la Convention.</p>
         <Button href="/academie" variant="secondary">Découvrir l'Académie</Button>
-      </InfoCard>
-      <InfoCard>
+      </InfoCard></CadreOr>
+      <CadreOr><InfoCard>
         <h2 class="diaspora-card__title">Session diaspora</h2>
         <p>Une session en ligne dédiée à la diaspora se tient le <strong>19 décembre 2026</strong>. Les modalités de connexion seront publiées sur cette page.</p>
-      </InfoCard>
+      </InfoCard></CadreOr>
     </div>
   </Section>
 </BaseLayout>

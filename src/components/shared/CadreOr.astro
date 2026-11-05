@@ -1,0 +1,14 @@
+---
+/*
+  Enveloppe « cadre or au survol » : la carte reçue est posée sur un cadre or vieilli qui pivote
+  derrière elle au survol ou au focus clavier (styles .cadre-or dans src/styles/global.css). Même
+  effet que les cartes « Articles officiels » de la boutique.
+*/
+interface Props {
+  /** Rayon du cadre, s'il diffère de celui des cartes (var(--radius-card)). */
+  rayon?: string;
+}
+const { rayon } = Astro.props;
+---
+
+<div class="cadre-or" style={rayon ? `--cadre-or-rayon: ${rayon}` : undefined}><slot /></div>

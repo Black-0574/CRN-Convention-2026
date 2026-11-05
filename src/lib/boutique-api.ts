@@ -16,6 +16,8 @@ export interface VueVariante {
   id: number;
   libelle: string;
   disponible: number | null;
+  /** Séances propres à la variante (ex. une classe de l'Académie au choix). */
+  plateformes?: { nom: string; debut: string | null; fin: string | null; lieu: string | null }[];
 }
 
 export interface VueProduit {

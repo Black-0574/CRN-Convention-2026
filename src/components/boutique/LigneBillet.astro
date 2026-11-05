@@ -1,0 +1,478 @@
+---
+/*
+  Ligne de billetterie (pass ou ticket), sur le modèle « rendez-vous » : dates, visuel, nom, résumé,
+  accès ouverts, prix d'appel, bouton Réserver et lieu. Dates, lieux et accès viennent des séances
+  réelles du produit (« à annoncer » sinon). Sans photo du back-office, un ticket prend le visuel de
+  sa plateforme (BQ-07) ; à défaut, cadre neutre marqué, jamais d'image inventée. Sur mobile, la ligne devient une carte empilée.
+*/
+import { lienProduit, type EmplacementBoutique } from '../../lib/boutique';
+import type { VueProduit } from '../../lib/boutique-api';
+import { formaterEUR, formaterXAF } from '../../lib/boutique-format';
+import { accesBillet, datesBillet, lieuBillet, rayonDe, texteRecherche } from '../../lib/boutique-rayons';
+import { visuelProduit } from '../../lib/visuels-plateformes';
+import { Image } from 'astro:assets';
+import Icon from '../shared/Icon.astro';
+
+interface Props {
+  produit: VueProduit;
+  /** Masquée au chargement (accueil : seules les premières lignes s'affichent). */
+  masquee?: boolean;
+  /** Depuis une page du site : lien suivi vers la fiche (LOT A, A5). */
+  suivi?: EmplacementBoutique;
+}
+const { produit: p, masquee = false, suivi } = Astro.props;
+const dates = datesBillet(p);
+const acces = accesBillet(p);
+const ACCES_MAX = 4;
+const photo = p.photos[0];
+const visuel = photo ? undefined : visuelProduit(p.slug);
+const lien = suivi ? lienProduit(p.slug, suivi) : `/boutique/produits/${p.slug}`;
+const rayon = rayonDe(p);
+---
+
+<div
+  class="billet-boite"
+  data-produit={p.slug}
+  data-rayon={rayon}
+  data-recherche={texteRecherche(p)}
+  data-prix={p.prixXAF ?? ''}
+  data-date={dates?.premier ?? ''}
+  data-ordre={p.ordre}
+  hidden={masquee}
+>
+<article class="billet">
+  <div class="billet__dates">
+    {dates ? (
+      <>
+        <p class="billet__jour">{dates.haut}</p>
+        <p class="billet__date"><Icon name="calendar" size={20} /> {dates.date}</p>
+        <p class="billet__heure"><Icon name="clock" size={18} /> {dates.bas}</p>
+      </>
+    ) : (
+      <p class="billet__date"><Icon name="calendar" size={20} /> Dates à annoncer</p>
+    )}
+  </div>
+
+  <div class="billet__visuel">
+    {photo ? (
+      <img src={photo.carte} alt={photo.alt} width="320" height="240" loading="lazy" />
+    ) : visuel ? (
+      <Image src={visuel.image} alt="" widths={[240, 400]} sizes="(min-width: 560px) 200px, 112px" loading="lazy" />
+    ) : (
+      <div class="billet__cadre" aria-hidden="true">
+        <span class="billet__sigle">CRN</span>
+        <span class="billet__note">Photo à venir</span>
+      </div>
+    )}
+    <span class="billet__rayon"><Icon name="ticket" size={16} /> {rayon === 'pass' ? 'Pass' : 'Ticket'}</span>
+  </div>
+
+  <div class="billet__corps">
+    <h3 class="billet__nom"><a href={lien}>{p.nom}</a></h3>
+    {p.resume && <p class="billet__resume">{p.resume}</p>}
+    {acces.length > 0 && (
+      <p class="billet__acces">
+        <span class="billet__acces-libelle">Accès</span>
+        {acces.slice(0, ACCES_MAX).map((a) => <span class="billet__etiquette">{a}</span>)}
+        {acces.length > ACCES_MAX && <span class="billet__etiquette">+{acces.length - ACCES_MAX}</span>}
+      </p>
+    )}
+  </div>
+
+  <div class="billet__achat">
+    <p class="billet__prix">
+      <span class="billet__a-partir">À partir de</span>
+      {p.prixXAF !== null ? (
+        <>
+          <strong>{formaterXAF(p.prixXAF)}</strong>
+          <span class="billet__euros">{formaterEUR(p.prixXAF)}</span>
+        </>
+      ) : (
+        <strong>À annoncer</strong>
+      )}
+    </p>
+    {p.indisponible ? (
+      <span class="button billet__bouton billet__bouton--attente">{p.indisponible}</span>
+    ) : (
+      <a class="button button--primary billet__bouton" href={lien} aria-label={`Réserver : ${p.nom}`}>
+        Réserver <Icon name="arrow-right" size={18} />
+      </a>
+    )}
+    <p class="billet__lieu"><Icon name="pin" size={18} /> {lieuBillet(p)}</p>
+  </div>
+</article>
+</div>
+
+<style>
+  /* La mise en page suit la largeur disponible (requêtes de conteneur), pas celle de l'écran :
+     pleine largeur sur l'accueil, à côté des filtres sur les pages de rayon. */
+  .billet-boite {
+    container-type: inline-size;
+  }
+
+  /* Mobile : dates en bandeau, vignette à gauche du contenu, achat en pied. */
+  .billet {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-areas: 'dates dates' 'visuel corps' 'achat achat';
+    column-gap: 14px;
+    background: var(--crn-blanc);
+    border: 1.5px solid var(--crn-or);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: box-shadow var(--transition-standard), transform var(--transition-standard);
+  }
+
+  .billet:hover {
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-2px);
+  }
+
+  /* Dates : bandeau à liseré or (le texte reste bleu nuit, jamais d'or sur fond clair). */
+  .billet__dates {
+    grid-area: dates;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+    padding: 12px 16px;
+    border-left: 4px solid var(--crn-or);
+    background: linear-gradient(90deg, var(--crn-creme) 0%, var(--crn-blanc) 100%);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .billet__dates p {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .billet__dates :global(svg) {
+    color: var(--crn-or);
+    flex: none;
+  }
+
+  .billet__jour {
+    font-weight: 700;
+  }
+
+  .billet__date {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 20px;
+  }
+
+  .billet__heure {
+    color: var(--crn-gris);
+  }
+
+  .billet__visuel {
+    grid-area: visuel;
+    position: relative;
+    align-self: start;
+    aspect-ratio: 1;
+    margin: 16px 0 0 16px;
+    border-radius: var(--radius-card-sm);
+    background: var(--crn-bleu-nuit);
+    overflow: hidden;
+  }
+
+  .billet__visuel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .billet:hover .billet__visuel img {
+    transform: scale(1.05);
+  }
+
+  .billet__cadre {
+    position: absolute;
+    inset: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding-top: 28px; /* place pour l'étiquette Pass / Ticket */
+    border: 1.5px dashed var(--crn-or);
+    border-radius: var(--radius-card-sm);
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+  }
+
+  .billet__sigle {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 31px;
+    letter-spacing: 0.08em;
+    color: var(--crn-or);
+  }
+
+  .billet__note {
+    color: var(--crn-blanc);
+    font-size: 16px;
+  }
+
+  .billet__rayon {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--crn-bleu-nuit);
+    border: 1px solid rgba(184, 150, 62, 0.6);
+    color: var(--crn-blanc);
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .billet__rayon :global(svg) {
+    color: var(--crn-or);
+  }
+
+  .billet__corps {
+    grid-area: corps;
+    padding: 16px 16px 0 0;
+    min-width: 0;
+  }
+
+  .billet__nom {
+    margin: 0 0 6px;
+    font-family: var(--font-labeur);
+    font-size: 22px;
+    line-height: 1.2;
+  }
+
+  .billet__nom a {
+    color: var(--crn-bleu-nuit);
+    text-decoration: none;
+  }
+
+  .billet__nom a:hover {
+    text-decoration: underline;
+  }
+
+  .billet__resume {
+    margin: 0 0 10px;
+    color: var(--crn-gris);
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .billet__acces {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+  }
+
+  .billet__acces-libelle {
+    color: var(--crn-gris);
+    margin-right: 4px;
+  }
+
+  .billet__etiquette {
+    padding: 2px 12px;
+    border: 1px solid var(--crn-or);
+    border-radius: var(--radius-pill);
+    background: var(--crn-creme);
+    color: var(--crn-bleu-nuit);
+    font-size: 16px;
+  }
+
+  .billet__achat {
+    grid-area: achat;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 16px;
+  }
+
+  .billet__prix {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .billet__a-partir {
+    color: var(--crn-gris);
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .billet__prix strong {
+    font-size: 24px;
+    line-height: 1.2;
+  }
+
+  .billet__euros {
+    color: var(--crn-gris);
+    font-size: 16px;
+  }
+
+  .billet__bouton {
+    justify-self: end;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .billet__bouton--attente {
+    background: var(--crn-bleu-nuit-profond);
+    color: var(--crn-blanc);
+    cursor: default;
+  }
+
+  .billet__lieu {
+    grid-column: 1 / -1;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--crn-gris);
+  }
+
+  .billet__lieu :global(svg) {
+    color: var(--crn-or);
+    flex: none;
+  }
+
+  /* Mobile : seul le nom se place à côté de la vignette ; résumé et accès reprennent toute la
+     largeur. Le cadre neutre de la petite vignette garde seulement le sigle. */
+  @container (max-width: 559px) {
+    .billet {
+      grid-template-areas: 'dates dates' 'visuel nom' 'resume resume' 'acces acces' 'achat achat';
+    }
+
+    .billet__corps {
+      display: contents;
+    }
+
+    .billet__nom {
+      grid-area: nom;
+      align-self: center;
+      margin: 16px 16px 0 0;
+    }
+
+    .billet__resume {
+      grid-area: resume;
+      margin: 12px 16px 10px;
+    }
+
+    .billet__acces {
+      grid-area: acces;
+      margin: 0 16px;
+    }
+
+    .billet__sigle {
+      font-size: 24px;
+    }
+
+    .billet__note,
+    .billet__rayon {
+      display: none;
+    }
+  }
+
+  /* Largeur moyenne : même disposition, visuel plus grand, achat sur une ligne. */
+  @container (min-width: 560px) and (max-width: 859px) {
+    .billet {
+      grid-template-columns: 200px minmax(0, 1fr);
+      column-gap: 16px;
+    }
+
+    .billet__visuel {
+      aspect-ratio: 4 / 3;
+    }
+
+    .billet__achat {
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .billet__lieu {
+      grid-column: auto;
+      grid-row: 1;
+      grid-column-start: 2;
+      justify-content: center;
+    }
+  }
+
+  /* Grande largeur : une ligne — dates | visuel | contenu | achat. */
+  @container (min-width: 860px) {
+    .billet {
+      grid-template-columns: 196px 200px minmax(0, 1fr) 230px;
+      grid-template-areas: 'dates visuel corps achat';
+      align-items: center;
+      gap: 24px;
+      padding: 20px 24px 20px 0;
+    }
+
+    .billet__dates {
+      flex-direction: column;
+      align-items: flex-start;
+      align-self: stretch;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 12px 12px 16px;
+      border-radius: 0 var(--radius-card-sm) var(--radius-card-sm) 0;
+      margin-left: 16px;
+    }
+
+    .billet__dates p {
+      white-space: nowrap;
+    }
+
+    .billet__date {
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--crn-or);
+    }
+
+    .billet__visuel {
+      align-self: center;
+      aspect-ratio: 4 / 3;
+      margin: 0;
+    }
+
+    .billet__corps {
+      padding: 0;
+    }
+
+    .billet__achat {
+      grid-template-columns: 1fr;
+      justify-items: end;
+      text-align: right;
+      padding: 0;
+      gap: 12px;
+    }
+
+    .billet__prix {
+      align-items: flex-end;
+    }
+
+    .billet__lieu {
+      justify-content: flex-end;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .billet,
+    .billet__visuel img {
+      transition: none;
+    }
+
+    .billet:hover,
+    .billet:hover .billet__visuel img {
+      transform: none;
+    }
+  }
+</style>

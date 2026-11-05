@@ -867,3 +867,138 @@ reportés dans `docs/donnees-reference.md` et sur la page Billetterie du site. L
 partenaires Diamant reste non mentionné au public (règle permanente). En production, les ventes de
 ces pass restent conditionnées aux quotas (Dîner des Élites, repas privé) que le CRN doit
 renseigner. **Statut : fait en local, non poussé.**
+
+## Dérogation signalée — bannière de l'accueil de la boutique en diaporama (5 novembre 2026)
+
+Règle permanente n° 10 : « Aucun carrousel ni défilement automatique. Respect de
+`prefers-reduced-motion`. » **L'écart a été signalé par écrit avant tout développement**, avec
+l'alternative conforme (volets changés uniquement par le visiteur) ; le Commanditaire a choisi le
+défilement automatique avec pause. Périmètre strictement limité à la bannière de `/boutique`
+(`src/components/boutique/BanniereDiaporama.astro`) : un volet par rayon (Pass, Tickets,
+Articles), chacun avec son titre, son texte, son prix d'appel (plus petit prix en vigueur du rayon,
+calculé depuis le catalogue) et son bouton. Garde-fous :
+- défilement toutes les 6 s, bouton Pause visible, premier dans l'ordre du clavier (WCAG 2.2.2) ;
+- mise en attente au survol, au focus clavier et quand l'onglet est caché ; arrêt définitif dès
+  que le visiteur choisit un volet (onglet, flèche, glissement au doigt, flèches du clavier) ;
+- aucun défilement automatique ni animation si `prefers-reduced-motion` ;
+- motif « carrousel à onglets » de l'APG WAI-ARIA (volets inactifs `inert` et `aria-hidden`,
+  annonces des volets seulement quand le défilement est arrêté) ; hauteur stable (volets empilés).
+Les rangées de produits restent en carrousel manuel, sans défilement automatique.
+Preuve : vérification dans le navigateur (375 et 1280 px) — passage automatique au volet suivant
+après 6 s, pause/reprise, arrêt après une flèche, navigation au clavier, aucun débordement.
+**Statut : fait en local, non poussé.**
+
+## Boutique — accueil en deux rubriques et pages de rayon (5 novembre 2026)
+
+Demande du Commanditaire : ne plus étaler tous les produits sur l'accueil de `/boutique`, mais deux
+rubriques, « Billetterie » (pass et tickets) et « Articles officiels », chacune avec un bouton à
+droite vers la page de son rayon ; modèles de design fournis (liste « rendez-vous », catalogue
+filtrable, carte article posée sur un cadre de couleur qui bascule au survol).
+
+| Élément | Réalisation | Preuve |
+| --- | --- | --- |
+| Rubrique Billetterie | Lignes « rendez-vous » (`LigneBillet.astro`) : dates, visuel, nom, résumé, accès, prix d'appel, bouton Réserver, lieu — tout dérivé des séances réelles (« à annoncer » sinon, ex. lieu du Dîner) ; pastilles Tous / Pass / Tickets ; 5 lignes sur l'accueil, bouton « Toute la billetterie » | e2e : 5 lignes, pastille Tickets, lien vers `/boutique/billetterie` |
+| Rubrique Articles officiels | Cartes (`CarteArticle.astro`) posées sur un cadre or invisible qui pivote au survol ou au focus (sans mouvement si `prefers-reduced-motion`) ; seconde photo, favori, aperçu rapide ; aucun avis ni note affiché (il n'en existe pas) ; bouton « Tous les articles » | Vérification dans le navigateur (survol à 1280 px) |
+| Pages de rayon | `/boutique/billetterie`, `/boutique/articles`, `/boutique/recherche` (`ListeCatalogue.astro`) : filtres mot clé, catégories avec effectifs, prix maximum ; tri ; critères dans l'adresse ; filtres repliés sous « Filtrer par » sur mobile | e2e : `?categorie=tickets&tri=prix-croissant`, recherche « concert » depuis l'accueil |
+| Accessibilité | Aucune violation critique ou sérieuse (axe, WCAG 2 A/AA) | e2e axe sur les 3 pages (NF-CNV-008) |
+
+Palette GBIS respectée : boutons bleu nuit (jamais de blanc sur or), prix et dates en bleu nuit
+(jamais de texte or sur fond clair), or réservé aux liserés, icônes et au cadre de survol. Les
+liens de la barre de la boutique (Pass, Tickets, Articles) et de la bannière mènent aux pages de
+rayon. Les tests d'achat partagent le back-office local et s'exécutent l'un après l'autre.
+Résultats : boutique e2e 9/9 (`E2E_BOUTIQUE=1`), site e2e 31/31, unitaires 27/27.
+**Statut : fait en local, non poussé.**
+
+## Dérogation — couleurs du verdict au poste de contrôle d'accès (5 novembre 2026)
+
+Règle permanente n° 7 : palette exclusive GBIS (ni vert ni rouge). À la demande explicite du
+Commanditaire, le verdict affiché au poste de scan des agents (`/scan` du back-office, outil
+interne, jamais vu du public) passe en **vert** (#1E7B34) quand l'entrée est acceptée et en
+**rouge** (#B3261E) pour tout refus (déjà utilisé, non inclus, annulé, invalide), pour une
+lecture instantanée à la porte. Texte blanc (contraste supérieur à 5:1) ; le titre énonce aussi le
+verdict, la couleur n'est jamais la seule information. Les messages d'erreur du poste (ex. poste
+non renseigné) gardent la palette GBIS. Périmètre : `backend/src/app/(agents)/agents.css`.
+**Statut : fait en local, non poussé.**
+
+## Back-office — heures affichées à l'heure de Libreville, statuts en français (5 novembre 2026)
+
+Règle permanente de la boutique : heure de référence Africa/Libreville pour tous les horodatages.
+Les listes du back-office suivaient le fuseau de l'ordinateur qui consulte (un passage scanné à
+03:05 à Libreville apparaissait « 2:05 AM » sur un poste réglé en UTC). Toutes les dates de la
+boutique (création, paiement, réservation, émission du billet, consommation d'un droit, remise
+d'un article, début et fin des séances) s'affichent désormais à l'heure de Libreville, au format
+français 24 h (cellule `DateLibreville`, champs `dateHeure` et `creeLe` dans
+`backend/src/boutique/collections/dates.ts`) ; l'en-tête de colonne le précise. Statuts des droits
+d'accès et des réservations en libellés français (Valide, Consommé, Annulé…). Aucun changement de
+schéma. Reste à traiter : la saisie d'une date dans un formulaire (ex. heure d'une séance) suit
+encore le fuseau de l'ordinateur — sans effet depuis Libreville, à surveiller pour une saisie
+depuis un autre pays. **Statut : fait en local, non poussé.**
+
+## LOT A, A2 — section boutique de l'accueil du site alignée sur la boutique (5 novembre 2026)
+
+Écart signalé avant développement : A2 prévoit 6 à 8 cartes « mis en avant » (carrousel sur
+mobile). Le Commanditaire a choisi d'aligner la section sur l'accueil de la boutique. Quand le
+catalogue est lu au build (`src/components/home/BoutiqueVitrine.astro`) : bloc « Billetterie »
+(4 lignes rendez-vous : dates, lieu, accès, prix, Réserver) et bloc « Articles officiels » (4 cartes
+à cadre or au survol, sans favori ni aperçu rapide pour ne charger aucun script de la boutique),
+boutons « Toute la billetterie » et « Tous les articles », lien « Accéder à toute la boutique » ;
+tous les liens suivis (`utm_medium=accueil-boutique`, A5). Catalogue injoignable : les cartes A2
+du fichier de secours, inchangées — la section n'est jamais vide (F-CNV-020).
+Preuves : e2e « accueil du site : section boutique alignée » (`E2E_BOUTIQUE=1`) ; axe sans
+violation sur `/` ; suite du site en mode CI 31/31 (repli A2 vérifié par `boutique-lot-a.spec.ts`).
+**Statut : fait en local, non poussé.**
+
+## Un seul or sur le site : l'or vieilli #B8963E (5 novembre 2026)
+
+Décision du Commanditaire : tous les éléments qui tendent vers l'or passent à l'or vieilli
+#B8963E (`--crn-or`). L'or lumière #D9C48A et l'or profond #8A6E22 de la palette GBIS ne sont plus
+employés sur le site public ni dans la boutique (35 fichiers ; jetons `--crn-or-lumiere`,
+`--crn-or-profond` et `--color-accent-deep` retirés de `src/styles/tokens.css`, transparences
+`rgba(217, 196, 138, …)` ramenées à `rgba(184, 150, 62, …)`). Les quelques textes qui étaient en or
+profond sur fond clair (étiquettes d'annonces, FAQ, fiche produit, profils, numéro de commande,
+rôle de NASTY, sigle du panier) passent en bleu nuit, conformément à « jamais de texte or sur fond
+clair » et au contraste minimal (#B8963E sur crème : 2,5:1). Contraste vérifié (axe, règle
+color-contrast) sur 22 pages à 360 et 1 280 px : aucun défaut lié à l'or ; seul défaut relevé,
+antérieur et sans rapport, la mention grise « Photo réelle à fournir » de `/artistes` (3,3:1).
+Suite du site 31/31, accessibilité de la boutique 4/4. Le back-office (Payload, poste de scan)
+garde pour l'instant ses propres tons. **Statut : fait en local, non poussé.**
+
+## Cadre or au survol sur les pavés du site (5 novembre 2026)
+
+Même effet que les cartes « Articles officiels » de la boutique : le pavé est posé sur un cadre or
+vieilli invisible au repos, qui pivote derrière lui au survol (souris) ou au focus clavier ; sur
+écran tactile, seul le focus le déclenche (pas de survol « collant ») ; animations réduites : le
+cadre apparaît sans mouvement. Effet commun `.cadre-or` (`src/styles/global.css`) et enveloppe
+`src/components/shared/CadreOr.astro`, appliqués là où le Commanditaire l'a demandé : accueil
+(« Une vision. Trois mouvements. », Plateformes phares, Billetterie de la section boutique,
+Action sociale, Suivre à distance) et pages Académie des Sciences Divines, Action sociale, Infos
+pratiques, Diaspora. Preuves : vérification au survol (accueil, Diaspora) ; suite du site 31/31,
+accessibilité 5/5 (dont l'accueil avec le catalogue). **Statut : fait en local, non poussé.**
+
+## Visuels des plateformes intégrés (5 novembre 2026)
+
+Le Commanditaire a fourni 10 visuels nommés par plateforme (jeu PL du document d'habillage
+visuel `Convention_CRN_2026_Habillage_Visuel.docx`). Les 10 sont intégrés, convertis en WebP maîtres
+(1 500 × 844, 115 à 230 Ko, bas de l'image écarté pour retirer le filigrane du générateur) dans
+`src/assets/images/plateformes/`, puis déclinés par Astro (`astro:assets`) aux tailles affichées,
+en chargement différé. Table unique `src/lib/visuels-plateformes.ts` (produit ou séance → visuel).
+Emplacements :
+
+| Emplacement (document) | Fichiers | Visuels |
+|---|---|---|
+| A-08 Plateformes phares (accueil) | `PlatformCard.astro`, `index.astro` | les 6 cartes : Académie, Femme de Foi, J'ai soif, Concert, Culte & ordination, Dîner |
+| A-05 Aperçu du programme (accueil) | `ProgramPreview.astro`, `index.astro` | vignette ronde de la séance affichée |
+| Séances du programme (`/programme`) | `SessionCard.astro`, `programme.astro` | Matin de gloire, Académie, Atmosphère prophétique / Pastorale, Plénière, Culte unique, ordination, Concert, Femme de Foi, J'ai soif, Dîner |
+| BQ-07 Lignes des 7 tickets (boutique, rayon Billetterie, recherche, section boutique de l'accueil) | `LigneBillet.astro` | Académie (classe et Pass Académie Intégral), Femme de Foi, J'ai soif, Dîner, Concert Standard, Concert VIP |
+| Fiche produit et panier des mêmes tickets | `boutique/produits/[slug].astro` | idem |
+| B-02 Cartes de `/billetterie` | `PriceCard.astro`, `billetterie.astro` | idem, par groupe |
+
+Une photo saisie dans le back-office reste prioritaire sur ces visuels. Les pass gardent le cadre
+neutre marqué « CRN » (jeu PS non fourni).
+
+**DÉROGATION à la règle permanente n° 4** (« aucun visage généré par IA ») : les visuels
+« Femme de Foi — Live » et « J'ai soif » montrent des visages générés par IA. Conflit signalé par
+écrit, puis intégration choisie par le Commanditaire le 5 novembre 2026. Portée : ces deux visuels
+seulement ; les 8 autres ne montrent aucun visage (lieux, objets, personnes de dos), et orateurs,
+artistes et lieux restent en photos réelles. Mention ajoutée à la règle n° 4 de `CLAUDE.md`. Textes alternatifs : descriptifs sur la fiche
+produit, vides là où le titre voisin nomme déjà la plateforme. **Statut : fait en local, non poussé.**

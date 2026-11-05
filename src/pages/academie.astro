@@ -5,6 +5,7 @@ import Section from '../components/shared/Section.astro';
 import Button from '../components/shared/Button.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import InfoCard from '../components/shared/InfoCard.astro';
+import CadreOr from '../components/shared/CadreOr.astro';
 import { lienBoutique } from '../lib/boutique';
 
 const speakers = await getCollection('speakers');
@@ -29,11 +30,11 @@ const classes = (jourReference?.data.sessions ?? []).filter((s) => s.titre.start
   <Section tone="default" ariaLabel="Académie des Sciences Divines">
     <div class="classes-grid" data-reveal-group>
       {classes.map((c) => (
-        <InfoCard>
+        <CadreOr><InfoCard>
           <h2 class="class-card__title">{c.titre.replace('Académie — ', '')}</h2>
           <p class="class-card__time">{c.heureDebut} – {c.heureFin}</p>
           <p class="class-card__speakers">{c.intervenants.map(speakerName).join(' · ')}</p>
-        </InfoCard>
+        </InfoCard></CadreOr>
       ))}
     </div>
 

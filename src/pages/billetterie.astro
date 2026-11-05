@@ -10,6 +10,7 @@ import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import Icon from '../components/shared/Icon.astro';
 import PriceCard from '../components/ticketing/PriceCard.astro';
+import { visuelProduit } from '../lib/visuels-plateformes';
 import AccessRules from '../components/ticketing/AccessRules.astro';
 import { lienBoutique, lienProduit } from '../lib/boutique';
 
@@ -55,6 +56,8 @@ const categories: { key: typeof produits[number]['data']['categorie']; label: st
     {categories.map((cat) => {
       const items = produits.filter((p) => p.data.categorie === cat.key);
       if (items.length === 0) return null;
+      // Vignettes (B-02) seulement dans les groupes qui en ont au moins une ; cadre neutre sinon.
+      const avecVisuels = items.some((p) => visuelProduit(p.id));
       return (
         <div class="price-group" id={cat.key}>
           <h3>{cat.label}</h3>
@@ -67,6 +70,7 @@ const categories: { key: typeof produits[number]['data']['categorie']; label: st
                 lienAchat={lienProduit(p.id, 'billetterie')}
                 statut={p.data.statut}
                 featured={p.data.nom === 'Pass Académie Intégral'}
+                visuel={avecVisuels ? (visuelProduit(p.id) ?? null) : undefined}
               />
             ))}
           </div>
@@ -99,7 +103,7 @@ const categories: { key: typeof produits[number]['data']['categorie']; label: st
     height: 52px;
     border-radius: 50%;
     background: var(--crn-bleu-nuit);
-    color: var(--crn-or-lumiere);
+    color: var(--crn-or);
   }
 
   .billetterie-boutique__texte h2 {

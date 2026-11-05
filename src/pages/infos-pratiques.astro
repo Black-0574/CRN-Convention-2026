@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import InfoCard from '../components/shared/InfoCard.astro';
+import CadreOr from '../components/shared/CadreOr.astro';
 
 const lieux = [
   {
@@ -33,11 +34,11 @@ const lieux = [
     <h2>Lieux</h2>
     <div class="venues-grid" data-reveal-group>
       {lieux.map((lieu) => (
-        <InfoCard>
+        <CadreOr><InfoCard>
           <h3 class="venue-card__name">{lieu.nom}</h3>
           <p class="venue-card__address">{lieu.adresse}</p>
           <p class="venue-card__note">{lieu.note}</p>
-        </InfoCard>
+        </InfoCard></CadreOr>
       ))}
     </div>
 

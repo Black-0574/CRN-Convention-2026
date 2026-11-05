@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import InfoCard from '../components/shared/InfoCard.astro';
+import CadreOr from '../components/shared/CadreOr.astro';
 ---
 
 <BaseLayout
@@ -18,14 +19,14 @@ import InfoCard from '../components/shared/InfoCard.astro';
 
   <Section tone="default" ariaLabel="Détails de la collecte">
     <div class="info-grid" data-reveal-group>
-      <InfoCard>
+      <CadreOr><InfoCard>
         <p class="info-card__label">Collecte</p>
         <p class="info-card__value">Du 9 au 27 novembre 2026</p>
-      </InfoCard>
-      <InfoCard>
+      </InfoCard></CadreOr>
+      <CadreOr><InfoCard>
         <p class="info-card__label">Distribution</p>
         <p class="info-card__value">Samedi 5 décembre 2026, 9h – 12h, Église Centrale</p>
-      </InfoCard>
+      </InfoCard></CadreOr>
     </div>
 
     <p class="info-footnote">
@@ -48,7 +49,7 @@ import InfoCard from '../components/shared/InfoCard.astro';
     text-transform: uppercase;
     font-size: var(--text-s);
     letter-spacing: 0.06em;
-    color: var(--crn-or-profond);
+    color: var(--crn-bleu-nuit);
     margin: 0 0 6px 0;
   }
 

@@ -1,5 +1,7 @@
 ---
+import { Image } from 'astro:assets';
 import { formatEUR, formatXAF } from '../../lib/boutique';
+import type { VisuelPlateforme } from '../../lib/visuels-plateformes';
 
 interface Props {
   nom: string;
@@ -9,13 +11,24 @@ interface Props {
   lienAchat?: string;
   statut: 'disponible' | 'complet' | 'a_annoncer';
   featured?: boolean;
+  /** Vignette en tête de carte (B-02) ; null : cadre neutre marqué, en attente du visuel. */
+  visuel?: VisuelPlateforme | null;
 }
-const { nom, prixFCFA, description, lienAchat, statut, featured = false } = Astro.props;
+const { nom, prixFCFA, description, lienAchat, statut, featured = false, visuel } = Astro.props;
 
 const prixAffiche = prixFCFA === null ? 'À annoncer' : formatXAF(prixFCFA);
 ---
 
 <article class={`price-card ${featured ? 'price-card--featured' : ''}`}>
+  {visuel !== undefined && (
+    <div class="price-card__visuel">
+      {visuel ? (
+        <Image src={visuel.image} alt="" widths={[400, 640]} sizes="(min-width: 1224px) 380px, (min-width: 1024px) 30vw, (min-width: 768px) 46vw, 92vw" loading="lazy" />
+      ) : (
+        <span class="price-card__sigle" aria-hidden="true">CRN</span>
+      )}
+    </div>
+  )}
   {featured && <span class="price-card__flag">Recommandé</span>}
   <div class="price-card__head">
     <h4 class="price-card__name">{nom}</h4>
@@ -45,6 +58,35 @@ const prixAffiche = prixFCFA === null ? 'À annoncer' : formatXAF(prixFCFA);
     gap: var(--space-1);
     height: 100%;
     transition: transform var(--transition-standard), box-shadow var(--transition-standard);
+  }
+
+  /* Vignette pleine largeur en tête de carte, coins hauts arrondis comme la carte. */
+  .price-card__visuel {
+    aspect-ratio: 16 / 9;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) var(--space-1);
+    border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+    border-bottom: 2px solid var(--crn-or);
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .price-card__visuel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .price-card__sigle {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: 25px;
+    letter-spacing: 0.12em;
+    color: var(--crn-or);
+    border: 1px solid var(--crn-or);
+    padding: 6px 14px;
   }
 
   .price-card:hover {
@@ -113,7 +155,7 @@ const prixAffiche = prixFCFA === null ? 'À annoncer' : formatXAF(prixFCFA);
   }
 
   .price-card--featured .price-card__price {
-    color: var(--crn-or-lumiere);
+    color: var(--crn-or);
   }
 
   .price-card__eur {

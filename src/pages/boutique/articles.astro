@@ -1,0 +1,18 @@
+---
+// Rayon Articles officiels de la boutique, avec filtres.
+import ListeCatalogue from '../../components/boutique/ListeCatalogue.astro';
+import Boutique from '../../layouts/BoutiqueLayout.astro';
+import { catalogue } from '../../lib/boutique-api';
+import { estBillet } from '../../lib/boutique-rayons';
+
+const c = await catalogue();
+---
+
+<Boutique title="Articles officiels" description="Articles officiels de la Convention CRN 2026, livrés dans l’église du réseau de votre choix, au Gabon ou à l’étranger.">
+  <ListeCatalogue
+    titre="Articles officiels"
+    intro="Les articles officiels de la Convention, livrés dans l’église du réseau CRN de votre choix, au Gabon ou à l’étranger."
+    produits={(c?.produits ?? []).filter((p) => !estBillet(p))}
+    indisponible={c === null}
+  />
+</Boutique>

@@ -1,0 +1,479 @@
+---
+/*
+  Page de rayon de la boutique (Billetterie, Articles officiels, Recherche) : filtres à gauche
+  (mot clé, catégories, prix maximum), tri et nombre de résultats, puis les billets en lignes
+  « rendez-vous » et les articles en cartes. Filtrage dans le navigateur, sans requête réseau ;
+  les critères vivent dans l'adresse (?q=…&categorie=pass&prix=…&tri=…), donc une recherche se
+  partage. Sur mobile, les filtres se replient sous « Filtrer par ».
+*/
+import type { VueProduit } from '../../lib/boutique-api';
+import { formaterXAF } from '../../lib/boutique-format';
+import { estBillet, parOrdre, RAYONS, rayonDe } from '../../lib/boutique-rayons';
+import CarteArticle from './CarteArticle.astro';
+import InteractionsCartes from './InteractionsCartes.astro';
+import LigneBillet from './LigneBillet.astro';
+
+interface Props {
+  titre: string;
+  intro: string;
+  produits: VueProduit[];
+  indisponible: boolean;
+}
+const { titre, intro, produits, indisponible } = Astro.props;
+
+const billets = produits.filter(estBillet).sort(parOrdre);
+const articles = produits.filter((p) => !estBillet(p)).sort(parOrdre);
+const rayons = RAYONS.map((r) => ({ ...r, nombre: produits.filter((p) => rayonDe(p) === r.id).length })).filter((r) => r.nombre > 0);
+const prix = produits.map((p) => p.prixXAF).filter((x): x is number => x !== null);
+const prixMax = prix.length ? Math.max(...prix) : 0;
+const PAS = 1000;
+const borneMax = Math.ceil(prixMax / PAS) * PAS;
+---
+
+<section class="rayon-entete">
+  <div class="container">
+    <nav class="rayon-entete__fil" aria-label="Fil d’Ariane">
+      <a href="/boutique">Boutique</a> <span aria-hidden="true">›</span> <span aria-current="page">{titre}</span>
+    </nav>
+    <h1 class="rayon-entete__titre">{titre}</h1>
+    <p class="rayon-entete__intro">{intro}</p>
+  </div>
+</section>
+
+<div class="container rayon">
+  {indisponible ? (
+    <p class="rayon__alerte" role="status">La boutique est momentanément indisponible. Merci de réessayer dans quelques instants.</p>
+  ) : (
+    <>
+      <details class="filtres" data-filtres-details>
+        <summary class="filtres__titre">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
+          Filtrer par
+        </summary>
+        <form class="filtres__form" role="search" aria-label={`Filtrer : ${titre}`} data-filtres>
+          <fieldset class="filtres__bloc">
+            <legend>Recherche par mot clé</legend>
+            <label class="visually-hidden" for="filtre-q">Mot clé</label>
+            <input id="filtre-q" class="filtres__saisie" type="search" name="q" placeholder="Rechercher…" autocomplete="off" enterkeyhint="search" />
+          </fieldset>
+
+          {rayons.length > 1 && (
+            <fieldset class="filtres__bloc">
+              <legend>Catégories</legend>
+              {rayons.map((r) => (
+                <label class="filtres__case">
+                  <input type="checkbox" name="categorie" value={r.id} />
+                  <span>{r.libelle}</span>
+                  <span class="filtres__nombre">({r.nombre})</span>
+                </label>
+              ))}
+            </fieldset>
+          )}
+
+          {prix.length > 1 && (
+            <fieldset class="filtres__bloc">
+              <legend>Prix maximum</legend>
+              <input class="filtres__curseur" type="range" name="prix" min="0" max={borneMax} step={PAS} value={borneMax} aria-label="Prix maximum en francs CFA" data-prix-max={borneMax} />
+              <p class="filtres__bornes">
+                <span>0 F CFA</span>
+                <output data-prix-sortie>{formaterXAF(borneMax)}</output>
+              </p>
+            </fieldset>
+          )}
+
+          <button type="reset" class="button button--secondary filtres__effacer">Réinitialiser les filtres</button>
+        </form>
+      </details>
+
+      <div class="rayon__resultats">
+        <div class="rayon__barre">
+          <p class="rayon__compte" role="status" data-compte>{produits.length} produit{produits.length > 1 ? 's' : ''}</p>
+          <label class="rayon__tri">
+            <span>Trier</span>
+            <select name="tri" data-tri>
+              <option value="">Par défaut</option>
+              <option value="prix-croissant">Prix croissant</option>
+              <option value="prix-decroissant">Prix décroissant</option>
+              {billets.length > 0 && <option value="date">Date la plus proche</option>}
+            </select>
+          </label>
+        </div>
+
+        {billets.length > 0 && (
+          <section class="rayon__groupe" aria-label="Billetterie" data-groupe>
+            {articles.length > 0 && <h2 class="rayon__groupe-titre">Billetterie</h2>}
+            <div class="rayon__billets" data-liste>
+              {billets.map((p) => <LigneBillet produit={p} />)}
+            </div>
+          </section>
+        )}
+
+        {articles.length > 0 && (
+          <section class="rayon__groupe" aria-label="Articles officiels" data-groupe>
+            {billets.length > 0 && <h2 class="rayon__groupe-titre">Articles officiels</h2>}
+            <div class="rayon__articles" data-liste>
+              {articles.map((p) => <CarteArticle produit={p} />)}
+            </div>
+          </section>
+        )}
+
+        <div class="rayon__vide" data-vide hidden>
+          <p>Aucun produit ne correspond à ces critères.</p>
+          <button type="button" class="button button--primary" data-tout-voir>Voir tous les produits</button>
+        </div>
+      </div>
+    </>
+  )}
+</div>
+
+{!indisponible && <InteractionsCartes />}
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-filtres]');
+  if (form) {
+    const details = document.querySelector<HTMLDetailsElement>('[data-filtres-details]')!;
+    const q = form.elements.namedItem('q') as HTMLInputElement;
+    const cases = [...form.querySelectorAll<HTMLInputElement>('input[name="categorie"]')];
+    const curseur = form.querySelector<HTMLInputElement>('input[name="prix"]');
+    const sortie = form.querySelector<HTMLOutputElement>('[data-prix-sortie]');
+    const tri = document.querySelector<HTMLSelectElement>('[data-tri]')!;
+    const compte = document.querySelector<HTMLElement>('[data-compte]')!;
+    const vide = document.querySelector<HTMLElement>('[data-vide]')!;
+    const produits = [...document.querySelectorAll<HTMLElement>('[data-produit]')];
+    const borne = Number(curseur?.dataset.prixMax ?? 0);
+    const xaf = (n: number) => `${new Intl.NumberFormat('fr-FR').format(n).replace(/\s/g, '\u202f')}\u00a0F\u00a0CFA`;
+    const normaliser = (s: string) =>
+      s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[’‘]/g, "'").toLowerCase().trim();
+
+    // Filtres ouverts d'office sur ordinateur, repliés sur mobile.
+    const large = window.matchMedia('(min-width: 1024px)');
+    const majOuverture = () => (details.open = large.matches);
+    majOuverture();
+    large.addEventListener('change', majOuverture);
+
+    const appliquer = () => {
+      const mots = normaliser(q.value).split(/\s+/).filter(Boolean);
+      const rayons = cases.filter((c) => c.checked).map((c) => c.value);
+      const max = curseur ? Number(curseur.value) : Infinity;
+      if (sortie) sortie.textContent = xaf(max);
+      let total = 0;
+      for (const el of produits) {
+        const prix = el.dataset.prix ? Number(el.dataset.prix) : null;
+        const ok =
+          (rayons.length === 0 || rayons.includes(el.dataset.rayon!)) &&
+          mots.every((m) => normaliser(el.dataset.recherche ?? '').includes(m)) &&
+          (prix === null || prix <= max);
+        el.hidden = !ok;
+        if (ok) total++;
+      }
+      document.querySelectorAll<HTMLElement>('[data-groupe]').forEach((g) => (g.hidden = !g.querySelector('[data-produit]:not([hidden])')));
+      compte.textContent = `${total} produit${total > 1 ? 's' : ''}`;
+      vide.hidden = total > 0;
+
+      // Tri dans chaque liste (billets, articles).
+      const cle = tri.value;
+      document.querySelectorAll<HTMLElement>('[data-liste]').forEach((liste) => {
+        const els = [...liste.querySelectorAll<HTMLElement>(':scope > [data-produit]')];
+        const nombre = (el: HTMLElement, champ: string, defaut: number) => (el.dataset[champ] ? Number(el.dataset[champ]) : defaut);
+        els.sort((a, b) => {
+          if (cle === 'prix-croissant') return nombre(a, 'prix', Infinity) - nombre(b, 'prix', Infinity);
+          if (cle === 'prix-decroissant') return nombre(b, 'prix', -Infinity) - nombre(a, 'prix', -Infinity);
+          if (cle === 'date') return nombre(a, 'date', Infinity) - nombre(b, 'date', Infinity);
+          return nombre(a, 'ordre', 0) - nombre(b, 'ordre', 0);
+        });
+        liste.append(...els);
+      });
+
+      // Critères dans l'adresse.
+      const url = new URL(location.href);
+      url.search = '';
+      if (q.value.trim()) url.searchParams.set('q', q.value.trim());
+      rayons.forEach((r) => url.searchParams.append('categorie', r));
+      if (curseur && max < borne) url.searchParams.set('prix', String(max));
+      if (cle) url.searchParams.set('tri', cle);
+      history.replaceState(null, '', url);
+    };
+
+    // Critères reçus dans l'adresse (recherche de l'accueil, liens des rubriques).
+    const params = new URLSearchParams(location.search);
+    q.value = params.get('q') ?? '';
+    const voulus = params.getAll('categorie');
+    cases.forEach((c) => (c.checked = voulus.includes(c.value)));
+    if (curseur && params.get('prix')) curseur.value = params.get('prix')!;
+    if ([...tri.options].some((o) => o.value === params.get('tri'))) tri.value = params.get('tri')!;
+    appliquer();
+
+    form.addEventListener('input', appliquer);
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      appliquer();
+    });
+    form.addEventListener('reset', () => setTimeout(appliquer));
+    tri.addEventListener('change', appliquer);
+    document.querySelector('[data-tout-voir]')?.addEventListener('click', () => form.reset());
+  }
+</script>
+
+<style>
+  .rayon-entete {
+    background: linear-gradient(160deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
+    color: var(--crn-blanc);
+    padding-block: var(--space-3) var(--space-6);
+    border-bottom: 3px solid var(--crn-or);
+  }
+
+  .rayon-entete__fil {
+    display: flex;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .rayon-entete__fil a {
+    color: var(--crn-blanc);
+  }
+
+  .rayon-entete__titre {
+    margin: var(--space-2) 0 8px;
+    color: var(--crn-blanc);
+    font-size: var(--text-h1-mobile);
+    line-height: 1.1;
+  }
+
+  .rayon-entete__intro {
+    margin: 0;
+    max-width: 60ch;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .rayon {
+    display: grid;
+    gap: var(--space-3);
+    padding-block: var(--space-3) var(--space-6);
+  }
+
+  .rayon__alerte {
+    padding: var(--space-2);
+    border: 1px solid var(--crn-or);
+    border-radius: var(--radius-card-sm);
+    background: var(--crn-blanc);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  /* Filtres. */
+  .filtres {
+    align-self: start;
+    background: var(--crn-blanc);
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-card-sm);
+    box-shadow: var(--shadow-card);
+  }
+
+  .filtres__titre {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 56px;
+    padding: 0 var(--space-2);
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .filtres__titre::-webkit-details-marker {
+    display: none;
+  }
+
+  .filtres__titre svg {
+    color: var(--crn-or);
+  }
+
+  .filtres__form {
+    display: grid;
+    gap: var(--space-2);
+    padding: 0 var(--space-2) var(--space-2);
+  }
+
+  .filtres__bloc {
+    margin: 0;
+    padding: var(--space-2) 0 0;
+    border: 0;
+    border-top: 1px solid var(--crn-gris-clair);
+  }
+
+  /* Légende flottante (pour qu'elle reste dans le bloc, sous le filet) : tout ce qui suit passe
+     dessous, sinon le premier choix se place à côté et déborde du panneau. */
+  .filtres__bloc > * {
+    clear: both;
+  }
+
+  .filtres__bloc legend {
+    float: left;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 0;
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+  }
+
+  .filtres__saisie {
+    width: 100%;
+    min-height: var(--tap-target-min);
+    padding: 0 14px;
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-pill);
+    font: inherit;
+    font-size: 16px;
+    color: var(--crn-noir);
+  }
+
+  .filtres__saisie:focus-visible,
+  .filtres__case input:focus-visible,
+  .filtres__curseur:focus-visible,
+  .rayon__tri select:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .filtres__case {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--tap-target-min);
+    color: var(--crn-noir);
+    cursor: pointer;
+  }
+
+  .filtres__case input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--crn-bleu-nuit);
+  }
+
+  .filtres__nombre {
+    margin-left: auto;
+    color: var(--crn-gris);
+  }
+
+  .filtres__curseur {
+    width: 100%;
+    accent-color: var(--crn-bleu-nuit);
+  }
+
+  .filtres__bornes {
+    display: flex;
+    justify-content: space-between;
+    margin: 6px 0 0;
+    color: var(--crn-gris);
+  }
+
+  .filtres__bornes output {
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+  }
+
+  .filtres__effacer {
+    justify-self: start;
+  }
+
+  /* Résultats. */
+  .rayon__resultats {
+    min-width: 0;
+  }
+
+  .rayon__barre {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: var(--space-2);
+  }
+
+  .rayon__compte {
+    margin: 0;
+    color: var(--crn-gris);
+  }
+
+  .rayon__tri {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--crn-gris);
+  }
+
+  .rayon__tri select {
+    min-height: var(--tap-target-min);
+    padding: 0 12px;
+    border: 1px solid var(--crn-gris-clair);
+    border-radius: var(--radius-control);
+    background: var(--crn-blanc);
+    font: inherit;
+    font-size: 16px;
+    color: var(--crn-noir);
+  }
+
+  .rayon__groupe + .rayon__groupe {
+    margin-top: var(--space-6);
+  }
+
+  .rayon__groupe-titre {
+    margin: 0 0 var(--space-2);
+    color: var(--crn-bleu-nuit);
+    font-size: var(--text-h3-mobile);
+  }
+
+  .rayon__billets {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .rayon__articles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .rayon__vide {
+    padding: var(--space-6) var(--space-2);
+    text-align: center;
+    color: var(--crn-bleu-nuit);
+  }
+
+  @media (max-width: 479px) {
+    .rayon__articles {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .rayon-entete__titre {
+      font-size: var(--text-h1);
+    }
+
+    .rayon__articles {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .rayon {
+      grid-template-columns: 280px minmax(0, 1fr);
+      align-items: start;
+      gap: var(--space-3);
+    }
+
+    .filtres {
+      position: sticky;
+      top: calc(var(--site-header-h, 72px) + var(--b-barre-h, 64px) + 16px);
+    }
+
+    /* Ordinateur : les filtres restent ouverts, le titre ne replie plus. */
+    .filtres__titre {
+      pointer-events: none;
+    }
+  }
+</style>

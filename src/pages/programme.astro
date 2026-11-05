@@ -5,6 +5,7 @@ import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
 import DayNav from '../components/program/DayNav.astro';
 import SessionCard from '../components/program/SessionCard.astro';
+import { visuelSeance } from '../lib/visuels-plateformes';
 
 const jours = (await getCollection('program')).sort((a, b) => a.data.ordre - b.data.ordre);
 const speakers = await getCollection('speakers');
@@ -41,6 +42,7 @@ const joursNav = jours.map((j) => ({ date: j.data.date, label: j.data.label }));
                 lieu={s.lieu}
                 intervenantsNoms={s.intervenants.map(speakerName)}
                 noteIntervenant={s.noteIntervenant}
+                visuel={visuelSeance(s.titre)}
               />
             ))}
         </div>

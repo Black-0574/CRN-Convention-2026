@@ -1,22 +1,27 @@
 ---
+import { getImage, Image } from 'astro:assets';
 import CompteARebours from '../../../components/boutique/CompteARebours.astro';
 import Boutique from '../../../layouts/BoutiqueLayout.astro';
 import { catalogue, type VueProduit } from '../../../lib/boutique-api';
 import { creneau, dernierJour, formaterEUR, formaterXAF } from '../../../lib/boutique-format';
+import { visuelProduit } from '../../../lib/visuels-plateformes';
 
 // Une page statique par produit du catalogue, générée au build (site statique).
 export async function getStaticPaths() {
   const c = await catalogue();
-  return (c?.produits ?? []).map((produit) => ({ params: { slug: produit.slug }, props: { produit, demo: c!.demo } }));
+  return (c?.produits ?? []).map((produit) => ({ params: { slug: produit.slug }, props: { produit } }));
 }
 
-const { produit: p, demo } = Astro.props as { produit: VueProduit; demo: boolean };
+const { produit: p } = Astro.props as { produit: VueProduit };
 
 const maintenant = new Date();
 const palierCourant = p.paliers.find((pa) => new Date(pa.debut) <= maintenant && maintenant < new Date(pa.fin));
 const palierSuivant = p.paliers.find((pa) => new Date(pa.debut) > maintenant);
 const choixVariante = p.variantes.length > 1;
 const vendable = p.prixXAF !== null && !p.indisponible;
+// Sans photo du back-office, un ticket prend le visuel de sa plateforme (BQ-07), panier compris.
+const visuel = p.photos.length > 0 ? undefined : visuelProduit(p.slug);
+const vignetteVisuel = visuel ? (await getImage({ src: visuel.image, width: 128, format: 'webp' })).src : null;
 const etiquetteType = { pass: 'Pass nominatif', ticket: 'Billet nominatif', physique: 'Article officiel', numerique: 'Produit numérique' }[p.type];
 
 // Données reprises par le panier (rien n'y fait foi : le serveur revérifie à la commande).
@@ -30,12 +35,12 @@ const pourPanier = {
   kitTailles: p.kit.filter((k) => k.tailles.length > 0).map((k) => ({ nom: k.nom, tailles: k.tailles })),
   // Articles physiques à livrer : l'article lui-même, ou le kit inclus dans un pass.
   aLivrer: p.type === 'physique' || p.kit.length > 0,
-  photo: p.photos[0]?.carte ?? null,
+  photo: p.photos[0]?.carte ?? vignetteVisuel,
   variantes: p.variantes,
 };
 ---
 
-<Boutique title={p.nom} description={p.resume ?? `${p.nom} — Convention CRN 2026.`} demo={demo}>
+<Boutique title={p.nom} description={p.resume ?? `${p.nom} — Convention CRN 2026.`}>
   <div class="container fiche">
     <nav class="fil" aria-label="Fil d’Ariane"><a href="/boutique">Boutique</a> <span aria-hidden="true">/</span> <span>{p.nom}</span></nav>
 
@@ -52,6 +57,15 @@ const pourPanier = {
               </div>
             )}
           </>
+        ) : visuel ? (
+          <Image
+            class="fiche__photo"
+            src={visuel.image}
+            alt={visuel.alt}
+            widths={[480, 800, 1200]}
+            sizes="(min-width: 900px) 50vw, 100vw"
+            loading="eager"
+          />
         ) : (
           <div class="fiche__cadre" role="img" aria-label="Photo à venir">
             <span class="fiche__cadre-sigle">CRN</span>
@@ -253,7 +267,7 @@ const pourPanier = {
     font-family: var(--font-titrage);
     font-weight: 700;
     font-size: 49px;
-    color: var(--crn-or-lumiere);
+    color: var(--crn-or);
     letter-spacing: 0.08em;
   }
 
@@ -267,13 +281,13 @@ const pourPanier = {
     letter-spacing: 0.08em;
     font-weight: 700;
     font-size: 16px;
-    color: var(--crn-or-profond);
+    color: var(--crn-bleu-nuit);
   }
 
   .fiche__apercu {
     display: inline-block;
     margin: 8px 0 0;
-    background: var(--crn-or-lumiere);
+    background: var(--crn-or);
     color: var(--crn-noir);
     font-weight: 700;
     padding: 4px 12px;
@@ -290,8 +304,8 @@ const pourPanier = {
   .fiche__badge {
     display: inline-block;
     font-weight: 700;
-    color: var(--crn-or-profond);
-    border: 1px solid var(--crn-or-lumiere);
+    color: var(--crn-bleu-nuit);
+    border: 1px solid var(--crn-or);
     border-radius: var(--radius-pill);
     padding: 2px 12px;
   }
@@ -315,7 +329,7 @@ const pourPanier = {
 
   .fiche__palier {
     background: var(--crn-blanc);
-    border: 1px solid var(--crn-or-lumiere);
+    border: 1px solid var(--crn-or);
     border-radius: var(--radius-card-sm);
     padding: var(--space-2);
     margin-bottom: var(--space-2);
