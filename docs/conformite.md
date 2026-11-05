@@ -1246,3 +1246,21 @@ habillage visuel, boutique (vitrine et catalogue), héros animé, orateurs, gale
   redémarrage absent du dépôt principal ; le prochain envoi suivra la procédure du README (`--force`).
   La republication automatique du site après une modification dans l'admin ne s'est pas déclenchée
   (`SITE_REBUILD_GITHUB_TOKEN` / `SITE_REBUILD_GITHUB_REPO` à vérifier dans hPanel).
+
+## Boutique — prix des pins, de l'huile d'onction, du polo et de la casquette (5 novembre 2026)
+
+Prix communiqués par le Commanditaire : **pins 5 000 F CFA, huile d'onction 3 000 F CFA, polo
+12 500 F CFA, casquette 10 000 F CFA** (palier en vigueur depuis le 5 novembre, 00h00 Libreville).
+Ces articles passent de « Prix à valider » à « en vente » (polo S à XXL ; stocks non suivis tant
+que le CRN ne les saisit pas).
+
+- Import initial (`ajouterArticlesAnnonces`) : créés directement au prix validé.
+- Base déjà importée (production) : `appliquerPrixArticlesAnnonces`, à chaque démarrage, n'agit que
+  sur un article encore en « Prix à valider » sans palier ; un article tarifé ou modifié dans l'admin
+  n'est jamais touché.
+- Testé en mode production : base existante (4 articles mis en vente, second démarrage sans effet)
+  et base vierge (créés au prix) ; catalogue public de 18 produits.
+- Volet « Articles » du diaporama : texte mis à jour avec toute la gamme ; prix d'appel calculé
+  (3 000 F CFA).
+
+Rappel : les ventes restent fermées tant qu'aucun prestataire de paiement n'est raccordé.
