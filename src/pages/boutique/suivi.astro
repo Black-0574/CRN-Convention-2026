@@ -4,13 +4,17 @@
   Page statique : la commande est lue dans le navigateur auprès de l'API de la boutique. C'est aussi
   la page où l'agrégateur de paiement renvoie le client. Billets nominatifs (QR code) à télécharger
   une fois le paiement confirmé, livraison des articles, état de la réservation ; mise à jour
-  automatique tant que le paiement est en attente.
+  automatique tant que le paiement est en attente. Commande payée : illustration de confirmation
+  (BQ-09, billet doré dans une enveloppe), décorative.
 */
+import { Image } from 'astro:assets';
 import Boutique from '../../layouts/BoutiqueLayout.astro';
+import illustrationMerci from '../../assets/images/boutique-habillage/confirmation.webp';
 ---
 
 <Boutique title="Suivi de commande">
   <div class="container suivi" data-suivi>
+    <Image class="suivi__merci" src={illustrationMerci} alt="" widths={[200, 400]} sizes="200px" loading="lazy" data-illustration-merci hidden />
     <p class="suivi__numero" data-numero></p>
     <h1 data-titre>Chargement de votre commande…</h1>
     <p class="suivi__texte" data-texte></p>
@@ -66,6 +70,7 @@ import Boutique from '../../layouts/BoutiqueLayout.astro';
     document.title = `Commande ${c.numero} · Boutique · Convention CRN 2026`;
     $('[data-numero]').textContent = `Commande ${c.numero}`;
     $('[data-titre]').textContent = etat.titre;
+    $('[data-illustration-merci]').hidden = c.statut !== 'payee';
     $('[data-texte]').textContent = etat.texte;
 
     const blocs: string[] = [];
@@ -117,6 +122,18 @@ import Boutique from '../../layouts/BoutiqueLayout.astro';
   .suivi {
     padding-top: var(--space-6);
     max-width: 820px;
+  }
+
+  .suivi__merci {
+    display: block;
+    width: 200px;
+    height: auto;
+    margin-bottom: var(--space-2);
+    border-radius: var(--radius-card);
+  }
+
+  .suivi__merci[hidden] {
+    display: none;
   }
 
   .suivi__numero {

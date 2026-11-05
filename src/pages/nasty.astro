@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
+import imageHeros from '../assets/images/heros/nasty.webp';
 import InfoCard from '../components/shared/InfoCard.astro';
 import Icon from '../components/shared/Icon.astro';
 
@@ -22,6 +23,7 @@ const sujets = [
     title="NASTY"
     intro="Disponible 24h/24 et 7j/7, directement sur le site, pour vous accueillir et répondre à vos questions sur la Convention CRN 2026."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'NASTY' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Présentation de NASTY">

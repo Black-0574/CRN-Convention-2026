@@ -12,6 +12,8 @@
  *
  * Types : vue publique renvoyée par l'API (backend/src/boutique/lib/catalogue.ts).
  */
+import { photosArticle } from './photos-articles';
+
 export interface VueVariante {
   id: number;
   libelle: string;
@@ -29,7 +31,8 @@ export interface VueProduit {
   resume: string | null;
   description: string | null;
   badge: string | null;
-  photos: { url: string; carte: string; fiche: string; alt: string }[];
+  /** `mention` : photo par défaut du site (maquette), jamais renvoyée par l'API. */
+  photos: { url: string; carte: string; fiche: string; alt: string; mention?: string }[];
   prixXAF: number | null;
   paliers: { prixXAF: number; debut: string; fin: string }[];
   prochaineBascule: string | null;
@@ -110,7 +113,9 @@ async function localiserPhotos(p: VueProduit): Promise<VueProduit> {
   const photos = await Promise.all(
     p.photos.map(async (ph) => ({ url: await recopier(ph.url), carte: await recopier(ph.carte), fiche: await recopier(ph.fiche), alt: ph.alt })),
   );
-  return { ...p, photos: photos.filter((ph) => ph.carte || ph.fiche) };
+  const recopiees = photos.filter((ph) => ph.carte || ph.fiche);
+  // Sans photo du back-office : photos par défaut de l'article (AT-01, AT-02), s'il en a.
+  return { ...p, photos: recopiees.length > 0 ? recopiees : await photosArticle(p.slug) };
 }
 
 let catalogueEnCours: Promise<{ demo: boolean; produits: VueProduit[] } | null> | undefined;

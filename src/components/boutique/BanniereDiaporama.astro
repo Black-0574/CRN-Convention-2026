@@ -13,7 +13,12 @@
   - motif « carrousel à onglets » de l'APG WAI-ARIA ; volets empilés dans la même cellule de
     grille, d'où une hauteur stable (aucun saut de mise en page entre deux volets).
   Sans JavaScript, seul le premier volet s'affiche, sans les commandes.
+  Image du volet (BQ-01 à BQ-03) en fond de toute la bannière, sous un voile bleu nuit côté texte ;
+  fondu enchaîné avec le volet actif (sans animation si prefers-reduced-motion). Décorative.
 */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
 export interface Volet {
   id: string;
   onglet: string;
@@ -21,6 +26,7 @@ export interface Volet {
   texte: string;
   prixAppel: string | null;
   bouton: { libelle: string; href: string };
+  image?: ImageMetadata;
 }
 
 interface Props {
@@ -33,6 +39,15 @@ const DUREE_MS = 6000;
 
 <section class="diapo" aria-roledescription="carrousel" aria-label="La boutique en bref" data-diapo data-duree={DUREE_MS}>
   <h1 class="visually-hidden">{titrePage}</h1>
+  {volets.some((v) => v.image) && (
+    <div class="diapo__fonds" aria-hidden="true">
+      {volets.map((v, i) => v.image && (
+        <div class:list={['diapo__fond', { 'diapo__fond--actif': i === 0 }]} data-fond={i}>
+          <Image src={v.image} alt="" widths={[640, 1024, 1672]} sizes="100vw" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} />
+        </div>
+      ))}
+    </div>
+  )}
   <div class="container diapo__inner">
     {volets.length > 1 && (
       <div class="diapo__commandes" data-commandes hidden>
@@ -117,8 +132,10 @@ const DUREE_MS = 6000;
     diapo.querySelectorAll<HTMLElement>('[data-commandes], [data-fleches]').forEach((el) => (el.hidden = false));
     diapo.classList.add('diapo--pret');
 
+    const fonds = [...diapo.querySelectorAll<HTMLElement>('[data-fond]')];
     const afficher = (i: number, focus = false) => {
       actuel = (i + volets.length) % volets.length;
+      fonds.forEach((f) => f.classList.toggle('diapo__fond--actif', Number(f.dataset.fond) === actuel));
       volets.forEach((v, j) => {
         const actif = j === actuel;
         v.classList.toggle('diapo__volet--actif', actif);
@@ -219,6 +236,46 @@ const DUREE_MS = 6000;
     /* Place réservée en bas pour la barre de recherche, posée à cheval sur le filet or. */
     padding-block: var(--space-3) calc(var(--space-6) + 56px);
     border-bottom: 3px solid var(--crn-or);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Fonds : image du volet actif sur toute la bannière, sujet calé à droite. */
+  .diapo__fonds {
+    position: absolute;
+    inset: 0;
+  }
+
+  .diapo__fond {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 600ms ease;
+  }
+
+  .diapo__fond--actif {
+    opacity: 1;
+  }
+
+  .diapo__fond img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center;
+  }
+
+  /* Voile : uniforme sur mobile (le texte couvre toute la largeur), côté texte seulement ensuite. */
+  .diapo__fonds::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(22, 36, 74, 0.78);
+  }
+
+  @media (min-width: 900px) {
+    .diapo__fonds::after {
+      background: linear-gradient(90deg, rgba(22, 36, 74, 0.82) 0%, rgba(22, 36, 74, 0.6) 40%, rgba(22, 36, 74, 0) 70%);
+    }
   }
 
   .diapo__inner {
@@ -359,15 +416,22 @@ const DUREE_MS = 6000;
     max-width: 18ch;
   }
 
+  /* Blanc plein : le texte passe sur la photo (contraste ≥ 4,5:1 mesuré sur les 3 volets). */
   .diapo__texte {
     margin: 0;
     max-width: 52ch;
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--crn-blanc);
   }
 
+  /* Or sur photo : pastille bleu nuit derrière le prix d'appel, contraste ≥ 4,5:1 mesuré. */
   .diapo__prix {
+    /* Bloc ajusté au contenu : le bouton reste sur la ligne suivante. */
+    display: table;
     margin: 12px 0 0;
+    padding: 2px 12px;
     color: var(--crn-or);
+    background: rgba(22, 36, 74, 0.78);
+    border-radius: var(--radius-pill);
   }
 
   .diapo__prix strong {
@@ -407,6 +471,10 @@ const DUREE_MS = 6000;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .diapo__fond {
+      transition: none;
+    }
+
     .diapo--pret .diapo__volet,
     .diapo--pret .diapo__volet--actif {
       transform: none;

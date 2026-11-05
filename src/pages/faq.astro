@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
+import imageHeros from '../assets/images/heros/faq.webp';
 import FaqAccordion from '../components/shared/FaqAccordion.astro';
 
 const faqs = (await getCollection('faq')).sort((a, b) => a.data.ordre - b.data.ordre);
@@ -17,6 +18,7 @@ const faqs = (await getCollection('faq')).sort((a, b) => a.data.ordre - b.data.o
     title="Questions fréquentes"
     intro="Accès, QR code, pass, horaires, paiement : les réponses aux questions les plus fréquentes sur la Convention CRN 2026."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'FAQ' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Questions fréquentes">

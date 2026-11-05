@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import BanniereDiaporama, { type Volet } from '../../components/boutique/BanniereDiaporama.astro';
 import CarteArticle from '../../components/boutique/CarteArticle.astro';
 import InteractionsCartes from '../../components/boutique/InteractionsCartes.astro';
@@ -8,6 +9,14 @@ import Boutique from '../../layouts/BoutiqueLayout.astro';
 import { catalogue, type VueProduit } from '../../lib/boutique-api';
 import { formaterXAF } from '../../lib/boutique-format';
 import { parOrdre, RAYONS, rayonDe } from '../../lib/boutique-rayons';
+import imageVoletPass from '../../assets/images/boutique-habillage/diapo-pass.webp';
+import imageVoletTickets from '../../assets/images/boutique-habillage/diapo-tickets.webp';
+// Volet Articles recadré sans le pagne : son étiquette portait une marque tierce (Commanditaire, 5 nov.).
+import imageVoletArticles from '../../assets/images/boutique-habillage/diapo-articles.webp';
+import iconeBilletterie from '../../assets/images/boutique-habillage/icone-billetterie.webp';
+import iconePaiement from '../../assets/images/boutique-habillage/icone-paiement.webp';
+import iconeLivraison from '../../assets/images/boutique-habillage/icone-livraison.webp';
+import iconeAssistance from '../../assets/images/boutique-habillage/icone-assistance.webp';
 
 const c = await catalogue();
 const produits: VueProduit[] = c?.produits ?? [];
@@ -31,7 +40,7 @@ const prixAppel = (liste: VueProduit[]) => {
   const prix = liste.map((p) => p.prixXAF).filter((x): x is number => x !== null);
   return prix.length ? formaterXAF(Math.min(...prix)) : null;
 };
-const volets: Volet[] = [
+const volets: Volet[] = ([
   pass.length > 0 && {
     id: 'pass',
     onglet: 'Pass',
@@ -39,6 +48,7 @@ const volets: Volet[] = [
     texte: 'Pass nominatifs avec QR code, envoyés par e-mail dès le paiement et scannés à l’entrée de chaque site. Du 6 au 13 décembre 2026, à Libreville.',
     prixAppel: prixAppel(pass),
     bouton: { libelle: 'Voir les pass', href: '/boutique/billetterie?categorie=pass' },
+    image: imageVoletPass,
   },
   tickets.length > 0 && {
     id: 'tickets',
@@ -47,6 +57,7 @@ const volets: Volet[] = [
     texte: 'Un seul rendez-vous vous intéresse ? Prenez un ticket nominatif pour la séance de votre choix : Académie, Femme de Foi — Live, J’ai soif, Dîner des Élites ou Concert pour la vie.',
     prixAppel: prixAppel(tickets),
     bouton: { libelle: 'Voir les tickets', href: '/boutique/billetterie?categorie=tickets' },
+    image: imageVoletTickets,
   },
   articles.length > 0 && {
     id: 'articles',
@@ -55,8 +66,9 @@ const volets: Volet[] = [
     texte: 'Tee-shirt et pagne officiels, livrés dans l’église du réseau CRN de votre choix, au Gabon ou à l’étranger. Paiement par Mobile Money ou carte bancaire.',
     prixAppel: prixAppel(articles),
     bouton: { libelle: 'Voir les articles', href: '/boutique/articles' },
+    image: imageVoletArticles,
   },
-].filter((v): v is Volet => !!v);
+] as (Volet | false)[]).filter((v): v is Volet => !!v);
 // Catalogue indisponible : un volet unique, sans prix.
 if (volets.length === 0) {
   volets.push({
@@ -95,36 +107,28 @@ if (volets.length === 0) {
 
     <ul class="atouts" aria-label="Les atouts de la boutique">
       <li class="atout">
-        <span class="atout__icone" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" /></svg>
-        </span>
+        <Image class="atout__icone" src={iconeBilletterie} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
         <div>
           <h2 class="atout__titre">Pass et tickets nominatifs</h2>
           <p class="atout__texte">Un QR code unique par personne, émis dès le paiement et scanné à l’entrée de chaque site.</p>
         </div>
       </li>
       <li class="atout">
-        <span class="atout__icone" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6Z" /><path d="m8.8 12 2.2 2.2 4.3-4.4" /></svg>
-        </span>
+        <Image class="atout__icone" src={iconePaiement} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
         <div>
           <h2 class="atout__titre">Paiement sécurisé</h2>
           <p class="atout__texte">Par Mobile Money ou carte bancaire, depuis plusieurs pays.</p>
         </div>
       </li>
       <li class="atout">
-        <span class="atout__icone" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" /><circle cx="12" cy="10" r="2.5" /></svg>
-        </span>
+        <Image class="atout__icone" src={iconeLivraison} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
         <div>
           <h2 class="atout__titre">Livraison en point relais</h2>
           <p class="atout__texte">Retrait dans une église du réseau CRN, au Gabon et à l’étranger.</p>
         </div>
       </li>
       <li class="atout">
-        <span class="atout__icone" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1" /><rect x="3" y="13" width="4" height="6" rx="1.5" /><rect x="17" y="13" width="4" height="6" rx="1.5" /><path d="M19 19c0 1.5-1.5 2.5-4 2.5h-2" /></svg>
-        </span>
+        <Image class="atout__icone" src={iconeAssistance} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
         <div>
           <h2 class="atout__titre">Assistance en ligne 24&nbsp;h/24, 7&nbsp;j/7</h2>
           <p class="atout__texte">Une question sur votre commande ou votre billet&#8239;? NASTY vous répond à toute heure.</p>
@@ -412,17 +416,16 @@ if (volets.length === 0) {
   /* Atouts de la boutique : quatre cartes à icône, 1 colonne, puis 2, puis 4. */
   .atouts {
     list-style: none;
-    margin: var(--space-6) 0 0;
+    /* Place au-dessus de la première rangée pour les icônes qui débordent des cartes. */
+    margin: calc(var(--space-6) + 40px) 0 0;
     padding: 0;
     display: grid;
-    gap: var(--space-2);
+    gap: calc(var(--space-3) + 40px) var(--space-2);
   }
 
   .atout {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 12px 16px;
+    position: relative;
+    padding: 60px 16px 16px;
     background: var(--crn-blanc);
     border: 1px solid var(--crn-gris-clair);
     border-top: 3px solid var(--crn-or);
@@ -430,16 +433,31 @@ if (volets.length === 0) {
     box-shadow: var(--shadow-card);
   }
 
+  /* Icônes illustrées (BQ-05), sorties du cadre : posées à cheval sur le filet or, avec une ombre
+     portée. Décoratives, le titre de l'atout porte le sens. */
   .atout__icone {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--crn-bleu-nuit) 0%, var(--crn-bleu-nuit-profond) 100%);
-    color: var(--crn-or);
-    box-shadow: inset 0 0 0 1.5px rgba(184, 150, 62, 0.5);
+    position: absolute;
+    top: -40px;
+    left: 16px;
+    width: 84px;
+    height: 90px;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 14px rgba(22, 36, 74, 0.35));
+    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .atout:hover .atout__icone {
+    transform: translateY(-4px) rotate(-3deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .atout__icone {
+      transition: none;
+    }
+
+    .atout:hover .atout__icone {
+      transform: none;
+    }
   }
 
   .atout__titre {
@@ -467,10 +485,6 @@ if (volets.length === 0) {
   @media (min-width: 1100px) {
     .atouts {
       grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .atout {
-      flex-direction: column;
     }
   }
 

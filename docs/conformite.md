@@ -283,7 +283,7 @@ ne contenait que des images et n'était donc pas atteignable au clavier — dés
 (`tabindex="0"`, nom accessible), défilement aux flèches, contour de focus or du GBIS
 (`EcosystemBand.astro`). Preuve : `npx playwright test` (CI) — 11/11.
 
-## Écart assumé par le Commanditaire — images à visages générés par IA pour les cartes Trône/Autel/Cité (1er novembre 2026)
+## Écart assumé par le Commanditaire — images à visages générés par IA pour les cartes Trône/Autel/Cité (1er novembre 2026) — **sans objet depuis le 5 novembre 2026** (images remplacées, foule de dos ; voir « Habillage du site, deuxième série »)
 
 L'utilisateur a fourni 3 images (foule en adoration, fidèles en prière à l'autel, famille marchant
 vers la ville) pour illustrer les cartes « Le Trône », « L'Autel », « La Cité ». Ces images
@@ -1025,4 +1025,102 @@ Demande du Commanditaire du 5 novembre 2026. **Aucun prix fourni** : conforméme
 
 **Pour les mettre en vente** : dans l'admin, Boutique · Catalogue → Produits, ajouter un palier dans « Prix (paliers datés) », décocher
 « Prix à valider », cocher « Actif », renseigner les stocks et ajouter une photo réelle.
+**Statut : fait en local, non poussé.**
+
+## Habillage : vignettes des actualités, en-tête du billet et de l'e-mail, photos du tee-shirt (5 novembre 2026)
+
+Visuels fournis par le Commanditaire le 5 novembre 2026, nommés selon les emplacements du document
+d'habillage visuel. Aucun visage (règle 4 respectée sans dérogation : le tee-shirt porté est cadré
+du cou à la taille).
+
+| Emplacement (document) | Fichiers | Détail | Preuve |
+| --- | --- | --- | --- |
+| A-12 Actualités de l'accueil | `AnnouncementCard.astro` (variante `compacte`), `index.astro`, `src/lib/visuels-actualites.ts` | Vignette 4:3 à gauche dès 768 px (colonne étroite à côté de la FAQ), bande 16:9 en tête sur mobile | Vérifié à 1280 px |
+| N-02 Vignettes de `/actualites` | `AnnouncementCard.astro`, `src/lib/visuels-actualites.ts` | Bande 16:9 en tête de carte, liseré or ; image choisie par la **rubrique** (Billetterie — et Boutique —, Orateurs, Action sociale, Programme) ; rubrique sans image → carte inchangée. La vignette « Programme » servira à la première actualité de cette rubrique | Vérifié à 375 px |
+| BQ-10 En-tête du billet PDF | `backend/src/boutique/lib/billets.ts`, `backend/public/brand/bandeau-billet.jpg` (1200 × 400, 45 Ko) | Bandeau 3:1 pleine largeur, filet or, dates dessous. Bandeau plus haut que l'ancien : QR 120 pt (42 mm) et 4 séances listées (« … et N autres séances ») ; le pire cas (pass à 12 séances + kit tee-shirt) ne passe plus sous le pied de page, ce qui arrivait auparavant. Fichier absent → ancien bandeau texte | Billet d'essai généré, positions vérifiées (ligne du kit à 36 pt, pied de page 0–30 pt) |
+| BQ-10 En-tête de l'e-mail de confirmation | `backend/src/boutique/lib/messagerie.ts` | Image servie par le back-office (`PUBLIC_SERVER_URL` + `/brand/bandeau-billet.jpg`), texte de remplacement « Convention CRN 2026 » sur fond bleu nuit si les images sont bloquées | `/brand/bandeau-billet.jpg` répond 200 |
+| AT-01 / AT-02 Photos du tee-shirt (carte du rayon, seconde photo au survol, galerie de la fiche, panier) | `src/lib/photos-articles.ts`, `src/lib/boutique-api.ts` | Utilisées seulement si le back-office n'a aucune photo du produit. **Maquettes, pas des photos du produit fini** : la fiche affiche « Visuel non contractuel » (exigence AT-01). À remplacer par des photos réelles saisies dans l'admin, qui priment automatiquement | Fiche `/boutique/produits/tee-shirt-officiel` vérifiée à 375 px |
+
+Images recadrées à l'intérieur du cadre or intégré aux fichiers fournis (le site pose son propre
+liseré). Non-régression : typecheck, lint, unitaires (27 + 44), e2e `parcours-et-domaines` et
+`boutique-lot-a` (audit réseau, axe, débordements — ces derniers verts en exécution série ; les 4
+tests A2 du fichier de secours restent en échec connu quand le back-office local répond).
+**Statut : fait en local, non poussé.**
+
+## Habillage du site, deuxième série : héros des pages, accueil, articles, page 404 (5 novembre 2026)
+
+Visuels fournis par le Commanditaire le 5 novembre 2026, nommés selon le document d'habillage
+visuel. Aucun visage identifiable (personnes de dos ou mains seules) : règle 4 respectée sans
+dérogation.
+
+| Emplacement (document) | Fichier fourni | Fichiers du site | Détail |
+| --- | --- | --- | --- |
+| A-02 « Une vision. Trois mouvements. » | Une vision, trois mouvements (version sombre) | `ThreeMovements.astro`, `src/assets/images/mouvement-*.webp` | Les 3 scènes découpées **sans le texte incrusté** (titres déjà en HTML), choix du Commanditaire. Remplacent les images du 1er novembre (visages générés) : l'écart assumé de cette section est **levé**. La version claire n'est pas utilisée |
+| A-10 Action sociale (carte) / A-11 Suivre à distance (carte) | Action sociale ; Suivre à distance | `IconCallout.astro` (prop `visuel`), `index.astro` | Bande 16:9 en tête, médaillon qui la chevauche |
+| A-12 Actualités — Orateurs | Orateurs | `src/assets/images/actualites/orateurs.webp` | Remplace la vignette encadrée de la première série |
+| P-01, AC-01, O-01, AR-02, IP-01, B-01, AS-01, D-01 Héros | Grande salle de l'Église Centrale ; Salle d'étude de l'Académie ; héros de la liste des orateurs / artistes / informations générales / Billetterie / action sociale / diaspora | `PageHero.astro` (prop `image`, emplacement `fond` de `Section.astro`), pages `/programme`, `/academie`, `/orateurs`, `/artistes`, `/infos-pratiques`, `/billetterie`, `/action-sociale`, `/diaspora` | Photo sous voile bleu nuit (uniforme 86 % sur mobile, dégradé 92 → 55 % dès 768 px) : contraste du texte garanti ; image décorative, chargée en priorité |
+| D-02 Diaspora — Suivre à distance | Suivre la Convention à distance | `diaspora.astro` | Bande 16:9 en tête de la carte |
+| G-06 Page 404 | Page 404 | `src/pages/404.astro` (nouvelle) | Page « Cette page est introuvable », liens vers l'accueil, le programme et la boutique. **À vérifier au déploiement** : que l'hébergeur sert bien `404.html` pour une adresse inconnue (sinon une directive `ErrorDocument` sera nécessaire) |
+| Photos des articles | Polo ; Pagne ; Huile d'Onction ; Pins ; Casquette | `src/lib/photos-articles.ts` | Mêmes règles que le tee-shirt (photo du back-office prioritaire, « Visuel non contractuel »). **Pagne et huile recadrés** pour retirer les mentions non validées (« Pagne wax original », « 100 % coton », « Qualité premium », « Formule naturelle », « Flacon spray », « 100 ml »), choix du Commanditaire |
+
+Poids de l'accueil : aucune image chargée en plus à l'ouverture (nouvelles images en chargement
+différé). Non-régression : typecheck, lint, unitaires, e2e `parcours-et-domaines` et
+`boutique-lot-a` en série (audit réseau, axe, débordements verts ; 4 tests A2 du fichier de
+secours en échec connu). **Statut : fait en local, non poussé.**
+
+**Non intégrés (signalés au Commanditaire)** : planche « tickets » (contient un ticket « Visite de
+Libreville », produit inexistant), visuel « Pass Intégral » (montre Concert VIP et un kit polo,
+casquette, huile, pins, pagne, alors que le pass validé comprend Concert Standard et le tee-shirt),
+enveloppe dorée (BQ-09) : fichiers non disponibles dans Téléchargements. Autres fichiers présents dans
+Téléchargements mais non transmis dans la demande : FAQ — héros, Héros Contact, Contact — carte,
+NASTY — héros, galeries, Actualités (héros), Collage, Don à distance, Cours de l'Académie suivi à
+distance, Session diaspora en visioconférence, tee-shirt officiel CRN Convention 2026.
+
+## Habillage du site, troisième série : diaspora, héros restants, boutique, partage (5 novembre 2026)
+
+Visuels fournis par le Commanditaire le 5 novembre 2026, nommés selon le document d'habillage.
+
+| Emplacement (document) | Fichier fourni | Fichiers du site | Détail |
+| --- | --- | --- | --- |
+| D-03, D-04, D-05 Diaspora | Don à distance ; Cours de l'Académie suivi à distance ; Session diaspora en visioconférence | `diaspora.astro` | Les 4 cartes ont désormais leur bande 16:9. Visioconférence : vignettes floues, aucun visage net |
+| N-01, F-01, C-01, L-01 Héros | Actualités ; FAQ — héros ; Héros Contact ; Héros des pages légales | `actualites/index.astro`, `faq.astro`, `contact.astro`, `mentions-legales.astro`, `confidentialite.astro` (prop `image` de `PageHero`) | La CGV de la boutique (`PageLegale.astro`) n'a pas de héros : inchangée. Héros Contact : accueil générique, non présenté comme le siège CRN |
+| NA-01 NASTY — héros | NASTY — héros | `nasty.astro`, `heros/nasty.webp` | **Recadré sur le globe** : l'image montrait un visage net généré par IA (règle 4) ; choix du Commanditaire. L'avatar existant de NASTY est inchangé |
+| C-02 Contact — « Nous sommes à votre écoute » | Contact — carte « Nous sommes à votre écoute » | `contact.astro` | Bande 4:3 en tête de l'encart |
+| M-01 États d'attente des galeries | galeries de la Convention CRN 2026 | `multimedia/galerie-{photos,videos,audios}.astro` | Même image dans les 3 encarts d'attente |
+| BQ-01 à BQ-03 Diaporama de la boutique | Diaporama — volets Pass, Tickets, Articles | `BanniereDiaporama.astro` (prop `image` du volet), `boutique/index.astro` | Image à droite du texte dès 900 px, masquée et non chargée sur mobile. **Volet Articles recadré sans le pagne** : son étiquette portait une marque tierce (« Madison Real Wax ») et des allégations en anglais ; choix du Commanditaire. Dérogation n° 10 (diaporama) inchangée |
+| BQ-04 Bandeaux des rayons | Bannières CRN — Billetterie, Articles, Recherche | `ListeCatalogue.astro` (prop `banniere`), `boutique/{billetterie,articles,recherche}.astro` | Fond de l'en-tête, aligné à droite ; voile uniforme sur mobile, côté texte seulement dès 768 px |
+| BQ-05 Atouts (4 pavés) | Icônes de billetterie, de paiement, de livraison, d'assistance | `boutique/index.astro` | Illustrations à la place des pictogrammes ; l'icône d'assistance, présente dans Téléchargements mais non transmise, complète le jeu de 4 |
+| BQ-09 Confirmation de commande | Confirmation de commande | `boutique/suivi.astro` | Affichée seulement quand la commande est payée |
+| G-01 Image de partage | Collage événementiel bleu marine et or | `public/og-image.jpg` (1200 × 630), `BaseLayout.astro` | Emplacement choisi par le Commanditaire (le collage n'avait pas d'emplacement nommé) ; `og:image` en adresse absolue, carte `summary_large_image` |
+
+Non-régression : typecheck, lint, unitaires, e2e `parcours-et-domaines` et `boutique-lot-a` en série
+(audit réseau, axe, débordements verts ; 4 tests A2 du fichier de secours en échec connu).
+**Statut : fait en local, non poussé.**
+
+**Toujours non intégrés** : « Vignettes des 7 tickets » (ticket « Visite de Libreville » sans
+produit), « Vignettes des 5 pass » et « Vignettes des articles officiels » (non transmis ; la planche
+« Pass Intégral » vue le 5 novembre contredit le contenu validé du pass), « tee-shirt officiel CRN
+Convention 2026 », « Une vision, trois mouvements » version claire.
+
+## Habillage — ajustements demandés : diaporama plein cadre, icônes des atouts, voiles allégés (5 novembre 2026)
+
+| Demande | Fichiers | Réalisation |
+| --- | --- | --- |
+| Images du diaporama de la boutique sur toute la section (et non en carte à droite) | `BanniereDiaporama.astro`, `boutique-habillage/diapo-*.webp` | Fond plein cadre du volet actif, fondu enchaîné (aucun si `prefers-reduced-motion`), visible aussi sur mobile. Pass et Tickets : images d'origine entières (zone sombre prévue pour le texte). Articles : produits sans le pagne, recomposés à droite et fondus dans le bleu nuit. Voile 78 % sur mobile, dégradé 82 → 0 % dès 900 px |
+| Icônes des atouts plus expressives, hors du cadre blanc | `boutique/index.astro` | 84 px, à cheval sur le filet or de la carte, ombre portée, léger soulèvement au survol (neutralisé si `prefers-reduced-motion`) |
+| Voiles des héros des pages internes et des bandeaux allégés de 10 à 15 % | `PageHero.astro`, `ListeCatalogue.astro` | Héros : 86 → 73 % (mobile), 92/80/55 → 79/67/42 % (ordinateur). Bandeaux de rayon : 80 → 67 % (mobile) ; dès 768 px, visuel sur la moitié droite **sans voile**, fondu vers la gauche, recadré sans le trait or du coin gauche |
+
+**Contraste vérifié par mesure** (script exécuté sur le rendu réel : pixels de la photo sous chaque
+bloc de texte, voile appliqué, 98e centile de luminance, à 375 et 1280 px, 14 héros, 3 volets,
+3 rayons). L'allègement faisait tomber plusieurs textes sous le seuil ; corrigé sans réassombrir
+les photos :
+- étiquette or des héros (2,3 à 2,8:1) → pastille bleu nuit derrière l'étiquette seule : 4,6 à 5,4:1 ;
+- chapô des héros sur ordinateur (3,5 à 4,4:1) → blanc plein : 4,8 à 6,9:1 ;
+- prix d'appel or du diaporama (3,1 à 3,3:1) → même pastille : 4,9 à 5,4:1 ; texte du volet Articles
+  (3,4:1) → blanc plein : 4,7:1 ;
+- fil et chapô des rayons sur mobile (4,0 à 4,4:1) → blanc plein : 5,6 à 6,2:1 ; sur ordinateur, le
+  texte reste sur le bleu nuit uni (aucun chevauchement avec le visuel).
+
+Non-régression : typecheck, lint, unitaires, e2e `parcours-et-domaines` et `boutique-lot-a` en série
+(audit réseau, axe, débordements verts ; 4 tests A2 du fichier de secours en échec connu).
 **Statut : fait en local, non poussé.**

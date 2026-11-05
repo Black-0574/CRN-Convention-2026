@@ -4,8 +4,11 @@
   (mot clé, catégories, prix maximum), tri et nombre de résultats, puis les billets en lignes
   « rendez-vous » et les articles en cartes. Filtrage dans le navigateur, sans requête réseau ;
   les critères vivent dans l'adresse (?q=…&categorie=pass&prix=…&tri=…), donc une recherche se
-  partage. Sur mobile, les filtres se replient sous « Filtrer par ».
+  partage. Sur mobile, les filtres se replient sous « Filtrer par ». Bandeau d'image du rayon
+  (BQ-04) : en fond sous voile sur mobile, sur la moitié droite sans voile ensuite.
 */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import type { VueProduit } from '../../lib/boutique-api';
 import { formaterXAF } from '../../lib/boutique-format';
 import { estBillet, parOrdre, RAYONS, rayonDe } from '../../lib/boutique-rayons';
@@ -18,8 +21,9 @@ interface Props {
   intro: string;
   produits: VueProduit[];
   indisponible: boolean;
+  banniere?: ImageMetadata;
 }
-const { titre, intro, produits, indisponible } = Astro.props;
+const { titre, intro, produits, indisponible, banniere } = Astro.props;
 
 const billets = produits.filter(estBillet).sort(parOrdre);
 const articles = produits.filter((p) => !estBillet(p)).sort(parOrdre);
@@ -30,7 +34,12 @@ const PAS = 1000;
 const borneMax = Math.ceil(prixMax / PAS) * PAS;
 ---
 
-<section class="rayon-entete">
+<section class:list={['rayon-entete', { 'rayon-entete--image': banniere }]}>
+  {banniere && (
+    <div class="rayon-entete__fond">
+      <Image src={banniere} alt="" widths={[960, 1920]} sizes="100vw" loading="eager" />
+    </div>
+  )}
   <div class="container">
     <nav class="rayon-entete__fil" aria-label="Fil d’Ariane">
       <a href="/boutique">Boutique</a> <span aria-hidden="true">›</span> <span aria-current="page">{titre}</span>
@@ -220,6 +229,57 @@ const borneMax = Math.ceil(prixMax / PAS) * PAS;
     color: var(--crn-blanc);
     padding-block: var(--space-3) var(--space-6);
     border-bottom: 3px solid var(--crn-or);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .rayon-entete > .container {
+    position: relative;
+  }
+
+  /* Sur bandeau photo (voile allégé) : fil et chapô en blanc plein, contraste ≥ 4,5:1 mesuré. */
+  .rayon-entete--image .rayon-entete__fil,
+  .rayon-entete--image .rayon-entete__intro {
+    color: var(--crn-blanc);
+  }
+
+  .rayon-entete__fond {
+    position: absolute;
+    inset: 0;
+  }
+
+  .rayon-entete__fond img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center;
+  }
+
+  /* Sur mobile le visuel passe sous le texte : voile bleu nuit. */
+  .rayon-entete__fond::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(22, 36, 74, 0.67);
+  }
+
+  /* Dès 768 px : visuel sur la moitié droite, sans voile, fondu vers la gauche ; le texte reste sur
+     le bleu nuit de l'en-tête (contraste maximal), limité à la moitié gauche. */
+  @media (min-width: 768px) {
+    .rayon-entete__fond {
+      left: 52%;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%);
+      mask-image: linear-gradient(90deg, transparent 0, #000 30%);
+    }
+
+    .rayon-entete__fond::after {
+      content: none;
+    }
+
+    .rayon-entete--image .rayon-entete__titre,
+    .rayon-entete--image .rayon-entete__intro {
+      max-width: min(60ch, 44vw);
+    }
   }
 
   .rayon-entete__fil {

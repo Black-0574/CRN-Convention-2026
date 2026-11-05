@@ -1,0 +1,76 @@
+---
+/*
+  Page introuvable (G-06 du document d'habillage) : billet doré et étoile filante sur fond crème,
+  illustration fournie par le Commanditaire le 5 novembre 2026. Astro la publie en 404.html.
+*/
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Section from '../components/shared/Section.astro';
+import Button from '../components/shared/Button.astro';
+import Icon from '../components/shared/Icon.astro';
+import illustration from '../assets/images/page-404.webp';
+---
+
+<BaseLayout title="Page introuvable" description="Cette page de la Convention CRN 2026 n’existe pas ou a été déplacée.">
+  <Section tone="default" ariaLabel="Page introuvable">
+    <div class="introuvable">
+      <Image class="introuvable__image" src={illustration} alt="Billet doré marqué « Page 404 », sous une étoile filante" widths={[320, 560]} sizes="(min-width: 768px) 360px, 70vw" loading="eager" />
+      <div class="introuvable__texte">
+        <h1>Cette page est introuvable</h1>
+        <p>Le lien est peut-être incomplet, ou la page a été déplacée. Reprenez depuis l’une de ces entrées :</p>
+        <div class="introuvable__liens">
+          <Button href="/" variant="primary">Retour à l’accueil <Icon name="arrow-right" size={16} /></Button>
+          <Button href="/programme" variant="secondary">Le programme</Button>
+          <Button href="/boutique" variant="secondary">La boutique</Button>
+        </div>
+      </div>
+    </div>
+  </Section>
+</BaseLayout>
+
+<style>
+  .introuvable {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+    text-align: center;
+  }
+
+  .introuvable__image {
+    width: min(70vw, 360px);
+    height: auto;
+  }
+
+  .introuvable__texte h1 {
+    margin: 0 0 var(--space-1);
+  }
+
+  .introuvable__texte p {
+    margin: 0 auto var(--space-3);
+    max-width: 52ch;
+  }
+
+  .introuvable__liens {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  @media (min-width: 768px) {
+    .introuvable {
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      justify-items: start;
+      text-align: left;
+    }
+
+    .introuvable__texte p {
+      margin-left: 0;
+    }
+
+    .introuvable__liens {
+      justify-content: flex-start;
+    }
+  }
+</style>

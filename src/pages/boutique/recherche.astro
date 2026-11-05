@@ -1,6 +1,7 @@
 ---
 // Recherche dans toute la boutique (formulaire de l'accueil : ?q=…&categorie=…).
 import ListeCatalogue from '../../components/boutique/ListeCatalogue.astro';
+import banniere from '../../assets/images/boutique-habillage/banniere-recherche.webp';
 import Boutique from '../../layouts/BoutiqueLayout.astro';
 import { catalogue } from '../../lib/boutique-api';
 
@@ -9,6 +10,7 @@ const c = await catalogue();
 
 <Boutique title="Recherche" description="Rechercher un pass, un ticket ou un article officiel de la Convention CRN 2026.">
   <ListeCatalogue
+    banniere={banniere}
     titre="Tous les produits"
     intro="Pass, tickets à l’unité et articles officiels de la Convention : affinez avec les filtres."
     produits={c?.produits ?? []}

@@ -21,6 +21,8 @@ import { VISUELS, visuelSeance } from '../lib/visuels-plateformes';
 import AnnouncementCard from '../components/shared/AnnouncementCard.astro';
 import { isPublished } from '../lib/state';
 import { getAnnonceMeta } from '../lib/announcements';
+import imageActionSociale from '../assets/images/accueil/action-sociale.webp';
+import imageSuivreADistance from '../assets/images/accueil/suivre-a-distance.webp';
 import { lienBoutique, lienProduit } from '../lib/boutique';
 
 const formatAnnonceDate = (iso: string) =>
@@ -203,6 +205,7 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
         texte="Collecte de vivres et de vêtements du 9 au 27 novembre, distribution le 5 décembre."
         lienLabel="En savoir plus"
         lienHref="/action-sociale"
+        visuel={imageActionSociale}
       /></CadreOr>
       <CadreOr><IconCallout
         icone="wifi"
@@ -210,6 +213,7 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
         texte="Donnez en ligne et rejoignez la session diaspora du 19 décembre, où que vous soyez."
         lienLabel="En savoir plus"
         lienHref="/diaspora"
+        visuel={imageSuivreADistance}
       /></CadreOr>
     </div>
   </Section>
@@ -235,6 +239,7 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
                 texte={a.data.texte}
                 lienHref={meta.lienHref}
                 lienLabel={meta.lienLabel}
+                compacte
               />
             );
           })}

@@ -10,10 +10,10 @@ import imageCite from '../../assets/images/mouvement-cite.webp';
 /*
   Les sous-titres et textes des trois cartes reprennent mot pour mot la copie déjà approuvée
   (texte d'origine scindé à la ponctuation « : »), rien n'est inventé pour coller au modèle de
-  référence. Images fournies par le Commanditaire le 1er novembre 2026, qui a explicitement
-  assumé la responsabilité de cette décision après signalement écrit du prestataire (ces visuels
-  comportent des visages générés par IA, en écart avec la règle absolue « Aucun visage généré par
-  IA » de CLAUDE.md) — voir docs/conformite.md pour la traçabilité complète de cet écart assumé.
+  référence. Images (A-02 du document d'habillage) : les trois scènes du visuel « Une vision, trois
+  mouvements » fourni le 5 novembre 2026, découpées sans le texte incrusté (titres déjà en HTML).
+  Foule de dos, aucun visage : elles remplacent les visuels du 1er novembre, qui en montraient et
+  relevaient d'un écart assumé à la règle 4 (docs/conformite.md), désormais sans objet.
 */
 const mouvements = [
   {
@@ -61,7 +61,7 @@ const mouvements = [
       <CadreOr>
       <article class="movements__card">
         <div class="movements__band">
-          <Image src={m.image} alt="" width={640} height={400} class="movements__photo" />
+          <Image src={m.image} alt="" width={520} height={325} class="movements__photo" />
           <span class="movements__icon"><Icon name={m.icone} size={32} /></span>
         </div>
         <div class="movements__body">

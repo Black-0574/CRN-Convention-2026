@@ -1,8 +1,10 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/shared/Section.astro';
 import PageHero from '../../components/shared/PageHero.astro';
 import Icon from '../../components/shared/Icon.astro';
+import imageAttente from '../../assets/images/accueil/galeries-attente.webp';
 ---
 
 <BaseLayout
@@ -17,6 +19,10 @@ import Icon from '../../components/shared/Icon.astro';
 
   <Section tone="default" ariaLabel="Galerie photos">
     <div class="placeholder" data-reveal>
+      <!-- M-01 : état d’attente des galeries, image décorative. -->
+      <div class="placeholder__visuel">
+        <Image src={imageAttente} alt="" widths={[400, 640, 900]} sizes="(min-width: 768px) 600px, 92vw" loading="lazy" />
+      </div>
       <span class="placeholder__icon"><Icon name="camera" size={28} /></span>
       <p>
         Les photos de la Convention CRN 2026 (temps forts, enseignements, moments marquants) seront
@@ -27,6 +33,22 @@ import Icon from '../../components/shared/Icon.astro';
 </BaseLayout>
 
 <style>
+  .placeholder__visuel {
+    align-self: stretch;
+    aspect-ratio: 16 / 9;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) 0;
+    overflow: hidden;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    border-bottom: 2px solid var(--crn-or);
+  }
+
+  .placeholder__visuel img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   .placeholder {
     display: flex;
     flex-direction: column;

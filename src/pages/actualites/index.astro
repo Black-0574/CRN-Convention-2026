@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/shared/Section.astro';
 import PageHero from '../../components/shared/PageHero.astro';
+import imageHeros from '../../assets/images/heros/actualites.webp';
 import AnnouncementCard from '../../components/shared/AnnouncementCard.astro';
 import Icon from '../../components/shared/Icon.astro';
 import { getAnnonceMeta } from '../../lib/announcements';
@@ -25,6 +26,7 @@ const categories = [...new Set(items.map((a) => a.meta.categorie))];
     title="Actualités"
     intro="Les dernières nouvelles de la Convention CRN 2026."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Actualités' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Actualités">

@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
+import imageHeros from '../assets/images/heros/programme.webp';
 import DayNav from '../components/program/DayNav.astro';
 import SessionCard from '../components/program/SessionCard.astro';
 import { visuelSeance } from '../lib/visuels-plateformes';
@@ -23,6 +24,7 @@ const joursNav = jours.map((j) => ({ date: j.data.date, label: j.data.label }));
     title="Programme"
     intro="Le programme ci-dessous est la source unique de la Convention : toute mise à jour y apparaît aussitôt. Les modes de diffusion de chaque séance seront confirmés avant l’événement."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Programme' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Programme">

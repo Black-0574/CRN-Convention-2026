@@ -4,6 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import Button from '../components/shared/Button.astro';
 import PageHero from '../components/shared/PageHero.astro';
+import imageHeros from '../assets/images/heros/academie.webp';
 import InfoCard from '../components/shared/InfoCard.astro';
 import CadreOr from '../components/shared/CadreOr.astro';
 import { lienBoutique } from '../lib/boutique';
@@ -25,6 +26,7 @@ const classes = (jourReference?.data.sessions ?? []).filter((s) => s.titre.start
     title="Académie des Sciences Divines"
     intro="Trois classes, mêmes horaires du mardi 8 au jeudi 10 décembre, à l’Église Centrale. Chaque classe peut être suivie séparément, ou dans son ensemble avec le Pass Académie Intégral."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Académie' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Académie des Sciences Divines">

@@ -8,6 +8,7 @@ const { id, tone = 'default', ariaLabel } = Astro.props;
 ---
 
 <section id={id} class={`section-block section-block--${tone}`} aria-label={ariaLabel}>
+  <slot name="fond" />
   <div class="container">
     <slot />
   </div>

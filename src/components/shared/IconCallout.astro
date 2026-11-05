@@ -1,4 +1,6 @@
 ---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
 import Button from './Button.astro';
 
@@ -8,11 +10,18 @@ interface Props {
   texte: string;
   lienLabel: string;
   lienHref: string;
+  /** Bande d'image en tête (A-10, A-11 du document d'habillage) ; décorative. */
+  visuel?: ImageMetadata;
 }
-const { icone, titre, texte, lienLabel, lienHref } = Astro.props;
+const { icone, titre, texte, lienLabel, lienHref, visuel } = Astro.props;
 ---
 
-<article class="icon-callout">
+<article class:list={['icon-callout', { 'icon-callout--visuel': visuel }]}>
+  {visuel && (
+    <div class="icon-callout__visuel">
+      <Image src={visuel} alt="" widths={[400, 640, 900]} sizes="(min-width: 1224px) 580px, (min-width: 768px) 46vw, 92vw" loading="lazy" />
+    </div>
+  )}
   <span class="icon-callout__icon"><Icon name={icone} size={26} /></span>
   <h3 class="icon-callout__title">{titre}</h3>
   <p class="icon-callout__text">{texte}</p>
@@ -43,6 +52,38 @@ const { icone, titre, texte, lienLabel, lienHref } = Astro.props;
     transform: translateY(-6px);
     box-shadow: var(--shadow-lift), 0 0 0 1px rgba(184, 150, 62, 0.3);
     border-color: var(--crn-or) var(--crn-or) var(--crn-or) var(--crn-or);
+  }
+
+  /* Bande 16:9 pleine largeur (marges de la carte annulées) ; le médaillon la chevauche. */
+  .icon-callout__visuel {
+    align-self: stretch;
+    aspect-ratio: 16 / 9;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) -40px;
+    overflow: hidden;
+    border-radius: calc(var(--radius-card) - 3px) calc(var(--radius-card) - 3px) 0 0;
+    border-bottom: 2px solid var(--crn-or);
+  }
+
+  .icon-callout__visuel img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-standard);
+  }
+
+  .icon-callout:hover .icon-callout__visuel img {
+    transform: scale(1.04);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .icon-callout:hover .icon-callout__visuel img {
+      transform: none;
+    }
+  }
+
+  .icon-callout--visuel .icon-callout__icon {
+    margin-left: var(--space-1);
   }
 
   .icon-callout__icon {

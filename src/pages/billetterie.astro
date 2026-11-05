@@ -8,6 +8,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import PageHero from '../components/shared/PageHero.astro';
+import imageHeros from '../assets/images/heros/billetterie.webp';
 import Icon from '../components/shared/Icon.astro';
 import PriceCard from '../components/ticketing/PriceCard.astro';
 import { visuelProduit } from '../lib/visuels-plateformes';
@@ -34,6 +35,7 @@ const categories: { key: typeof produits[number]['data']['categorie']; label: st
     title="Billetterie"
     intro="Les pass, les tickets et les articles officiels s’achètent sur la Boutique de la Convention. Chaque billet est nominatif et intransférable, lié à un QR code unique."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Billetterie' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Billetterie">

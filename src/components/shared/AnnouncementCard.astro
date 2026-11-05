@@ -1,6 +1,8 @@
 ---
+import { Image } from 'astro:assets';
 import Icon from './Icon.astro';
 import type { IconName } from './Icon.astro';
+import { visuelActualite } from '../../lib/visuels-actualites';
 
 interface Props {
   categorie: string;
@@ -11,11 +13,24 @@ interface Props {
   texte: string;
   lienHref?: string;
   lienLabel?: string;
+  /** Vignette à gauche au lieu d'une bande en tête (colonne étroite de l'accueil). */
+  compacte?: boolean;
 }
-const { categorie, icone, date, dateISO, titre, texte, lienHref, lienLabel } = Astro.props;
+const { categorie, icone, date, dateISO, titre, texte, lienHref, lienLabel, compacte = false } = Astro.props;
+// Vignette de la rubrique (A-12, N-02) ; décorative, le titre nomme l'actualité.
+const visuel = visuelActualite(categorie);
 ---
 
-<article class="announcement-card" data-categorie={categorie}>
+<article class:list={['announcement-card', { 'announcement-card--compacte': compacte && visuel }]} data-categorie={categorie}>
+  {visuel && (
+    <div class="announcement-card__visuel">
+      {compacte ? (
+        <Image src={visuel} alt="" widths={[240, 400]} sizes="(min-width: 768px) 140px, 92vw" loading="lazy" />
+      ) : (
+        <Image src={visuel} alt="" widths={[400, 640, 900]} sizes="(min-width: 1224px) 380px, (min-width: 768px) 45vw, 92vw" loading="lazy" />
+      )}
+    </div>
+  )}
   <div class="announcement-card__head">
     <span class="announcement-card__icon"><Icon name={icone} size={22} /></span>
     <span class="announcement-card__tag">{categorie}</span>
@@ -48,6 +63,58 @@ const { categorie, icone, date, dateISO, titre, texte, lienHref, lienLabel } = A
     transform: translateY(-4px);
     box-shadow: var(--shadow-lift);
     border-color: var(--crn-or);
+  }
+
+  /* Bande d'image pleine largeur en tête de carte (marges de la carte annulées). */
+  .announcement-card__visuel {
+    aspect-ratio: 16 / 9;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) var(--space-2);
+    overflow: hidden;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    border-bottom: 2px solid var(--crn-or);
+    background: var(--crn-bleu-nuit);
+  }
+
+  .announcement-card__visuel img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-standard);
+  }
+
+  .announcement-card:hover .announcement-card__visuel img {
+    transform: scale(1.04);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .announcement-card:hover .announcement-card__visuel img {
+      transform: none;
+    }
+  }
+
+  /* Variante compacte : bande en tête sur mobile, vignette à gauche dès 768 px. */
+  @media (min-width: 768px) {
+    .announcement-card--compacte {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      column-gap: var(--space-2);
+      align-content: start;
+    }
+
+    .announcement-card--compacte > * {
+      grid-column: 2;
+    }
+
+    .announcement-card--compacte .announcement-card__visuel {
+      grid-column: 1;
+      grid-row: 1 / span 6;
+      align-self: start;
+      aspect-ratio: 4 / 3;
+      margin: 0;
+      border: 1.5px solid var(--crn-or);
+      border-radius: var(--radius-card);
+    }
   }
 
   .announcement-card__head {

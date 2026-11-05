@@ -1,8 +1,14 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Section from '../components/shared/Section.astro';
 import Button from '../components/shared/Button.astro';
 import PageHero from '../components/shared/PageHero.astro';
+import imageHeros from '../assets/images/heros/diaspora.webp';
+import imageSuivre from '../assets/images/accueil/diaspora-suivre.webp';
+import imageDon from '../assets/images/accueil/diaspora-don.webp';
+import imageAcademie from '../assets/images/accueil/diaspora-academie.webp';
+import imageSession from '../assets/images/accueil/diaspora-session.webp';
 import InfoCard from '../components/shared/InfoCard.astro';
 import CadreOr from '../components/shared/CadreOr.astro';
 import { lienBoutique } from '../lib/boutique';
@@ -17,26 +23,40 @@ import { lienBoutique } from '../lib/boutique';
     title="Diaspora"
     intro="La Convention CRN 2026 se vit aussi à distance. Le fuseau horaire de Libreville est identique à celui de Paris en décembre (UTC+1) : suivez les séances en direct, aux mêmes horaires qu’au Gabon, sans VPN et sans dépendre d’une plateforme bloquée."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Diaspora' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Diaspora">
     <div class="diaspora-grid" data-reveal-group>
       <CadreOr><InfoCard>
+        <!-- D-02 à D-05 : vignettes décoratives, le titre nomme la carte. -->
+        <div class="diaspora-card__visuel">
+          <Image src={imageSuivre} alt="" widths={[400, 640, 900]} sizes="(min-width: 1224px) 580px, (min-width: 768px) 46vw, 92vw" loading="lazy" />
+        </div>
         <h2 class="diaspora-card__title">Suivre à distance</h2>
         <p>Le direct et le programme du jour seront accessibles depuis cette page pendant la Convention (6 – 13 décembre).</p>
         <Button href="/programme" variant="secondary">Voir le programme</Button>
       </InfoCard></CadreOr>
       <CadreOr><InfoCard>
+        <div class="diaspora-card__visuel">
+          <Image src={imageDon} alt="" widths={[400, 640, 900]} sizes="(min-width: 1224px) 580px, (min-width: 768px) 46vw, 92vw" loading="lazy" />
+        </div>
         <h2 class="diaspora-card__title">Donner en ligne</h2>
         <p>Soutenez la Convention et l'action sociale par carte bancaire, depuis où que vous soyez.</p>
         <Button href={lienBoutique('diaspora')} variant="secondary">Accéder à la boutique</Button>
       </InfoCard></CadreOr>
       <CadreOr><InfoCard>
+        <div class="diaspora-card__visuel">
+          <Image src={imageAcademie} alt="" widths={[400, 640, 900]} sizes="(min-width: 1224px) 580px, (min-width: 768px) 46vw, 92vw" loading="lazy" />
+        </div>
         <h2 class="diaspora-card__title">Académie à distance</h2>
         <p>Suivez l'Académie des Sciences Divines depuis la diaspora, selon les modalités confirmées avant la Convention.</p>
         <Button href="/academie" variant="secondary">Découvrir l'Académie</Button>
       </InfoCard></CadreOr>
       <CadreOr><InfoCard>
+        <div class="diaspora-card__visuel">
+          <Image src={imageSession} alt="" widths={[400, 640, 900]} sizes="(min-width: 1224px) 580px, (min-width: 768px) 46vw, 92vw" loading="lazy" />
+        </div>
         <h2 class="diaspora-card__title">Session diaspora</h2>
         <p>Une session en ligne dédiée à la diaspora se tient le <strong>19 décembre 2026</strong>. Les modalités de connexion seront publiées sur cette page.</p>
       </InfoCard></CadreOr>
@@ -56,6 +76,22 @@ import { lienBoutique } from '../lib/boutique';
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-1);
+  }
+
+  .diaspora-card__visuel {
+    align-self: stretch;
+    aspect-ratio: 16 / 9;
+    margin: calc(-1 * var(--space-3)) calc(-1 * var(--space-3)) var(--space-1);
+    overflow: hidden;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    border-bottom: 2px solid var(--crn-or);
+  }
+
+  .diaspora-card__visuel img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .diaspora-card__title {

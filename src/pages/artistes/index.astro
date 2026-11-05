@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Section from '../../components/shared/Section.astro';
 import PageHero from '../../components/shared/PageHero.astro';
+import imageHeros from '../../assets/images/heros/artistes.webp';
 import SpeakerCard from '../../components/speakers/SpeakerCard.astro';
 
 // Artistes actifs dans l'admin (les désactivés sont déjà exclus par src/lib/cms-content.ts), par
@@ -19,6 +20,7 @@ const artistes = (await getCollection('artists')).sort((a, b) => a.data.nom.loca
     title="Les artistes"
     intro="Les voix qui accompagneront la Convention CRN 2026, du 6 au 13 décembre à Libreville."
     crumbs={[{ label: 'Accueil', href: '/' }, { label: 'Artistes' }]}
+    image={imageHeros}
   />
 
   <Section tone="default" ariaLabel="Les artistes">
