@@ -1310,3 +1310,10 @@ assistants, fournis par le Commanditaire le 6 novembre 2026 ; règles reprises d
 - Tests : cœur métier 68 (dont 24 SasPay) ; `test:saspay` 9 vérifications réussies.
 - **Non vérifié contre le vrai SasPay** (pas encore de clé) : session réelle, page de paiement,
   webhook réel (`webhook.test`), réseaux du Gabon.
+
+**Déploiement du 6 novembre 2026** : code SasPay poussé sur `main` (`a6c50c1`) et sur les dépôts
+du back-office suivis par Hostinger (`865a93b`). Le site n'a pas changé (pas de redéploiement).
+Après déploiement : catalogue, réglages et admin répondent, ventes toujours fermées. **Limite** :
+le code SasPay n'étant actif qu'avec ses variables, rien de public ne distingue la nouvelle version
+de l'ancienne — la prise en compte est à confirmer dans hPanel (historique des déploiements du
+back-office), puis par `npm --prefix backend run saspay:verifier` une fois les clés renseignées.
