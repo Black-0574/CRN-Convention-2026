@@ -1389,5 +1389,5 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - CRN — Église d'Owendo 2 500 F CFA.
   - Créés une seule fois au démarrage, sur une liste vide. En ligne, `GET /api/boutique/livraison` renvoie les 4 églises et leurs frais.
   - **À compléter dans l'admin :** localités déduites des noms, adresses, horaires, contacts et délais (« à confirmer » côté client).
-  - **Point ouvert :** le « retrait sur le lieu de la Convention » reste proposé à côté de l'Église Centrale.
+  - **Décision du Commanditaire (6 novembre 2026) :** le « retrait sur le lieu de la Convention » reste proposé à côté de l'Église Centrale.
 - **Tests de bout en bout :** 16 réussis, dont le parcours d'achat. Les 4 tests de la sélection « de secours » de l'accueil échouent en local (back-office local joignable, vrai catalogue affiché), sans lien avec ces changements.
