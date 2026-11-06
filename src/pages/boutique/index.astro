@@ -4,6 +4,7 @@ import BanniereDiaporama, { type Volet } from '../../components/boutique/Bannier
 import CarteArticle from '../../components/boutique/CarteArticle.astro';
 import InteractionsCartes from '../../components/boutique/InteractionsCartes.astro';
 import LigneBillet from '../../components/boutique/LigneBillet.astro';
+import CadreOr from '../../components/shared/CadreOr.astro';
 import Icon from '../../components/shared/Icon.astro';
 import Boutique from '../../layouts/BoutiqueLayout.astro';
 import { catalogue, type VueProduit } from '../../lib/boutique-api';
@@ -106,33 +107,49 @@ if (volets.length === 0) {
     )}
 
     <ul class="atouts" aria-label="Les atouts de la boutique">
-      <li class="atout">
-        <Image class="atout__icone" src={iconeBilletterie} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
-        <div>
-          <h2 class="atout__titre">Pass et tickets nominatifs</h2>
-          <p class="atout__texte">Un QR code unique par personne, émis dès le paiement et scanné à l’entrée de chaque site.</p>
-        </div>
+      <li class="atouts__case">
+        <CadreOr rayon="var(--radius-card-sm)">
+          <div class="atout">
+            <Image class="atout__icone" src={iconeBilletterie} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
+            <div>
+              <h2 class="atout__titre">Pass et tickets nominatifs</h2>
+              <p class="atout__texte">Un QR code unique par personne, émis dès le paiement et scanné à l’entrée de chaque site.</p>
+            </div>
+          </div>
+        </CadreOr>
       </li>
-      <li class="atout">
-        <Image class="atout__icone" src={iconePaiement} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
-        <div>
-          <h2 class="atout__titre">Paiement sécurisé</h2>
-          <p class="atout__texte">Par Mobile Money ou carte bancaire, depuis plusieurs pays.</p>
-        </div>
+      <li class="atouts__case">
+        <CadreOr rayon="var(--radius-card-sm)">
+          <div class="atout">
+            <Image class="atout__icone" src={iconePaiement} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
+            <div>
+              <h2 class="atout__titre">Paiement sécurisé</h2>
+              <p class="atout__texte">Par Mobile Money ou carte bancaire, depuis plusieurs pays.</p>
+            </div>
+          </div>
+        </CadreOr>
       </li>
-      <li class="atout">
-        <Image class="atout__icone" src={iconeLivraison} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
-        <div>
-          <h2 class="atout__titre">Livraison en point relais</h2>
-          <p class="atout__texte">Retrait dans une église du réseau CRN, au Gabon et à l’étranger.</p>
-        </div>
+      <li class="atouts__case">
+        <CadreOr rayon="var(--radius-card-sm)">
+          <div class="atout">
+            <Image class="atout__icone" src={iconeLivraison} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
+            <div>
+              <h2 class="atout__titre">Livraison en point relais</h2>
+              <p class="atout__texte">Retrait dans une église du réseau CRN, au Gabon et à l’étranger.</p>
+            </div>
+          </div>
+        </CadreOr>
       </li>
-      <li class="atout">
-        <Image class="atout__icone" src={iconeAssistance} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
-        <div>
-          <h2 class="atout__titre">Assistance en ligne 24&nbsp;h/24, 7&nbsp;j/7</h2>
-          <p class="atout__texte">Une question sur votre commande ou votre billet&#8239;? NASTY vous répond à toute heure.</p>
-        </div>
+      <li class="atouts__case">
+        <CadreOr rayon="var(--radius-card-sm)">
+          <div class="atout">
+            <Image class="atout__icone" src={iconeAssistance} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
+            <div>
+              <h2 class="atout__titre">Assistance en ligne 24&nbsp;h/24, 7&nbsp;j/7</h2>
+              <p class="atout__texte">Une question sur votre commande ou votre billet&#8239;? NASTY vous répond à toute heure.</p>
+            </div>
+          </div>
+        </CadreOr>
       </li>
     </ul>
 
@@ -421,6 +438,11 @@ if (volets.length === 0) {
     padding: 0;
     display: grid;
     gap: calc(var(--space-3) + 40px) var(--space-2);
+  }
+
+  /* Case de grille : le pavé et son cadre or prennent toute la hauteur de la rangée. */
+  .atouts__case {
+    display: grid;
   }
 
   .atout {

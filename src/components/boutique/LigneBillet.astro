@@ -4,6 +4,8 @@
   accès ouverts, prix d'appel, bouton Réserver et lieu. Dates, lieux et accès viennent des séances
   réelles du produit (« à annoncer » sinon). Sans photo du back-office, un pass prend son visuel et un
   ticket celui de sa plateforme (BQ-07) ; à défaut, cadre neutre marqué, jamais d'image inventée. Sur mobile, la ligne devient une carte empilée.
+  Posée sur le cadre or qui pivote au survol (CadreOr), partout : accueil du site, accueil et rayons
+  de la boutique, recherche — même effet que les autres cartes (demande du 6 novembre 2026).
 */
 import { lienProduit, type EmplacementBoutique } from '../../lib/boutique';
 import type { VueProduit } from '../../lib/boutique-api';
@@ -11,6 +13,7 @@ import { formaterEUR, formaterXAF } from '../../lib/boutique-format';
 import { accesBillet, datesBillet, lieuBillet, rayonDe, texteRecherche } from '../../lib/boutique-rayons';
 import { visuelProduit } from '../../lib/visuels-plateformes';
 import { Image } from 'astro:assets';
+import CadreOr from '../shared/CadreOr.astro';
 import Icon from '../shared/Icon.astro';
 
 interface Props {
@@ -40,6 +43,7 @@ const rayon = rayonDe(p);
   data-ordre={p.ordre}
   hidden={masquee}
 >
+<CadreOr>
 <article class="billet">
   <div class="billet__dates">
     {dates ? (
@@ -101,6 +105,7 @@ const rayon = rayonDe(p);
     <p class="billet__lieu"><Icon name="pin" size={18} /> {lieuBillet(p)}</p>
   </div>
 </article>
+</CadreOr>
 </div>
 
 <style>

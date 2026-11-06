@@ -13,7 +13,6 @@
   la section n'est jamais vide.
 */
 import Countdown from './Countdown.astro';
-import CadreOr from '../shared/CadreOr.astro';
 import Icon from '../shared/Icon.astro';
 import CarteArticle from '../boutique/CarteArticle.astro';
 import LigneBillet from '../boutique/LigneBillet.astro';
@@ -56,7 +55,7 @@ const cartes = produits.map((p) => {
             </a>
           </div>
           <div class="vitrine-rubrique__billets">
-            {billets.map((p) => <CadreOr><LigneBillet produit={p} suivi="accueil-boutique" /></CadreOr>)}
+            {billets.map((p) => <LigneBillet produit={p} suivi="accueil-boutique" />)}
           </div>
         </section>
       )}
