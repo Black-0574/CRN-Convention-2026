@@ -1376,3 +1376,18 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - la page en ligne contient le nouvel écran (sons, maintien de l'écran) et les styles du verdict ;
   - mise en page contrôlée en 375 × 812.
 - **Reste à tester sur téléphone :** caméra, sons et vibrations.
+
+**Boutique : cadre or et points relais (6 novembre 2026)** — commit `b95bb79`, back-office `1e9fab3`.
+- **Cadre or :** effet de la page d'accueil, à la demande du Commanditaire. Les lignes de billets (pass et tickets) sont posées sur le cadre or qui pivote au survol, partout : accueil, boutique, rayons et recherche. Les 4 atouts de la boutique aussi.
+  - En ligne : `/boutique/` compte 16 cadres (12 billets, 4 atouts) et l'accueil 4 billets encadrés.
+  - Contrôle local : aucun double cadre ni débordement ; au survol, le cadre pivote de −3° et la carte de +1°.
+  - Survol et clavier uniquement ; mouvement réduit respecté.
+- **Points relais** (liste et frais du Commanditaire) :
+  - CRN — Église Centrale (Libreville) 0 F CFA ;
+  - CRN — Église de Plein Ciel 2 000 F CFA ;
+  - CRN — Église d'Angondjé (Akanda) 2 500 F CFA ;
+  - CRN — Église d'Owendo 2 500 F CFA.
+  - Créés une seule fois au démarrage, sur une liste vide. En ligne, `GET /api/boutique/livraison` renvoie les 4 églises et leurs frais.
+  - **À compléter dans l'admin :** localités déduites des noms, adresses, horaires, contacts et délais (« à confirmer » côté client).
+  - **Point ouvert :** le « retrait sur le lieu de la Convention » reste proposé à côté de l'Église Centrale.
+- **Tests de bout en bout :** 16 réussis, dont le parcours d'achat. Les 4 tests de la sélection « de secours » de l'accueil échouent en local (back-office local joignable, vrai catalogue affiché), sans lien avec ces changements.
