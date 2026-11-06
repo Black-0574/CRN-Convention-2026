@@ -50,6 +50,30 @@ d'architecture. S'appliquent en plus des règles ci-dessus :
   tarifaires et horodatages.
 - Dépendances épinglées à une version exacte publiée depuis au moins 14 jours.
 
+## Paiement SasPay (`backend/src/boutique/domaine/src/saspay.ts`) — règles permanentes
+
+Règles d'intégration fournies par SasPay (guide « saspay-integration », 6 novembre 2026) :
+
+- Documentation officielle : `https://docs.saspay.me/llms.txt` ; la spécification OpenAPI
+  (`/api-reference/openapi.json`) fait foi : n'inventer aucun endpoint, champ, statut ou événement
+  absent de celle-ci. URL de base `https://api.saspay.me/api/v1`.
+- Toutes les requêtes SasPay depuis le back-office ; clé `SASPAY_API_KEY` (`sk_test_…` en
+  développement, `sk_live_…` en production) en variable d'environnement, jamais dans le site, les
+  journaux ou Git. Secret du webhook : `SASPAY_WEBHOOK_SECRET`.
+- Montants en chaînes décimales (`"150000.00"`), jamais de flottants.
+- `Idempotency-Key` sur `POST /payments/softpay/`, `POST /payouts/initialize/`,
+  `POST /wallet-transfers/` et `POST /payments/{payment_id}/retry/` (non utilisés aujourd'hui :
+  la boutique passe par le checkout hébergé, qui n'en prend pas).
+- Ne livrer (émettre un billet) que lorsque `GET /payments/{payment_id}/verify/` renvoie `SUCCESS`.
+- Si `checkout_url` est non vide après un softpay, y rediriger le client.
+- Webhooks : vérifier `X-Webhook-Signature` et `X-Webhook-Timestamp` sur le corps brut, rejeter un
+  horodatage de plus de 300 secondes ; répondre vite, traiter de façon idempotente.
+- Retraits : IP du serveur à déclarer, sinon `403 ip_not_whitelisted`.
+- Réponses `401`, `403`, `404`, `409`, `422`, `429` gérées selon l'endpoint ; sur `429`, espacer.
+- Comptabilité : `charged`/`debited_amount` et `net_amount`, jamais `amount` seul.
+- Avant d'ouvrir les ventes : `npm --prefix backend run saspay:verifier`, puis `webhook.test`,
+  paiement de test (`sk_test_`), petit paiement réel (`sk_live_`).
+
 ## Commandes utiles
 
 - `npm run dev` — serveur de développement

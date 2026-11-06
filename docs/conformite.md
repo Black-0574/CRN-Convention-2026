@@ -1264,3 +1264,49 @@ que le CRN ne les saisit pas).
   (3 000 F CFA).
 
 Rappel : les ventes restent fermées tant qu'aucun prestataire de paiement n'est raccordé.
+
+## Boutique — intégration du paiement SasPay (6 novembre 2026)
+
+Agrégateur retenu par le Commanditaire : **SasPay** (saspay.me, API REST, Mobile Money et carte,
+Afrique de l'Ouest et du Centre ; Gabon / XAF présent dans la liste publique des pays).
+Intégration conforme à la documentation officielle (docs.saspay.me et sa spécification OpenAPI) ;
+détail et procédure dans `backend/src/boutique/README.md`, variables dans `backend/.env.example`.
+
+| Point | Réalisation | Preuve |
+| --- | --- | --- |
+| Création du paiement | Checkout hébergé `POST /checkout-sessions/`, XAF, montant en chaîne décimale, expiration alignée sur la réservation, retour au suivi | Tests unitaires (requête, enveloppe, erreurs) |
+| Clé API côté serveur seulement | Variables d'environnement du back-office ; jamais dans le site ni dans Git ; détail d'erreur dans le journal, message neutre au client | Revue du code |
+| Webhooks signés | HMAC-SHA256 de « horodatage.corps brut », comparaison en temps constant, horodatage à ± 5 min | Tests : corps modifié, mauvais secret, rejeu ancien ou futur |
+| Aucune livraison sur la foi d'un webhook | Le webhook (sans référence de commande) déclenche la relecture du statut par l'API, revérifié par SasPay chez l'opérateur | `npm run test:saspay` |
+| Statuts | `PAID` → payée ; `EXPIRED`/`CANCELLED` → échouée, place rendue ; essai raté sur session ouverte → en attente (le client peut réessayer) | Tests unitaires (6 cas) |
+| Webhook perdu | Relecture toutes les 2 min ; commandes expirées < 24 h incluses → paiement tardif « à vérifier », jamais perdu | `npm run test:saspay` |
+| Idempotence | Événements dédupliqués (contrainte d'unicité) ; rejeu sans effet | `npm run test:saspay` |
+
+`npm run test:saspay` (faux serveur SasPay, vrais endpoints de la boutique) : 7 vérifications
+réussies — session créée, webhook mal signé refusé, session ouverte sans effet, session payée →
+commande payée + billet émis + place vendue, rejeu sans effet, session expirée → place rendue,
+paiement sur commande expirée → « à vérifier ». Cœur métier : 61 tests.
+
+**Non activé en production** : `PAIEMENT_PRESTATAIRE` n'y est pas défini, les ventes restent
+fermées. **Prérequis signalés avant d'ouvrir les ventes** : compte SasPay vérifié et clés, webhook
+créé, réseaux du Gabon confirmés ; `BILLETS_SECRET`, `LIENS_SECRET`, `PUBLIC_SERVER_URL` en
+production ; **prestataire d'e-mail** (aujourd'hui aucun e-mail ne part en production) ; CGV ;
+capacités des séances ; vente réelle de contrôle. **Statut : fait en local, non poussé.**
+
+**Mise en conformité avec le guide d'intégration SasPay** (« saspay-integration » et règles pour
+assistants, fournis par le Commanditaire le 6 novembre 2026 ; règles reprises dans `CLAUDE.md`) :
+
+- **Vérifier avant de livrer** : la commande ne passe « payée » que si `GET /payments/{id}/verify/`
+  renvoie `SUCCESS` (session payée mais transaction non vérifiée → reste en attente).
+- **Comptabilité** : montant débité au client et net reçu notés dans le détail du paiement.
+- **Webhook** : réponse immédiate, traitement en arrière-plan et en file ; **429** : arrêt de la
+  relecture, reprise au passage suivant.
+- **Variables** renommées comme dans le guide : `SASPAY_API_KEY`, `SASPAY_WEBHOOK_SECRET`.
+- **Commande de contrôle** `npm --prefix backend run saspay:verifier` : variables, clé acceptée,
+  réseaux ouverts au Gabon, plafond par paiement comparé au prix le plus élevé du catalogue (le
+  Pass Diamant vaut 1 000 000 F CFA ; l'exemple de la documentation plafonne à 500 000), webhook
+  déclaré et abonnements ; n'affiche aucun secret. Lancée en local sans clé : 3 points bloquants
+  signalés, comme attendu.
+- Tests : cœur métier 68 (dont 24 SasPay) ; `test:saspay` 9 vérifications réussies.
+- **Non vérifié contre le vrai SasPay** (pas encore de clé) : session réelle, page de paiement,
+  webhook réel (`webhook.test`), réseaux du Gabon.
