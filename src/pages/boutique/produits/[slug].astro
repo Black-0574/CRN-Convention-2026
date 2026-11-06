@@ -6,10 +6,11 @@ import { catalogue, type VueProduit } from '../../../lib/boutique-api';
 import { creneau, dernierJour, formaterEUR, formaterXAF } from '../../../lib/boutique-format';
 import { visuelProduit } from '../../../lib/visuels-plateformes';
 
-// Une page statique par produit du catalogue, générée au build (site statique).
+// Une page statique par produit du catalogue, générée au build (site statique), produits réservés
+// aux tests compris (page par lien direct, absente des listes et de l'indexation : robots.txt).
 export async function getStaticPaths() {
   const c = await catalogue();
-  return (c?.produits ?? []).map((produit) => ({ params: { slug: produit.slug }, props: { produit } }));
+  return (c?.tous ?? []).map((produit) => ({ params: { slug: produit.slug }, props: { produit } }));
 }
 
 const { produit: p } = Astro.props as { produit: VueProduit };

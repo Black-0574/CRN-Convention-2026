@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+# Produits réservés aux tests des équipes (liens directs, jamais listés).
+Disallow: /boutique/produits/test-

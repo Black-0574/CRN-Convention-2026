@@ -44,6 +44,8 @@ export interface VueProduit {
   kit: { nom: string; quantite: number; tailles: string[] }[];
   indisponible: string | null;
   apercu: boolean;
+  /** Produit réservé aux tests des équipes : page par lien direct, absent des listes. */
+  reserveTests?: boolean;
   ordre: number;
 }
 
@@ -118,17 +120,21 @@ async function localiserPhotos(p: VueProduit): Promise<VueProduit> {
   return { ...p, photos: recopiees.length > 0 ? recopiees : await photosArticle(p.slug) };
 }
 
-let catalogueEnCours: Promise<{ demo: boolean; produits: VueProduit[] } | null> | undefined;
+let catalogueEnCours: Promise<{ demo: boolean; produits: VueProduit[]; tous: VueProduit[] } | null> | undefined;
 
 /**
  * Catalogue public (lu une fois par build), ou `null` si l'API est injoignable hors production.
  * En développement, relu à chaque page : le catalogue local change pendant les essais.
+ * `produits` : ce que listent les pages de la boutique ; `tous` : y compris les produits réservés
+ * aux tests, qui n'ont qu'une page accessible par lien direct.
  */
 export function catalogue() {
   if (import.meta.env.DEV) catalogueEnCours = undefined;
   catalogueEnCours ??= (async () => {
     const c = await lireAuBuild<{ demo: boolean; produits: VueProduit[] }>('/api/boutique/catalogue');
-    return c && { demo: c.demo, produits: await Promise.all(c.produits.map(localiserPhotos)) };
+    if (!c) return null;
+    const tous = await Promise.all(c.produits.map(localiserPhotos));
+    return { demo: c.demo, produits: tous.filter((p) => !p.reserveTests), tous };
   })();
   return catalogueEnCours;
 }
