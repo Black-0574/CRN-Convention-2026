@@ -1350,3 +1350,16 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - Variables `SMTP_HOST=smtp.hostinger.com`, `SMTP_PORT=465`, `SMTP_USER=boutique@crn-convention2026.events` et `SMTP_PASS` (masqué) ajoutées dans hPanel ; Hostinger a redéployé `5f185ef` (11:47, « Actuel »).
   - Journaux : le message « SMTP non configuré » n'apparaît plus à aucun démarrage depuis 11:51, et la dernière heure ne compte aucune erreur.
   - Les identifiants sont ceux qui ont réussi l'envoi d'essai en local. Le premier envoi réel en production aura lieu à la première commande payée.
+
+**Produits test en ligne et photo du Dr Mike Jocktane (6 novembre 2026)** :
+- **Produits test à 200 F CFA**, réservés aux équipes : pass, ticket et article, choix « liens réservés » du Commanditaire.
+  - Nouveau champ produit « Réservé aux tests » (migration `20261106_120512`, appliquée en production à 12:13).
+  - Ces produits ne sont jamais listés dans la boutique ni mis en avant. Ils sont achetables par lien direct même ventes fermées, tout autre produit restant refusé (503).
+  - Ils sont créés une seule fois au démarrage du back-office (`97d1a78`) ; une fois retirés depuis l'admin, ils ne reviennent pas.
+  - Site (`b5ed6ba`) : pages `https://www.crn-convention2026.events/boutique/produits/test-pass-200/`, `test-ticket-200/` et `test-article-200/` en ligne (200, « 200 F CFA », « Ajouter au panier »). Aucune mention sur l'accueil, la boutique, la billetterie, les articles ni la recherche. Exclues par `robots.txt`.
+  - Preuve : `test:saspay`, 12 vérifications réussies, dont « ventes fermées : produit normal refusé, produit réservé aux tests vendu ».
+  - **À retirer avant l'ouverture des ventes.**
+- **Photo du Dr Mike Jocktane** : nouvelle photo fournie par le Commanditaire, qui a confirmé que c'est une photo réelle (règle « aucun visage généré par IA »).
+  - Envoyée dans le back-office (`mike-jocktane-2026.webp`, 1254 × 1254, alt « Dr. Mike Jocktane ») et liée à la fiche de l'orateur ; l'ancien média est conservé dans la bibliothèque.
+  - Le site republié affiche `/images/cms/mike-jocktane-2026-480x640.webp` sur `/orateurs/mike-jocktane/` (capture vérifiée).
+  - Photo de secours du dépôt : `public/images/orateurs/mike-jocktane-2.webp`.
