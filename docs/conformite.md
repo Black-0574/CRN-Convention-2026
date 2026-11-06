@@ -1363,3 +1363,16 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - Envoyée dans le back-office (`mike-jocktane-2026.webp`, 1254 × 1254, alt « Dr. Mike Jocktane ») et liée à la fiche de l'orateur ; l'ancien média est conservé dans la bibliothèque.
   - Le site republié affiche `/images/cms/mike-jocktane-2026-480x640.webp` sur `/orateurs/mike-jocktane/` (capture vérifiée).
   - Photo de secours du dépôt : `public/images/orateurs/mike-jocktane-2.webp`.
+
+**Contrôle d'accès, écran de scan (6 novembre 2026)** :
+- **Constat du test des équipes :** une entrée acceptée, suivie de sept refus « déjà utilisé » pour le même billet. Le verdict s'affichait hors de l'écran du téléphone, et la caméra relisait le QR toutes les 4 s.
+- **Correctif :**
+  - verdict en plein écran, vert ✓ accepté et rouge ✕ refusé (dérogation de palette déjà documentée pour ce poste interne) ;
+  - lecture en pause jusqu'à « Scanner le suivant », puis le même QR est ignoré 15 s ;
+  - sons synthétisés dans le navigateur, sans fichier externe : deux notes montantes pour une acceptation, trois bourdonnements graves pour un refus ; vibrations distinctes ;
+  - bandeau séance, poste et compteur d'entrées ; écran maintenu allumé.
+  - Commit `635710b`, back-office `1e46a73`.
+- **Vérifié :**
+  - la page en ligne contient le nouvel écran (sons, maintien de l'écran) et les styles du verdict ;
+  - mise en page contrôlée en 375 × 812.
+- **Reste à tester sur téléphone :** caméra, sons et vibrations.
