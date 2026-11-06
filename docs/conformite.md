@@ -1342,3 +1342,7 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
 - **Essai réel d'envoi (6 novembre 2026)** :
   - `courriel:test` : connexion SMTP acceptée (`smtp.hostinger.com:465`, `boutique@crn-convention2026.events`) et e-mail d'essai envoyé à la boîte de la boutique.
   - DNS du domaine : MX Hostinger, SPF `include:_spf.mail.hostinger.com`, DKIM `hostingermail-a/b/c`, DMARC `p=none`.
+- **Déploiement (6 novembre 2026, 11:35)** :
+  - Commits poussés : `main` = `e60f3cf` ; dépôts du back-office = `5f185ef`, simple avance depuis `865a93b`. Construction Hostinger terminée, version « Actuelle ».
+  - Au démarrage : zéro erreur et le message « SMTP non configuré », qui prouve que la nouvelle version tourne. Les e-mails ne partiront qu'une fois `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` et `SMTP_PASS` ajoutés dans hPanel.
+  - Adresses vérifiées : réglages (ventes toujours fermées), webhook (401 sans signature), suivi (404 pour une commande inconnue) et admin répondent.
