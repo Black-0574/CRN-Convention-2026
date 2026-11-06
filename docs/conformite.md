@@ -1317,3 +1317,20 @@ Après déploiement : catalogue, réglages et admin répondent, ventes toujours 
 le code SasPay n'étant actif qu'avec ses variables, rien de public ne distingue la nouvelle version
 de l'ancienne — la prise en compte est à confirmer dans hPanel (historique des déploiements du
 back-office), puis par `npm --prefix backend run saspay:verifier` une fois les clés renseignées.
+
+**Vérification contre le vrai SasPay (6 novembre 2026)** :
+- **Configuration de production :** dans hPanel, les 12 variables sont présentes, dont `BILLETS_SECRET`, `LIENS_SECRET` et `PUBLIC_SERVER_URL`. Le back-office a été redéployé, sans erreur dans les journaux.
+- **Contrôle `saspay:verifier`** (clé `sk_live_…`, portée « Encaissement ») :
+  - clé acceptée ;
+  - Airtel Gabon et Moov Money Gabon ouverts à l'encaissement ;
+  - plafond de 10 000 000 F CFA par paiement chez Airtel : le Pass Diamant passe ;
+  - webhook LIVE abonné à `transaction.success/failed/cancelled`.
+- **Paiement réel de 200 F CFA** depuis un poste local (produits de test, `produits-test`) :
+  - commande `CRN-DCN3ZCC` payée à la relecture suivante (≤ 2 min) ;
+  - billet `CRN-DCN3ZCC-01` émis, PDF et e-mail générés ;
+  - montants enregistrés : « débité 207 · net reçu 200 · frais client 7 F CFA » ;
+  - webhooks `transaction.created` et `transaction.success` livrés au back-office en ligne (200).
+- **Écarts constatés :**
+  1. **Mode de frais :** le mode demandé par l'API est ignoré sans option du compte, et le compte était en « Ajoutés ». Le CRN a choisi « Déduits », réglé le jour même dans SasPay → Paramètres → Frais. Aucune route de l'API ne donne ce réglage, donc le contrôle le rappelle sans pouvoir le vérifier. **Preuve** : second paiement réel, commande `CRN-LPVCFMX` (pass de test). SasPay indique « mode Déduits, débité 200, net 193 XAF » ; la commande est payée et le billet `CRN-LPVCFMX-01` émis. Le libellé du détail devient « frais SasPay » : en mode « Déduits », c'est le CRN qui les paie.
+  2. **Carte bancaire :** indisponible chez SasPay. Texte « ou carte bancaire » à retirer.
+  3. **Webhook en double :** un second webhook à adresse tronquée renvoyait 404. Il a été supprimé, et le contrôle signale désormais ce cas.
