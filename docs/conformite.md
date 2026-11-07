@@ -1391,3 +1391,15 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - **À compléter dans l'admin :** localités déduites des noms, adresses, horaires, contacts et délais (« à confirmer » côté client).
   - **Décision du Commanditaire (6 novembre 2026) :** le « retrait sur le lieu de la Convention » reste proposé à côté de l'Église Centrale.
 - **Tests de bout en bout :** 16 réussis, dont le parcours d'achat. Les 4 tests de la sélection « de secours » de l'accueil échouent en local (back-office local joignable, vrai catalogue affiché), sans lien avec ces changements.
+
+**Ouverture des ventes (7 novembre 2026)** :
+- **Décision :** le Commanditaire a ouvert les ventes en connaissance des manques signalés : CGV non publiées, stocks d'articles non suivis, plafond de 100 e-mails par jour, texte « ou carte bancaire » à corriger.
+- **Action :** la case « Ventes ouvertes » a été cochée dans Boutique · Réglages.
+- **Vérification :** `GET /api/boutique/reglages` renvoie `ventesOuvertes: true`, et la création de commande ne répond plus « ventes fermées ».
+- **Vendables (13) :**
+  - Pass Génération et Pass Académie Intégral ;
+  - Une classe de l'Académie ;
+  - Femme de Foi — Live et J'ai soif ;
+  - Concert Standard et Concert VIP ;
+  - Tee-shirt, Pagne, Pins, Huile d'onction, Polo et Casquette.
+- **Restent « Ouverture des ventes à annoncer » (capacité non renseignée) :** Pass Convention Intégral, Pass Génération Plus, Pass Or, Pass Diamant et Dîner des Élites.

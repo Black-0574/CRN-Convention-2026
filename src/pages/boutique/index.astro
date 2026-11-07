@@ -64,7 +64,7 @@ const volets: Volet[] = ([
     id: 'articles',
     onglet: 'Articles',
     titre: 'Les articles officiels de la Convention',
-    texte: 'Tee-shirt, polo, casquette, pagne, pins et huile d’onction officiels, livrés dans l’église du réseau CRN de votre choix, au Gabon ou à l’étranger. Paiement par Mobile Money ou carte bancaire.',
+    texte: 'Tee-shirt, polo, casquette, pagne, pins et huile d’onction officiels, livrés dans l’église du réseau CRN de votre choix, au Gabon ou à l’étranger. Paiement par Mobile Money.',
     prixAppel: prixAppel(articles),
     bouton: { libelle: 'Voir les articles', href: '/boutique/articles' },
     image: imageVoletArticles,
@@ -76,7 +76,7 @@ if (volets.length === 0) {
     id: 'boutique',
     onglet: 'Boutique',
     titre: 'Vos pass et vos articles de la Convention',
-    texte: 'Pass et billets nominatifs avec QR code ; paiement par Mobile Money ou carte bancaire ; articles livrés dans l’église du réseau de votre choix. Du 6 au 13 décembre 2026, à Libreville.',
+    texte: 'Pass et billets nominatifs avec QR code ; paiement par Mobile Money ; articles livrés dans l’église du réseau de votre choix. Du 6 au 13 décembre 2026, à Libreville.',
     prixAppel: null,
     bouton: { libelle: 'Voir la billetterie', href: '/boutique/billetterie' },
   });
@@ -124,7 +124,7 @@ if (volets.length === 0) {
             <Image class="atout__icone" src={iconePaiement} alt="" height={90} width={84} densities={[1, 2]} loading="lazy" />
             <div>
               <h2 class="atout__titre">Paiement sécurisé</h2>
-              <p class="atout__texte">Par Mobile Money ou carte bancaire, depuis plusieurs pays.</p>
+              <p class="atout__texte">Par Mobile Money, auprès des opérateurs de plusieurs pays d’Afrique.</p>
             </div>
           </div>
         </CadreOr>

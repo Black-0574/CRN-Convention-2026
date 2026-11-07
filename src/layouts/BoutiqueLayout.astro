@@ -14,7 +14,7 @@ interface Props {
 }
 const {
   title,
-  description = 'Boutique officielle de la Convention CRN 2026 : pass et billets nominatifs à QR code, articles officiels livrés dans le réseau, paiement Mobile Money ou carte.',
+  description = 'Boutique officielle de la Convention CRN 2026 : pass et billets nominatifs à QR code, articles officiels livrés dans le réseau, paiement par Mobile Money.',
 } = Astro.props;
 const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} · Boutique`;
 ---
@@ -42,7 +42,7 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} �
     <a href="/boutique/cgv">Conditions générales de vente</a>
     <a href="/mentions-legales">Mentions légales</a>
     <a href="/confidentialite">Confidentialité</a>
-    <span>Paiement sécurisé : Mobile Money (plusieurs pays) ou carte bancaire.</span>
+    <span>Paiement sécurisé par Mobile Money, depuis plusieurs pays d’Afrique.</span>
   </div>
 
   <TiroirPanier />

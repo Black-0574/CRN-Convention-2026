@@ -6,7 +6,8 @@
      l'achat) et livraison des articles (église du réseau au Gabon ou hors du Gabon, domicile ou
      lieu de travail à Libreville, ou retrait à la Convention) ; consentement facultatif non
      pré-coché ;
-  3. Paiement sur la page sécurisée de l'agrégateur : Mobile Money (plusieurs pays) ou carte.
+  3. Paiement sur la page sécurisée de l'agrégateur : Mobile Money (plusieurs pays ; carte bancaire
+  indisponible chez l'agrégateur au 6 novembre 2026).
   La commande est créée au passage à l'étape 3 : stock et places sont alors réservés 15 minutes
   (F03), prix garanti pendant ce délai.
 */
@@ -83,7 +84,6 @@ const r = await lireReglages();
           <form data-formulaire-paiement novalidate>
             <ul class="moyens-acceptes">
               <li><strong>Mobile Money</strong> — opérateurs de plusieurs pays d’Afrique</li>
-              <li><strong>Carte bancaire</strong> — depuis le Gabon ou l’étranger</li>
             </ul>
             <p class="aide">Vous choisissez votre moyen de paiement sur la page sécurisée de notre partenaire de paiement, puis vous revenez automatiquement au suivi de votre commande.</p>
             <button type="submit" class="button button--primary" data-payer>Payer</button>
@@ -360,7 +360,7 @@ const r = await lireReglages();
     bouton.disabled = true;
     try {
       // Session de paiement chez l'agrégateur, puis redirection vers sa page sécurisée : le client
-      // y choisit Mobile Money (son pays, son opérateur) ou carte, et revient au suivi de commande.
+      // y choisit Mobile Money (son pays, son opérateur), et revient au suivi de commande.
       const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/paiement?t=${etat.jeton}`, { method: 'POST' });
       const donnees = await res.json();
       if (!res.ok || !donnees.redirection) throw new Error(donnees.erreur ?? 'Paiement impossible.');
