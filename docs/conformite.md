@@ -1403,3 +1403,33 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - Concert Standard et Concert VIP ;
   - Tee-shirt, Pagne, Pins, Huile d'onction, Polo et Casquette.
 - **Restent « Ouverture des ventes à annoncer » (capacité non renseignée) :** Pass Convention Intégral, Pass Génération Plus, Pass Or, Pass Diamant et Dîner des Élites.
+
+**Refonte du back-office (7 novembre 2026)** — plan validé (`C:\Users\Mael\.claude\plans\peaceful-swinging-liskov.md`).
+- **Charte du site** (`backend/src/app/(payload)/crn-admin-theme.css`) :
+  - thème clair seul ;
+  - échelle neutre de Payload remplacée par une rampe dérivée de la palette GBIS (blanc, crème, gris clair, gris, bleu nuit, noir) ;
+  - menu latéral bleu nuit avec icônes par rubrique (masques SVG en CSS), lien actif blanc à filet or, marque en tête et carte du compte en pied ;
+  - boutons pilules, listes et fiches en cartes, connexion sur carte à filet or ;
+  - rien sous 16 px, y compris en 375 px de large.
+- **Tableau de bord par rôle** (`TableauDeBord.tsx`, données `backend/src/lib/tableau-de-bord.ts`, graphiques SVG maison sans bibliothèque) :
+  - administrateur, éditeur, catalogue, COM Boutique et comptabilité ont chacun leurs indicateurs, graphiques, listes et actions rapides ;
+  - en pied de page, des accès rapides limités au rôle ;
+  - aucune donnée inventée : un bloc vide affiche « Aucune … ».
+- **Droits et menu par rôle** (`backend/src/lib/roles.ts`, décision du Commanditaire) :
+  - le contenu du site, jusqu'ici modifiable par tout compte connecté, est réservé à l'éditeur ;
+  - la boutique garde ses règles par rôle ;
+  - chaque rubrique non permise est masquée du menu ;
+  - un non-administrateur ne lit que sa propre fiche de compte.
+- **Profils enrichis** (`Users.ts`, migration `20261107_075155_profils_utilisateurs`) :
+  - prénom, nom, photo (collection `photos-profil`, non publique), téléphone, fonction, service ;
+  - statut actif/suspendu (connexion refusée, y compris sur `/scan`) et dernière connexion ;
+  - séance et poste de scan par défaut, pré-remplis sur `/scan` ; notes internes réservées à l'administrateur ;
+  - garde-fous : un administrateur ne se suspend pas et ne se retire pas son rôle. Modifications des comptes journalisées.
+- **Preuves (poste local, comptes d'essai supprimés ensuite)** :
+  - migration rejouée sur une base neuve, et reprise d'un compte existant (nom affiché, statut actif) ;
+  - API : seul l'éditeur crée une FAQ (201), les autres rôles reçoivent un 403 ; un non-administrateur ne voit que son compte ;
+  - tableau de bord de chacun des 5 rôles vérifié ;
+  - compte suspendu refusé ; les deux garde-fous de l'administrateur fonctionnent ;
+  - 375 px sans débordement ni texte sous 16 px ;
+  - `test:boutique` (68), `test:saspay` et `test:scan` réussis.
+- **Écart au plan :** la page de connexion est une carte unique à filet or (et non deux colonnes).
