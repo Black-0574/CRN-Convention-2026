@@ -4,8 +4,8 @@
   "ordre": 8,
   "sessions": [
     {
-      "heureDebut": "08:00",
-      "heureFin": "11:00",
+      "heureDebut": "09:00",
+      "heureFin": "12:00",
       "titre": "Femme de Foi — Live",
       "lieu": "Église Centrale",
       "intervenants": ["patricia-piebi"],
@@ -13,8 +13,8 @@
       "visible": true
     },
     {
-      "heureDebut": "13:00",
-      "heureFin": "16:30",
+      "heureDebut": "14:00",
+      "heureFin": "17:30",
       "titre": "J’ai soif",
       "lieu": "Église Centrale",
       "intervenants": ["jek-kalombo", "carelle-ambouroue"],
