@@ -1453,3 +1453,14 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - `tests/unit/lieu-13-decembre.test.ts` (4 tests) : aucune mention résiduelle, corrections ciblées, communiqué en tête avec son visuel, découpage de l'article ;
   - correction rejouée deux fois sur la base locale : un seul communiqué créé, plus aucun « Nomad » dans le programme, les séances, les produits, la FAQ et les lieux ;
   - pages vérifiées en 599 px et en 1 280 px, sans débordement horizontal.
+
+**Film de mobilisation et photo de Nadia Jocktane (11 novembre 2026)** — fichiers du Commanditaire.
+- **Bouton « Voir le film » du héros :** il ouvre désormais le film de mobilisation « CRN 2026 Mobilisation EG ». La section « Film de la Convention » de l'accueil garde le film de 14 s.
+  - **Source :** 185 Mo, 12 min 35 s, en 480p. Trop lourde pour GitHub (limite de 100 Mo) et pour la 3G.
+  - **Réencodage :** ffmpeg 9.0.2, paquet officiel winget Gyan.FFmpeg dont l'empreinte SHA-256 a été vérifiée. H.264 Main 480p en deux passes à 440 kbit/s (plafond 700 kbit/s), AAC 64 kbit/s, index en tête (`+faststart`) → `public/videos/film-mobilisation-crn-2026-480p.mp4` (**48,4 Mo**).
+  - **Affiche :** carton-titre à 15 s (`film-mobilisation-crn-2026-affiche.jpg`, 32 Ko).
+  - **Chargement :** toujours au clic seulement, aucun poids ajouté à l'accueil.
+  - **Preuve :** en local, le lecteur lit 4,3 s au bout de 5 s, 65 s sont déjà en mémoire tampon et la durée complète est de 755 s.
+- **Photo de l'Évêque Nadia Jocktane :** nouvelle photo réelle.
+  - **Back-office :** téléversée (média 19, texte alternatif « Nadia Jocktane ») et associée à la fiche de l'orateur.
+  - **Site :** photo de secours recadrée en 480 × 640 (`public/images/orateurs/nadia-jocktane-3.webp`).
