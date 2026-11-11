@@ -1433,3 +1433,23 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - 375 px sans débordement ni texte sous 16 px ;
   - `test:boutique` (68), `test:saspay` et `test:scan` réussis.
 - **Écart au plan :** la page de connexion est une carte unique à filet or (et non deux colonnes).
+
+**Changement de lieu du dimanche 13 décembre (11 novembre 2026)** — communiqué et visuel du Commanditaire.
+- **« Lieu à déterminer » partout où figurait le Nomad** :
+  - programme du 13 décembre (libellé et 3 séances) ;
+  - FAQ « Horaires et lieux » ;
+  - Infos pratiques (adresse « À annoncer ») ;
+  - cartes « Concert pour la vie » et « Culte unique & ordination » de l'accueil ;
+  - fiches Billetterie et produits « Concert pour la vie » de la boutique ;
+  - séances `concert-vip` et `concert-standard` (billets, contrôle d'accès) ;
+  - données de référence, assistant Nasty, seeds.
+- **Base en production :** corrigée au démarrage du back-office (`backend/src/seed/lieu-13-decembre.ts`, appelé dans `onInit`). Seules les anciennes valeurs exactes sont remplacées ; une saisie ultérieure dans l'admin n'est jamais écrasée. Les cahiers des charges (`docs/CONV-*.md`) ne sont pas modifiés.
+- **Communiqué publié dans Multimédia → Actualités** (rubrique « Communiqué », en tête) :
+  - page `/actualites/changement-lieu-13-decembre` avec le visuel entier, auto-hébergé (NF-CNV-001) ;
+  - vignette 16:9 de 640 × 360 px (40 Ko) sur les cartes de l'accueil et des Actualités ;
+  - texte alternatif reprenant le contenu du visuel.
+- **Actualités enrichies dans le back-office** (migration `20261111_125443_actualites_article_visuel`) : champs facultatifs « Article complet », « Visuel (vignette) » et « Adresse de l'article ». Au build, le site télécharge le visuel et génère la vignette (`src/lib/cms-content.ts`).
+- **Preuves :**
+  - `tests/unit/lieu-13-decembre.test.ts` (4 tests) : aucune mention résiduelle, corrections ciblées, communiqué en tête avec son visuel, découpage de l'article ;
+  - correction rejouée deux fois sur la base locale : un seul communiqué créé, plus aucun « Nomad » dans le programme, les séances, les produits, la FAQ et les lieux ;
+  - pages vérifiées en 599 px et en 1 280 px, sans débordement horizontal.

@@ -203,18 +203,48 @@ export async function loadFaq(): Promise<Entry[]> {
   );
 }
 
+// Visuel d'une actualité : l'image entière (taille « fiche », 960 px de large au plus) pour la
+// page de l'article, et une vignette 16:9 de 640 × 360 px générée au build pour les cartes
+// (quelques dizaines de Ko sur l'accueil). Affiche verticale : cadrage sur le haut, où figure le titre.
+const VIGNETTE = { largeur: 640, hauteur: 360, hautRelatif: 0.22 };
+
+async function visuelActualite(image: unknown): Promise<Obj> {
+  const media = obj(image);
+  const fiche = obj(obj(media.sizes).fiche);
+  const chemin = (typeof fiche.url === 'string' && fiche.url) || (typeof media.url === 'string' && media.url);
+  if (!chemin) return {};
+  const url = new URL(chemin, `${API_URL}/`).toString();
+  if (!photoCache.has(url)) photoCache.set(url, downloadPhoto(url));
+  const publie = await photoCache.get(url)!;
+  const { default: sharp } = await import('sharp');
+  const source = `public${publie}`;
+  const reduite = await sharp(source).resize({ width: VIGNETTE.largeur }).toBuffer({ resolveWithObject: true });
+  const haut = Math.round(Math.max(0, reduite.info.height - VIGNETTE.hauteur) * VIGNETTE.hautRelatif);
+  const vignette = publie.replace(/(\.\w+)?$/, '-vignette.webp');
+  await sharp(reduite.data)
+    .extract({ left: 0, top: haut, width: reduite.info.width, height: Math.min(VIGNETTE.hauteur, reduite.info.height) })
+    .webp({ quality: 78 })
+    .toFile(`public${vignette}`);
+  const { width, height } = await sharp(source).metadata();
+  return { image: publie, imageLargeur: width, imageHauteur: height, vignette, imageAlt: typeof media.alt === 'string' ? media.alt : undefined };
+}
+
 export async function loadAnnouncements(): Promise<Entry[]> {
-  return (await list('announcements')).map((d) =>
-    compact({
-      id: String(d.id),
-      titre: d.titre,
-      texte: d.texte,
-      date: librevilleDay(d.date),
-      ordre: d.ordre,
-      categorie: d.categorie,
-      icone: d.icone,
-      lienHref: d.lienHref,
-      lienLabel: d.lienLabel,
-    }),
+  return Promise.all(
+    (await list('announcements')).map(async (d) =>
+      compact({
+        id: String(d.slug || d.id),
+        titre: d.titre,
+        texte: d.texte,
+        date: librevilleDay(d.date),
+        ordre: d.ordre,
+        categorie: d.categorie,
+        icone: d.icone,
+        lienHref: d.lienHref,
+        lienLabel: d.lienLabel,
+        article: d.article || undefined,
+        ...(await visuelActualite(d.image)),
+      }),
+    ),
   );
 }

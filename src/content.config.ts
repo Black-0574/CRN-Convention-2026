@@ -137,6 +137,14 @@ const announcements = defineCollection({
     icone: z.string().optional(),
     lienHref: z.string().optional(),
     lienLabel: z.string().optional(),
+    // Article complet (page /actualites/<id>) et visuel servi depuis le site (11 novembre 2026) :
+    // image entière en tête de l'article, vignette 16:9 sur les cartes.
+    article: z.string().optional(),
+    image: z.string().optional(),
+    imageLargeur: z.number().optional(),
+    imageHauteur: z.number().optional(),
+    vignette: z.string().optional(),
+    imageAlt: z.string().optional(),
   }),
 });
 

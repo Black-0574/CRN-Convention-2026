@@ -40,8 +40,8 @@ const plateformes = [
   { titre: 'Académie des Sciences Divines', date: '8 – 10 décembre', lieu: 'Église Centrale', href: '/academie', icone: 'book' as const, visuel: VISUELS.academie },
   { titre: 'Femme de Foi — Live', date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('femme-de-foi-live', 'accueil-plateformes'), icone: 'heart' as const, visuel: VISUELS.femmeDeFoi },
   { titre: "J'ai soif", date: '12 décembre', lieu: 'Église Centrale', href: lienProduit('jai-soif', 'accueil-plateformes'), icone: 'heart' as const, visuel: VISUELS.jaiSoif },
-  { titre: 'Concert pour la vie', date: '13 décembre', lieu: 'Nomad', href: lienBoutique('accueil-plateformes'), icone: 'music' as const, visuel: VISUELS.concertStandard },
-  { titre: 'Culte unique & ordination', date: '13 décembre', lieu: 'Nomad', href: '/programme', icone: 'crown' as const, visuel: VISUELS.culte },
+  { titre: 'Concert pour la vie', date: '13 décembre', lieu: 'Lieu à déterminer', href: lienBoutique('accueil-plateformes'), icone: 'music' as const, visuel: VISUELS.concertStandard },
+  { titre: 'Culte unique & ordination', date: '13 décembre', lieu: 'Lieu à déterminer', href: '/programme', icone: 'crown' as const, visuel: VISUELS.culte },
   { titre: 'Dîner des Élites', date: '12 décembre', lieu: 'Lieu à annoncer', href: lienProduit('diner-des-elites', 'accueil-plateformes'), icone: 'building' as const, visuel: VISUELS.diner },
 ];
 
@@ -240,6 +240,7 @@ const annoncesPreview = (await getCollection('announcements')).sort((a, b) => a.
                 texte={a.data.texte}
                 lienHref={meta.lienHref}
                 lienLabel={meta.lienLabel}
+                vignette={a.data.vignette}
                 compacte
               />
             );

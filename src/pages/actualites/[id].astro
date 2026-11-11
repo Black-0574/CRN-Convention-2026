@@ -1,0 +1,158 @@
+---
+/*
+  Page d'un article des Actualités (11 novembre 2026, communiqué du changement de lieu du
+  13 décembre) : publiée pour chaque annonce dont l'« Article complet » est rempli dans le
+  back-office. Visuel entier en tête (servi par le site, NF-CNV-001), texte en blocs simples.
+*/
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Section from '../../components/shared/Section.astro';
+import Breadcrumb from '../../components/shared/Breadcrumb.astro';
+import Icon from '../../components/shared/Icon.astro';
+import { blocsArticle, getAnnonceMeta } from '../../lib/announcements';
+
+export async function getStaticPaths() {
+  const annonces = await getCollection('announcements');
+  return annonces.filter((a) => a.data.article).map((a) => ({ params: { id: a.id }, props: { annonce: a } }));
+}
+
+const { annonce } = Astro.props;
+const { titre, texte, date, article = '', image, imageLargeur, imageHauteur, imageAlt } = annonce.data;
+const meta = getAnnonceMeta(annonce.id, annonce.data);
+const dateLisible = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(date));
+const blocs = blocsArticle(article);
+// Adresses web du texte rendues cliquables (le reste reste du texte brut, échappé par Astro).
+const morceaux = (t: string) => t.split(/(https?:\/\/[^\s]+?)(?=[.,;:!?)]?(?:\s|$))/g);
+---
+
+<BaseLayout title={titre} description={texte}>
+  <Section tone="default" ariaLabel="Article">
+    <Breadcrumb items={[{ label: 'Accueil', href: '/' }, { label: 'Actualités', href: '/actualites' }, { label: meta.categorie }]} />
+    <article class="article">
+      <header class="article__tete">
+        <p class="article__rubrique"><Icon name={meta.icone} size={18} /> {meta.categorie}</p>
+        <h1 class="article__titre">{titre}</h1>
+        <time class="article__date" datetime={date}>Publié le {dateLisible}</time>
+      </header>
+
+      <div class="article__corps">
+        {image && (
+          <figure class="article__visuel">
+            <img src={image} alt={imageAlt ?? ''} width={imageLargeur} height={imageHauteur} decoding="async" />
+          </figure>
+        )}
+        <div class="article__texte">
+          <p class="article__chapo">{texte}</p>
+          {blocs.map((b) =>
+            b.type === 'intertitre' ? (
+              <h2>{b.texte}</h2>
+            ) : b.type === 'citation' ? (
+              <blockquote>{b.texte}</blockquote>
+            ) : (
+              <p>{morceaux(b.texte).map((m, i) => (i % 2 ? <a href={m}>{m.replace(/^https?:\/\//, '')}</a> : m))}</p>
+            ),
+          )}
+          <p class="article__retour">
+            <a class="button button--secondary" href="/actualites"><Icon name="arrow-left" size={16} /> Toutes les actualités</a>
+          </p>
+        </div>
+      </div>
+    </article>
+  </Section>
+</BaseLayout>
+
+<style>
+  .article__tete {
+    max-width: 60rem;
+    margin-bottom: var(--space-3);
+  }
+
+  .article__rubrique {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 var(--space-1);
+    padding: 3px 12px;
+    font-weight: 700;
+    font-size: var(--text-s);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--crn-bleu-nuit);
+    background: var(--crn-creme);
+    border: 1px solid var(--crn-or);
+    border-radius: var(--radius-pill);
+  }
+
+  .article__titre {
+    margin: 0 0 var(--space-1);
+  }
+
+  .article__date {
+    font-size: var(--text-s);
+    font-weight: 700;
+    color: var(--color-text-muted);
+  }
+
+  .article__corps {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .article__visuel {
+    margin: 0;
+    max-width: 30rem;
+  }
+
+  .article__visuel img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-card);
+    border: 1.5px solid var(--crn-or);
+    box-shadow: var(--shadow-card);
+  }
+
+  .article__texte {
+    max-width: 65ch;
+  }
+
+  .article__chapo {
+    font-family: var(--font-titrage);
+    font-size: var(--text-h4-mobile);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .article__texte h2 {
+    margin: var(--space-3) 0 var(--space-1);
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--crn-or);
+  }
+
+  .article__texte blockquote {
+    margin: var(--space-2) 0;
+    padding: var(--space-2) var(--space-3);
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    background: var(--crn-creme);
+    border-left: 4px solid var(--crn-or);
+    border-radius: 0 var(--radius-card) var(--radius-card) 0;
+  }
+
+  .article__texte a:not(.button) {
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+  }
+
+  .article__retour {
+    margin-top: var(--space-6);
+  }
+
+  @media (min-width: 1024px) {
+    .article__corps {
+      grid-template-columns: minmax(0, 26rem) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+</style>

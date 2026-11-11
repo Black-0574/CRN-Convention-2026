@@ -11,7 +11,7 @@ est marqué **À annoncer** et doit rester ainsi tant qu'aucun arbitrage n'a ét
 - Convention : dimanche 6 → dimanche 13 décembre 2026, Libreville
 - Pré-convention sociale : samedi 5 décembre 2026
 - Hôte : Dr. Mike Jocktane, Évêque Général
-- Lieu principal : Église Centrale. Le 13 décembre : Nomad (culte unique, ordination, Concert pour la vie).
+- Lieu principal : Église Centrale. Le 13 décembre : **lieu à déterminer** (culte unique, ordination, Concert pour la vie). Le Nomad n’accueille plus cette journée (communiqué du Commanditaire, 11 novembre 2026) ; nouveau lieu à annoncer.
 - Repas DIAMANT : Palais de l'Orient (**jamais affiché au public**)
 - Dîner des Élites : lieu **À annoncer**
 
@@ -56,7 +56,7 @@ unique scanné à chaque entrée, aucun accès verbal.
   17h–21h Soirée africaine et prophétique (Nadia Jocktane, Wilson Ndi, Jek Kalombo)
 - **Sam. 12 déc.** — 9h–12h Femme de Foi — Live (Patricia Piebi) ; 14h–17h30 J'ai soif (Jek Kalombo,
   Carelle Ambouroué) ; 19h–22h Dîner des Élites (lieu à annoncer)
-- **Dim. 13 déc., au Nomad** — 9h–12h Culte unique de toutes les églises (orateur à annoncer) ;
+- **Dim. 13 déc., lieu à déterminer** (plus au Nomad depuis le 11 novembre 2026) — 9h–12h Culte unique de toutes les églises (orateur à annoncer) ;
   13h–14h30 Cérémonie d'ordination ; 17h Concert pour la vie
 
 Ne jamais afficher publiquement : repas DIAMANT, petit-déjeuner des orateurs, enregistrements médias.

@@ -15,13 +15,20 @@ interface Props {
   lienLabel?: string;
   /** Vignette à gauche au lieu d'une bande en tête (colonne étroite de l'accueil). */
   compacte?: boolean;
+  /** Vignette propre à l'actualité (640 × 360, servie par le site) ; prioritaire sur celle de la rubrique. */
+  vignette?: string;
 }
-const { categorie, icone, date, dateISO, titre, texte, lienHref, lienLabel, compacte = false } = Astro.props;
-// Vignette de la rubrique (A-12, N-02) ; décorative, le titre nomme l'actualité.
-const visuel = visuelActualite(categorie);
+const { categorie, icone, date, dateISO, titre, texte, lienHref, lienLabel, compacte = false, vignette } = Astro.props;
+// Vignette de l'actualité, sinon de sa rubrique (A-12, N-02) ; décorative, le titre nomme l'actualité.
+const visuel = vignette ? undefined : visuelActualite(categorie);
 ---
 
-<article class:list={['announcement-card', { 'announcement-card--compacte': compacte && visuel }]} data-categorie={categorie}>
+<article class:list={['announcement-card', { 'announcement-card--compacte': compacte && (visuel || vignette) }]} data-categorie={categorie}>
+  {vignette && (
+    <div class="announcement-card__visuel">
+      <img src={vignette} alt="" width="640" height="360" loading="lazy" decoding="async" />
+    </div>
+  )}
   {visuel && (
     <div class="announcement-card__visuel">
       {compacte ? (
