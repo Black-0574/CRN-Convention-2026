@@ -8,6 +8,13 @@ import imageEcoute from '../assets/images/accueil/contact-ecoute.webp';
 import Icon from '../components/shared/Icon.astro';
 import { hotline } from '../lib/contact';
 import { reseauxSociaux } from '../lib/social';
+import { API_BOUTIQUE } from '../lib/boutique-api';
+import { ACCEPT, FAMILLES, LIMITES, tailleLisible } from '../../backend/src/candidatures/regles';
+
+// Dépôt de candidature (13 novembre 2026) : limites affichées = celles que le back-office applique.
+const limitesTexte = Object.values(FAMILLES)
+  .map((f) => `${f.libelle.toLowerCase()} ${tailleLisible(f.max)}`)
+  .join(', ');
 ---
 
 <BaseLayout
@@ -26,12 +33,29 @@ import { reseauxSociaux } from '../lib/social';
     <div class="contact-layout">
       <div class="contact-card" data-reveal>
         <h2 class="contact-card__title">Envoyez-nous un message</h2>
-        <p class="contact-card__subtitle">
+        <p class="contact-card__subtitle" data-objet-texte="message">
           Remplissez le formulaire ci-dessous : votre messagerie s’ouvre avec le message prérempli,
           prêt à envoyer.
         </p>
+        <p class="contact-card__subtitle" data-objet-texte="candidature" hidden>
+          Joignez votre CV, vos lettres, photos, audios ou vidéos : votre candidature est transmise
+          directement à l’équipe des bénévoles.
+        </p>
 
-        <form class="contact-form" id="contact-form">
+        <form class="contact-form" id="contact-form" data-api={`${API_BOUTIQUE}/api/candidatures`}>
+          <div class="contact-field">
+            <label for="contact-objet">Objet</label>
+            <select id="contact-objet" name="objet">
+              <option value="message">Question ou message</option>
+              <option value="candidature">Dépôt de candidature</option>
+            </select>
+          </div>
+
+          <div class="contact-field" data-candidature hidden>
+            <label for="contact-poste">Titre du poste</label>
+            <input type="text" id="contact-poste" name="poste" maxlength={LIMITES.poste} placeholder="Ex. Agent d’accueil, chantre, photographe…" />
+          </div>
+
           <div class="contact-form__row">
             <div class="contact-field">
               <label for="contact-prenom">Prénom</label>
@@ -55,11 +79,38 @@ import { reseauxSociaux } from '../lib/social';
 
           <div class="contact-field">
             <label for="contact-message">Message</label>
-            <textarea id="contact-message" name="message" rows={5} required></textarea>
+            <textarea id="contact-message" name="message" rows={5} maxlength={LIMITES.message} required></textarea>
           </div>
 
-          <button type="submit" class="button button--primary contact-form__submit">
-            Envoyer le message <Icon name="arrow-right" size={16} />
+          <div class="contact-field" data-candidature hidden>
+            <label for="contact-pieces">Pièces jointes <span class="contact-field__optional">(facultatif)</span></label>
+            <input type="file" id="contact-pieces" name="pieces" multiple accept={ACCEPT} aria-describedby="contact-pieces-aide" />
+            <p class="contact-field__aide" id="contact-pieces-aide">
+              Word ou PDF, images, audio ou vidéo : {LIMITES.fichiers} fichiers au plus, {tailleLisible(LIMITES.total)} au
+              total ({limitesTexte} par fichier).
+            </p>
+            <ul class="contact-pieces" id="contact-pieces-liste"></ul>
+          </div>
+
+          <label class="contact-consentement" data-candidature hidden>
+            <input type="checkbox" name="consentement" value="oui" />
+            <span>J’accepte que ma candidature et mes pièces jointes soient transmises à l’équipe des bénévoles de la Convention CRN 2026 pour l’étude de ma candidature.</span>
+          </label>
+
+          <!-- Champ piège anti-robot : invisible et ignoré par les lecteurs d'écran. -->
+          <div class="contact-piege" aria-hidden="true">
+            <label for="contact-site-web">Site web</label>
+            <input type="text" id="contact-site-web" name="site_web" tabindex="-1" autocomplete="off" />
+          </div>
+
+          <div class="contact-envoi" id="contact-envoi" hidden>
+            <progress id="contact-progression" max="100" value="0"></progress>
+            <span id="contact-progression-texte"></span>
+          </div>
+          <p class="contact-statut" id="contact-statut" role="status" aria-live="polite"></p>
+
+          <button type="submit" class="button button--primary contact-form__submit" id="contact-envoyer">
+            <span id="contact-envoyer-libelle">Envoyer le message</span> <Icon name="arrow-right" size={16} />
           </button>
         </form>
       </div>
@@ -114,12 +165,118 @@ import { reseauxSociaux } from '../lib/social';
   </Section>
 
   <script>
-    // Pas de back-end de formulaire à ce lot (L2) : le message s'envoie via mailto, pré-rempli à
-    // partir des champs. Une vraie passerelle d'envoi (file d'attente, accusé de réception) reste
-    // à arbitrer pour un lot ultérieur — voir docs/conformite.md.
-    const form = document.getElementById('contact-form');
+    import { verifierPieces, tailleLisible } from '../../backend/src/candidatures/regles';
+
+    // Objet « Question ou message » : envoi via mailto, prérempli à partir des champs (L2).
+    // Objet « Dépôt de candidature » (13 novembre 2026) : envoi au back-office avec les pièces
+    // jointes, transmis par e-mail à benevoles@crn-convention2026.events.
+    const form = document.getElementById('contact-form') as HTMLFormElement | null;
+    const objet = document.getElementById('contact-objet') as HTMLSelectElement | null;
+    const poste = document.getElementById('contact-poste') as HTMLInputElement | null;
+    const pieces = document.getElementById('contact-pieces') as HTMLInputElement | null;
+    const liste = document.getElementById('contact-pieces-liste');
+    const statut = document.getElementById('contact-statut');
+    const envoi = document.getElementById('contact-envoi');
+    const progression = document.getElementById('contact-progression') as HTMLProgressElement | null;
+    const progressionTexte = document.getElementById('contact-progression-texte');
+    const bouton = document.getElementById('contact-envoyer') as HTMLButtonElement | null;
+    const libelle = document.getElementById('contact-envoyer-libelle');
+    const consentement = form?.querySelector<HTMLInputElement>('input[name="consentement"]');
+
+    const estCandidature = () => objet?.value === 'candidature';
+    const afficherStatut = (texte: string, type: 'erreur' | 'succes' | '' = '') => {
+      if (!statut) return;
+      statut.textContent = texte;
+      statut.dataset.type = type;
+    };
+
+    function appliquerObjet() {
+      const c = estCandidature();
+      document.querySelectorAll<HTMLElement>('[data-candidature]').forEach((el) => (el.hidden = !c));
+      document.querySelectorAll<HTMLElement>('[data-objet-texte]').forEach((el) => (el.hidden = el.dataset.objetTexte !== (c ? 'candidature' : 'message')));
+      if (poste) poste.required = c;
+      if (consentement) consentement.required = c;
+      if (libelle) libelle.textContent = c ? 'Envoyer ma candidature' : 'Envoyer le message';
+      afficherStatut('');
+    }
+    objet?.addEventListener('change', appliquerObjet);
+    appliquerObjet();
+
+    // Liste des fichiers choisis, avec leur taille et les éventuels refus, avant tout envoi.
+    function erreursPieces(): string[] {
+      const fichiers = [...(pieces?.files ?? [])];
+      if (liste) {
+        liste.replaceChildren(
+          ...fichiers.map((f) => {
+            const li = document.createElement('li');
+            li.textContent = `${f.name} — ${tailleLisible(f.size)}`;
+            return li;
+          }),
+        );
+      }
+      return verifierPieces(fichiers.map((f) => ({ nom: f.name, taille: f.size })));
+    }
+    pieces?.addEventListener('change', () => {
+      const erreurs = erreursPieces();
+      afficherStatut(erreurs.join(' '), erreurs.length ? 'erreur' : '');
+    });
+
+    function envoyerCandidature(f: HTMLFormElement) {
+      const erreurs = erreursPieces();
+      if (erreurs.length) return afficherStatut(erreurs.join(' '), 'erreur');
+      const donnees = new FormData(f);
+      donnees.delete('objet');
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', f.dataset.api ?? '');
+      xhr.timeout = 15 * 60 * 1000;
+      // Progression de l'envoi : utile en 3G pour des pièces jointes de plusieurs Mo.
+      xhr.upload.addEventListener('progress', (e) => {
+        if (!e.lengthComputable || !progression || !progressionTexte) return;
+        progression.value = Math.round((e.loaded / e.total) * 100);
+        progressionTexte.textContent = `Envoi : ${progression.value}\u00a0% (${tailleLisible(e.loaded)} sur ${tailleLisible(e.total)})`;
+      });
+      const terminer = () => {
+        if (bouton) bouton.disabled = false;
+        if (envoi) envoi.hidden = true;
+      };
+      xhr.addEventListener('load', () => {
+        terminer();
+        let reponse: { erreur?: string; reference?: string } = {};
+        try {
+          reponse = JSON.parse(xhr.responseText);
+        } catch {
+          /* réponse non JSON : message générique ci-dessous */
+        }
+        if (xhr.status === 201) {
+          f.reset();
+          appliquerObjet();
+          liste?.replaceChildren();
+          afficherStatut(
+            `Merci\u00a0! Votre candidature a bien été transmise à l’équipe des bénévoles${reponse.reference ? ` (référence ${reponse.reference})` : ''}. Elle vous répondra à l’adresse e-mail indiquée.`,
+            'succes',
+          );
+        } else if (xhr.status === 413) {
+          afficherStatut(reponse.erreur ?? 'Pièces jointes trop lourdes.', 'erreur');
+        } else {
+          afficherStatut(reponse.erreur ?? 'L’envoi n’a pas abouti. Réessayez dans quelques minutes ou écrivez à benevoles@crn-convention2026.events.', 'erreur');
+        }
+      });
+      const echec = () => {
+        terminer();
+        afficherStatut('Connexion interrompue pendant l’envoi. Vérifiez votre réseau et réessayez, ou écrivez à benevoles@crn-convention2026.events.', 'erreur');
+      };
+      xhr.addEventListener('error', echec);
+      xhr.addEventListener('timeout', echec);
+      if (bouton) bouton.disabled = true;
+      if (envoi) envoi.hidden = false;
+      if (progression) progression.value = 0;
+      afficherStatut('');
+      xhr.send(donnees);
+    }
+
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
+      if (estCandidature()) return envoyerCandidature(event.currentTarget as HTMLFormElement);
       const data = new FormData(form as HTMLFormElement);
       const prenom = String(data.get('prenom') ?? '').trim();
       const nom = String(data.get('nom') ?? '').trim();
@@ -202,6 +359,7 @@ import { reseauxSociaux } from '../lib/social';
   }
 
   .contact-field input,
+  .contact-field select,
   .contact-field textarea {
     font-family: var(--font-labeur);
     font-size: var(--text-s);
@@ -228,6 +386,113 @@ import { reseauxSociaux } from '../lib/social';
   .contact-form__submit {
     align-self: flex-start;
     margin-top: var(--space-1);
+  }
+
+  .contact-form__submit:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  /* Dépôt de candidature (13 novembre 2026) : pièces jointes, consentement, progression. */
+  .contact-field input[type='file'] {
+    padding: 10px;
+    background: var(--crn-creme);
+    border-style: dashed;
+    cursor: pointer;
+  }
+
+  .contact-field input[type='file']::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 16px;
+    font: 700 var(--text-s) var(--font-labeur);
+    color: var(--crn-blanc);
+    background: var(--crn-bleu-nuit);
+    border: 0;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+  }
+
+  .contact-field__aide {
+    margin: 0;
+    font-size: var(--text-s);
+    color: var(--color-text-muted);
+  }
+
+  .contact-pieces {
+    margin: 0;
+    padding-left: 20px;
+    font-size: var(--text-s);
+    overflow-wrap: anywhere;
+  }
+
+  .contact-consentement {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: var(--text-s);
+  }
+
+  .contact-consentement input {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    accent-color: var(--crn-bleu-nuit);
+  }
+
+  .contact-consentement[hidden],
+  .contact-field[hidden] {
+    display: none;
+  }
+
+  .contact-piege {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .contact-envoi {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: var(--text-s);
+    color: var(--color-text-muted);
+  }
+
+  .contact-envoi[hidden] {
+    display: none;
+  }
+
+  .contact-envoi progress {
+    width: 100%;
+    height: 10px;
+    accent-color: var(--crn-or);
+  }
+
+  .contact-statut:empty {
+    display: none;
+  }
+
+  .contact-statut {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: var(--radius-control);
+    font-size: var(--text-s);
+    background: var(--crn-creme);
+    border-left: 4px solid var(--crn-bleu-nuit);
+  }
+
+  .contact-statut[data-type='erreur'] {
+    border-left-color: var(--crn-noir);
+    font-weight: 700;
+  }
+
+  .contact-statut[data-type='succes'] {
+    border-left-color: var(--crn-or);
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
   }
 
   /* Volet sombre (bleu nuit) : seule zone de la page en accent fort, pour faire ressortir les

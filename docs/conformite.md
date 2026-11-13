@@ -1464,3 +1464,24 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
 - **Photo de l'Évêque Nadia Jocktane :** nouvelle photo réelle.
   - **Back-office :** téléversée (média 19, texte alternatif « Nadia Jocktane ») et associée à la fiche de l'orateur.
   - **Site :** photo de secours recadrée en 480 × 640 (`public/images/orateurs/nadia-jocktane-3.webp`).
+
+**Dépôt de candidature sur la page Contact (13 novembre 2026)** — demande du Commanditaire.
+- **Formulaire** (`src/pages/contact.astro`) : champ « Objet » avec deux choix.
+  - « Question ou message » : envoi par la messagerie du visiteur (mailto), comme avant.
+  - « Dépôt de candidature » : titre du poste obligatoire, pièces jointes facultatives, consentement obligatoire à la transmission, barre de progression de l'envoi (utile en 3G).
+- **Pièces jointes** (`backend/src/candidatures/regles.ts`, règles partagées par le site et le back-office, qui fait foi) :
+  - formats : Word, PDF, ODT, RTF, TXT ; JPG, PNG, WebP, HEIC ; MP3, M4A, AAC, WAV, OGG, Opus ; MP4, MOV, WebM, 3GP ;
+  - tailles maximales par fichier : 5 Mo (document, image), 10 Mo (audio), 15 Mo (vidéo) ;
+  - 5 fichiers et 20 Mo au total au plus, soit un e-mail d'environ 27 Mo une fois encodé ;
+  - tout autre format est refusé.
+- **Envoi** : `POST /api/candidatures` (`backend/src/candidatures/endpoints.ts`) transmet un e-mail à **benevoles@crn-convention2026.events** (`CANDIDATURES_A` pour une autre adresse).
+  - sujet « DÉPÔT DE CANDIDATURE — <poste> — <candidat> », sur une seule ligne (aucune injection d'en-tête possible) ;
+  - « Répondre » écrit directement au candidat ; une référence `CAND-AAAAMMJJ-XXXX` est affichée au candidat et figure dans l'e-mail ;
+  - rien n'est conservé sur le serveur.
+- **Garde-fous** : champ piège anti-robot, consentement obligatoire, 5 dépôts par heure et par adresse IP, refus des envois de plus de 21 Mo avant même la lecture du corps.
+- **Limite connue** : chaque dépôt compte dans le quota d'e-mails sortants du domaine (100 par jour avec l'offre actuelle, partagé avec la boutique).
+- **Preuves** :
+  - `tests/unit/candidatures.test.ts` : 5 tests (formats, tailles, champs obligatoires, sujet, tailles en français) ;
+  - point d'envoi appelé en local, SMTP désactivé : dépôt valide avec 3 pièces envoyé (201) ; vidéo de 16 Mo, fichier `.exe`, consentement absent et poste absent refusés (400) ; robot ignoré ;
+  - message SMTP construit avec nodemailer : réponse au candidat, pièce jointe intacte ;
+  - formulaire vérifié en 375 px.
