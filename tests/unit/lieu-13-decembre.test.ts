@@ -42,7 +42,8 @@ describe('lieu du dimanche 13 décembre', () => {
     for (const f of [annonce.image, annonce.vignette]) expect(existsSync(path.join(root, 'public', f))).toBe(true);
     expect(existsSync(path.join(root, 'backend', 'public', 'actualites', 'changement-lieu-13-decembre.webp'))).toBe(true);
     const autres = await readdir(path.join(root, 'src', 'content', 'announcements'));
-    for (const f of autres.filter((x) => x !== 'changement-lieu-13-decembre.json')) {
+    // Devant les annonces d'avant le 11 novembre (l'appel à candidatures du 13 novembre passe devant lui).
+    for (const f of autres.filter((x) => !['changement-lieu-13-decembre.json', 'appel-candidatures-equipe-medias.json'].includes(x))) {
       expect(JSON.parse(await readFile(path.join(root, 'src', 'content', 'announcements', f), 'utf-8')).ordre).toBeGreaterThan(annonce.ordre);
     }
     // Typographie française : espace insécable avant les deux-points.

@@ -1485,3 +1485,15 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
   - point d'envoi appelé en local, SMTP désactivé : dépôt valide avec 3 pièces envoyé (201) ; vidéo de 16 Mo, fichier `.exe`, consentement absent et poste absent refusés (400) ; robot ignoré ;
   - message SMTP construit avec nodemailer : réponse au candidat, pièce jointe intacte ;
   - formulaire vérifié en 375 px.
+
+**Orateurs (13 novembre 2026)** : biographie et titre « Pasteure de la jeunesse » de Carelle Ambouroué ; nouveau titre de Nadia Jocktane, « Responsable épiscopale du pôle prophétique, de l'évangélisation, des actions sociales et de l'engagement sociétal ». Fiches 1 et 6 mises à jour dans le back-office ; fichiers de secours du site et données d'import alignés.
+
+**Appel à candidatures — équipe médias (13 novembre 2026)** — article et visuel du Commanditaire.
+- **Publication :** en tête des Actualités, rubrique « Appel à candidatures », page `/actualites/appel-candidatures-equipe-medias`. Le visuel 1280 × 720 (159 Ko) s'affiche en pleine largeur au-dessus du texte ; la vignette 640 × 360 (62 Ko) figure sur les cartes. Le texte alternatif reprend les profils recherchés.
+- **Back-office en production :** article publié une seule fois au démarrage (`backend/src/seed/appel-candidatures.ts`). La publication d'une actualité au démarrage est désormais factorisée dans `backend/src/seed/annonces.ts`, également utilisée par le communiqué du 13 décembre.
+- **Format des articles enrichi** (`src/lib/announcements.ts`) : « ### » sous-titre, lignes « - » liste à puces, bloc « [Texte](/lien) » bouton (lien interne ou https seulement).
+- **Bouton « Accéder au formulaire de candidature » :** il ouvre `/contact?objet=candidature`, objet présélectionné. Le message rappelle les informations demandées : église, ville, domaine, expérience, disponibilité, portfolio.
+- **Dérogation à la règle 4** (aucun visage généré par IA) : le visuel montre des personnes vraisemblablement générées. Le Commanditaire a validé son usage entier le 13 novembre 2026, comme pour les visuels des plateformes « Femme de Foi — Live » et « J'ai soif » ; la dérogation est ajoutée à `CLAUDE.md`.
+- **Preuves :**
+  - `tests/unit/appel-candidatures.test.ts` (4 tests) : même article sur le site et dans le back-office, en tête, avec son visuel ; 6 sous-titres, listes de 5 et 8 éléments, bouton vers le formulaire ; lien `javascript:` refusé ;
+  - page vérifiée en 599 px, sans débordement ; le bouton présélectionne bien le dépôt de candidature.

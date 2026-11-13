@@ -33,23 +33,36 @@ export const getAnnonceMeta = (id: string, data: ChampsAdmin = {}): AnnonceMeta 
   const base = data.categorie
     ? { categorie: data.categorie, icone: (data.icone as IconName | undefined) ?? repli.icone, lienHref: data.lienHref, lienLabel: data.lienLabel }
     : repli;
-  return data.article ? { ...base, lienHref: lienArticle(id), lienLabel: 'Lire le communiqué' } : base;
+  if (!data.article) return base;
+  return { ...base, lienHref: lienArticle(id), lienLabel: /communiqu/i.test(base.categorie) ? 'Lire le communiqué' : 'Lire l’article' };
 };
 
 export const lienArticle = (id: string) => `/actualites/${id}`;
 
-/** Article saisi en texte simple : blocs séparés par une ligne vide ; « ## » intertitre, « > » citation. */
-export type BlocArticle = { type: 'intertitre' | 'citation' | 'paragraphe'; texte: string };
+/**
+ * Article saisi en texte simple, blocs séparés par une ligne vide : « ## » intertitre, « ### »
+ * sous-titre, « > » citation, lignes commençant par « - » liste à puces, « [Texte](/lien) » seul
+ * sur son bloc bouton (appel à candidatures du 13 novembre 2026) ; sinon paragraphe.
+ */
+export type BlocArticle =
+  | { type: 'intertitre' | 'sous-titre' | 'citation' | 'paragraphe'; texte: string }
+  | { type: 'liste'; elements: string[] }
+  | { type: 'bouton'; texte: string; lien: string };
+
+function bloc(b: string): BlocArticle {
+  if (b.startsWith('### ')) return { type: 'sous-titre', texte: b.slice(4).trim() };
+  if (b.startsWith('## ')) return { type: 'intertitre', texte: b.slice(3).trim() };
+  if (b.startsWith('> ')) return { type: 'citation', texte: b.slice(2).trim() };
+  const lignes = b.split(/\r?\n/).map((l) => l.trim());
+  if (lignes.every((l) => l.startsWith('- '))) return { type: 'liste', elements: lignes.map((l) => l.slice(2).trim()) };
+  const bouton = /^\[([^\]]+)\]\(([^)\s]+)\)$/.exec(b);
+  if (bouton && /^(\/|https:\/\/)/.test(bouton[2])) return { type: 'bouton', texte: bouton[1], lien: bouton[2] };
+  return { type: 'paragraphe', texte: b };
+}
 
 export const blocsArticle = (article: string): BlocArticle[] =>
   article
     .split(/\r?\n\s*\r?\n/)
     .map((b) => b.trim())
     .filter(Boolean)
-    .map((b) =>
-      b.startsWith('## ')
-        ? { type: 'intertitre', texte: b.slice(3).trim() }
-        : b.startsWith('> ')
-          ? { type: 'citation', texte: b.slice(2).trim() }
-          : { type: 'paragraphe', texte: b },
-    );
+    .map(bloc);

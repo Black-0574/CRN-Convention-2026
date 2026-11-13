@@ -16,8 +16,9 @@ les sessions de travail sur ce dépôt.
    whatsapp.com, et aucune police/script chargé depuis un service externe (Google Fonts compris).
    Toute ressource est auto-hébergée.
 4. **Aucun visage généré par IA.** Photos réelles uniquement ; cadre neutre marqué si la photo manque.
-   Dérogation validée par le Commanditaire, et elle seule : visuels des plateformes « Femme de Foi —
-   Live » et « J'ai soif » (`src/lib/visuels-plateformes.ts`, détail dans `docs/conformite.md`).
+   Dérogations validées par le Commanditaire, et elles seules : visuels des plateformes « Femme de
+   Foi — Live » et « J'ai soif » (`src/lib/visuels-plateformes.ts`) ; visuel de l'actualité « Appel
+   à candidatures — équipe médias » (13 novembre 2026). Détail dans `docs/conformite.md`.
 5. **Chaque exigence implémentée est référencée** par son identifiant (F-CNV-xxx, NF-CNV-xxx,
    SEC-CNV-xxx, INT-CNV-xxx) dans le code ou les tests concernés.
 6. **`docs/conformite.md` est tenu à jour** : tableau exigence → lot → statut → preuve (test ou capture).
