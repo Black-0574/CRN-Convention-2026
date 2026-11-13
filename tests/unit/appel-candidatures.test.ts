@@ -32,8 +32,8 @@ describe('appel à candidatures — équipe médias', () => {
   });
 
   it('n’accepte comme bouton qu’un lien interne ou en https', () => {
-    expect(blocsArticle('[Cliquez](javascript:alert(1))')[0].type).toBe('paragraphe');
-    expect(blocsArticle('[Site](https://crn-convention2026.events)')[0].type).toBe('bouton');
+    expect(blocsArticle('[Cliquez](javascript:alert(1))')[0]?.type).toBe('paragraphe');
+    expect(blocsArticle('[Site](https://crn-convention2026.events)')[0]?.type).toBe('bouton');
   });
 
   it('libellé du lien de carte selon la rubrique', () => {

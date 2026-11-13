@@ -55,8 +55,8 @@ function bloc(b: string): BlocArticle {
   if (b.startsWith('> ')) return { type: 'citation', texte: b.slice(2).trim() };
   const lignes = b.split(/\r?\n/).map((l) => l.trim());
   if (lignes.every((l) => l.startsWith('- '))) return { type: 'liste', elements: lignes.map((l) => l.slice(2).trim()) };
-  const bouton = /^\[([^\]]+)\]\(([^)\s]+)\)$/.exec(b);
-  if (bouton && /^(\/|https:\/\/)/.test(bouton[2])) return { type: 'bouton', texte: bouton[1], lien: bouton[2] };
+  const [, libelle, lien] = /^\[([^\]]+)\]\(([^)\s]+)\)$/.exec(b) ?? [];
+  if (libelle && lien && /^(\/|https:\/\/)/.test(lien)) return { type: 'bouton', texte: libelle, lien };
   return { type: 'paragraphe', texte: b };
 }
 
