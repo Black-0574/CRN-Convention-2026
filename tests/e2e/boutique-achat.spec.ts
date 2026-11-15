@@ -36,11 +36,10 @@ test('achat de trois billets « Concert pour la vie — VIP », paiement simulé
   await page.goto('/boutique/produits/concert-vip');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Concert pour la vie — VIP');
   await page.getByLabel('Quantité').fill('3');
-  await page.getByRole('button', { name: 'Ajouter au panier' }).click();
-  const tiroir = page.locator('[data-tiroir]');
-  await expect(tiroir).toBeVisible();
-  await expect(tiroir.locator('[data-total-tiroir]')).toContainText('75');
-  await tiroir.getByRole('link', { name: 'Commander' }).click();
+  // « Commander maintenant » mène directement à la commande (15 novembre 2026).
+  await page.getByRole('button', { name: 'Commander maintenant' }).click();
+  await expect(page).toHaveURL(/\/boutique\/commande/);
+  await expect(page.getByText(/75\s?000/).first()).toBeVisible();
 
   // Étape 1 : acheteur (compte express).
   await page.getByLabel('Prénom').fill('Awa');
@@ -89,8 +88,8 @@ test('achat de trois billets « Concert pour la vie — VIP », paiement simulé
 
 test('tee-shirt livré dans une église du réseau hors du Gabon, payé par carte, frais inclus', async ({ page }) => {
   await page.goto('/boutique/produits/tee-shirt-officiel');
-  await page.getByRole('button', { name: 'Ajouter au panier' }).click();
-  await page.locator('[data-tiroir]').getByRole('link', { name: 'Commander' }).click();
+  await page.getByRole('button', { name: 'Commander maintenant' }).click();
+  await expect(page).toHaveURL(/\/boutique\/commande/);
 
   await page.getByLabel('Prénom').fill('Awa');
   await page.getByLabel('Nom', { exact: true }).fill('Essono');
@@ -120,8 +119,8 @@ test('tee-shirt livré dans une église du réseau hors du Gabon, payé par cart
 test('Pass Partenaire Or (grille validée) : billet nominatif à QR code et kit livré à une église du réseau', async ({ page }) => {
   await page.goto('/boutique/produits/pass-or');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Pass Partenaire Or');
-  await page.getByRole('button', { name: 'Ajouter au panier' }).click();
-  await page.locator('[data-tiroir]').getByRole('link', { name: 'Commander' }).click();
+  await page.getByRole('button', { name: 'Commander maintenant' }).click();
+  await expect(page).toHaveURL(/\/boutique\/commande/);
 
   await page.getByLabel('Prénom').fill('Jean');
   await page.getByLabel('Nom', { exact: true }).fill('Mba');

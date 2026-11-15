@@ -84,7 +84,7 @@ const lien = suivi ? lienProduit(p.slug, suivi) : `/boutique/produits/${p.slug}`
     {p.resume && <p>{p.resume}</p>}
     <p><strong>{p.prixXAF !== null ? formaterXAF(p.prixXAF) : 'À annoncer'}</strong>{p.prixXAF !== null && <span> · {formaterEUR(p.prixXAF)}</span>}</p>
     {p.variantes.length > 1 && <p>Tailles : {p.variantes.map((v) => v.libelle).join(', ')}</p>}
-    <a class="button button--primary" href={lien}>Voir le produit</a>
+    <a class="button button--primary" href={lien}>Commander maintenant</a>
   </template>}
 </article>
 

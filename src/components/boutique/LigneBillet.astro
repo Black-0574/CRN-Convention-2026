@@ -98,8 +98,8 @@ const rayon = rayonDe(p);
     {p.indisponible ? (
       <span class="button billet__bouton billet__bouton--attente">{p.indisponible}</span>
     ) : (
-      <a class="button button--primary billet__bouton" href={lien} aria-label={`Réserver : ${p.nom}`}>
-        Réserver <Icon name="arrow-right" size={18} />
+      <a class="button button--primary billet__bouton" href={lien} aria-label={`Commander maintenant : ${p.nom}`}>
+        Commander maintenant <Icon name="arrow-right" size={18} />
       </a>
     )}
     <p class="billet__lieu"><Icon name="pin" size={18} /> {lieuBillet(p)}</p>

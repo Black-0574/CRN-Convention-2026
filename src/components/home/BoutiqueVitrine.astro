@@ -111,8 +111,8 @@ const cartes = produits.map((p) => {
               <Countdown cibleISO={c.palier?.fin ?? ''} variante="carte" label="Temps restant avant le prochain palier tarifaire" />
             </div>
           )}
-          <a class="button button--secondary produit-carte__cta" href={lienProduit(c.slug, 'accueil-boutique')} aria-label={`Voir le produit\u00a0: ${c.nom}`}>
-            Voir le produit <Icon name="arrow-right" size={16} />
+          <a class="button button--secondary produit-carte__cta" href={lienProduit(c.slug, 'accueil-boutique')} aria-label={`Commander maintenant\u00a0: ${c.nom}`}>
+            Commander maintenant <Icon name="arrow-right" size={16} />
           </a>
         </div>
       </li>

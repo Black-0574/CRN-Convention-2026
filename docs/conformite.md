@@ -1497,3 +1497,8 @@ back-office), puis par `npm --prefix backend run saspay:verifier` une fois les c
 - **Preuves :**
   - `tests/unit/appel-candidatures.test.ts` (4 tests) : même article sur le site et dans le back-office, en tête, avec son visuel ; 6 sous-titres, listes de 5 et 8 éléments, bouton vers le formulaire ; lien `javascript:` refusé ;
   - page vérifiée en 599 px, sans débordement ; le bouton présélectionne bien le dépôt de candidature.
+
+**Démarrage des ventes (15 novembre 2026)** — décisions du Commanditaire.
+- **Limite de places retirée** du Pass Convention Intégral, du Pass Génération Plus, du Pass Partenaire Or, du Pass Grand Partenaire Diamant et du ticket Dîner des Élites. Le Commanditaire a choisi « sans limite » pour le Dîner des Élites et le repas privé Diamant. Les quotas restent dans le back-office, ils ne sont simplement plus liés à ces produits ; aucune capacité n'est inventée. Les 18 produits sont en vente.
+- **Bouton d'achat « Commander maintenant »** sur la fiche produit, à la place de « Ajouter au panier » : le produit est ajouté puis le client va directement à la commande ; le panier garde le produit. Les boutons des listes (billetterie, articles, accueil) prennent le même libellé.
+- **Preuves :** catalogue de production à 18 produits en vente sur 18 ; build Hostinger (`npm run build`, vérification des types comprise) reproduit en local avec les données de production, sans aucune mention « Ouverture des ventes à annoncer » ; tests unitaires (40) et lint réussis ; tests e2e du parcours d'achat mis à jour.
