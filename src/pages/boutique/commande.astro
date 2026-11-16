@@ -7,7 +7,9 @@
      lieu de travail à Libreville, ou retrait à la Convention) ; consentement facultatif non
      pré-coché ;
   3. Paiement sur la page sécurisée de l'agrégateur : Mobile Money (plusieurs pays ; carte bancaire
-  indisponible chez l'agrégateur au 6 novembre 2026).
+  indisponible chez l'agrégateur au 6 novembre 2026), ou en espèces à la caisse de la COM Boutique
+  (16 novembre 2026 : places et prix réservés 5 jours, billets envoyés dès l'encaissement).
+  Billets envoyés par e-mail, par WhatsApp, ou les deux (étape 1) ; e-mail facultatif si WhatsApp seul.
   La commande est créée au passage à l'étape 3 : stock et places sont alors réservés 15 minutes
   (F03), prix garanti pendant ce délai.
 */
@@ -33,13 +35,22 @@ const r = await lireReglages();
         <!-- Étape 1 -->
         <form class="etape" data-etape="1" novalidate>
           <h2>Vos coordonnées</h2>
-          <p class="aide">Pas de compte à créer : vos billets et le suivi de commande vous sont envoyés par e-mail.</p>
+          <p class="aide">Pas de compte à créer : vos billets et le suivi de commande vous sont envoyés par e-mail ou par WhatsApp, à votre choix.</p>
           <div class="champs champs--deux">
             <label>Prénom<input name="prenom" autocomplete="given-name" required /></label>
             <label>Nom<input name="nom" autocomplete="family-name" required /></label>
-            <label>E-mail<input name="email" type="email" autocomplete="email" required /></label>
+            <label><span data-libelle-email>E-mail</span><input name="email" type="email" autocomplete="email" required /></label>
             <label>Téléphone<input name="telephone" type="tel" autocomplete="tel" placeholder="+241 …" required /></label>
           </div>
+          <fieldset class="retrait canal">
+            <legend>Recevoir mes billets</legend>
+            <div class="livraison__modes">
+              <label class="livraison__mode"><input type="radio" name="canalBillets" value="email" checked /><span><strong>Par e-mail</strong></span></label>
+              <label class="livraison__mode"><input type="radio" name="canalBillets" value="whatsapp" /><span><strong>Par WhatsApp</strong><br />sans adresse e-mail</span></label>
+              <label class="livraison__mode"><input type="radio" name="canalBillets" value="email_whatsapp" /><span><strong>Par e-mail et WhatsApp</strong></span></label>
+            </div>
+            <label data-champ-whatsapp hidden>Numéro WhatsApp<input name="whatsapp" type="tel" autocomplete="tel" placeholder="+241 …" /></label>
+          </fieldset>
           <button type="submit" class="button button--primary">Continuer</button>
         </form>
 
@@ -82,10 +93,20 @@ const r = await lireReglages();
           <h2>Paiement</h2>
           <div class="reservation" data-reservation></div>
           <form data-formulaire-paiement novalidate>
-            <ul class="moyens-acceptes">
-              <li><strong>Mobile Money</strong> — opérateurs de plusieurs pays d’Afrique</li>
-            </ul>
-            <p class="aide">Vous choisissez votre moyen de paiement sur la page sécurisée de notre partenaire de paiement, puis vous revenez automatiquement au suivi de votre commande.</p>
+            <div class="livraison__modes">
+              <label class="livraison__mode">
+                <input type="radio" name="moyen" value="en_ligne" checked />
+                <span><strong>Mobile Money</strong> — paiement en ligne<br />Opérateurs de plusieurs pays d’Afrique, sur la page sécurisée de notre partenaire de paiement ; retour automatique au suivi de votre commande.</span>
+              </label>
+              <label class="livraison__mode" data-moyen-especes hidden>
+                <input type="radio" name="moyen" value="especes" />
+                <span><strong>Espèces</strong> — à la caisse de la <span data-especes-lieu></span><br /><span data-especes-detail></span></span>
+              </label>
+            </div>
+            <label class="champ-seul" data-email-paiement hidden>
+              E-mail<input name="emailPaiement" type="email" autocomplete="email" />
+              <span class="aide">Notre partenaire de paiement l’exige pour un paiement Mobile Money.</span>
+            </label>
             <button type="submit" class="button button--primary" data-payer>Payer</button>
           </form>
         </div>
@@ -113,10 +134,12 @@ const r = await lireReglages();
     convention: { lieu: string | null; horaires: string | null } | null;
   };
 
+  type Especes = { actif: boolean; lieu: string; horaires: string | null; delaiJours: number };
+
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const panier = lirePanier();
   const erreur = $('[data-erreur]');
-  const etat: { client?: Record<string, string>; numero?: string; jeton?: string; options?: Options } = {};
+  const etat: { client?: Record<string, string>; numero?: string; jeton?: string; options?: Options; total?: number } = {};
   const echapper = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
   if (panier.length === 0) location.replace('/boutique');
@@ -159,8 +182,22 @@ const r = await lireReglages();
     return false;
   };
 
+  // ——— Étape 1 : billets par e-mail, par WhatsApp ou les deux (e-mail facultatif si WhatsApp seul) ———
+  const formulaire1 = $<HTMLFormElement>('[data-etape="1"]');
+  const canalChoisi = () => formulaire1.querySelector<HTMLInputElement>('[name="canalBillets"]:checked')?.value ?? 'email';
+  function majCanal() {
+    const canal = canalChoisi();
+    formulaire1.querySelector<HTMLInputElement>('[name="email"]')!.required = canal !== 'whatsapp';
+    $('[data-libelle-email]').textContent = canal === 'whatsapp' ? 'E-mail (facultatif)' : 'E-mail';
+    const whatsapp = formulaire1.querySelector<HTMLInputElement>('[name="whatsapp"]')!;
+    $('[data-champ-whatsapp]').hidden = canal === 'email';
+    whatsapp.required = canal !== 'email';
+    if (!whatsapp.value) whatsapp.value = formulaire1.querySelector<HTMLInputElement>('[name="telephone"]')!.value;
+  }
+  formulaire1.querySelectorAll('[name="canalBillets"]').forEach((r) => r.addEventListener('change', majCanal));
+
   // ——— Étape 1 ———
-  $<HTMLFormElement>('[data-etape="1"]').addEventListener('submit', (e) => {
+  formulaire1.addEventListener('submit', (e) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
     if (!valider(form)) return;
@@ -183,7 +220,7 @@ const r = await lireReglages();
         <label>Prénom<input name="${id}-prenom" required></label>
         <label>Nom<input name="${id}-nom" required></label>
         <label>Téléphone<input name="${id}-telephone" type="tel" required></label>
-        <label>E-mail<input name="${id}-email" type="email" required></label>
+        <label>E-mail${canalChoisi() === 'whatsapp' ? ' (facultatif)' : ''}<input name="${id}-email" type="email"${canalChoisi() === 'whatsapp' ? '' : ' required'}></label>
         ${tailles}${age}
       </div>
     </fieldset>`;
@@ -304,6 +341,8 @@ const r = await lireReglages();
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           client: etat.client,
+          canalBillets: etat.client?.canalBillets ?? 'email',
+          whatsapp: etat.client?.whatsapp ?? '',
           lignes: panier.map((l) => ({ varianteId: l.varianteId, quantite: l.quantite })),
           titulaires,
           livraison: saisieLivraison(champs),
@@ -319,8 +358,11 @@ const r = await lireReglages();
       if (donnees.totalXAF !== total) {
         $('[data-recap-total]').textContent = formaterXAF(donnees.totalXAF);
       }
+      etat.total = donnees.totalXAF;
       afficherReservation(donnees.reservationExpireA, donnees.totalXAF);
-      $('[data-payer]').textContent = `Payer ${formaterXAF(donnees.totalXAF)}`;
+      $<HTMLInputElement>('[name="emailPaiement"]').value = etat.client?.email ?? '';
+      majMoyen();
+      void chargerEspeces();
       allerA(3);
     } catch (err) {
       montrerErreur((err as Error).message);
@@ -354,14 +396,57 @@ const r = await lireReglages();
     const id = setInterval(() => !tic() && clearInterval(id), 1000);
   }
 
+  // Paiement en espèces à la caisse de la COM Boutique (Commanditaire, 16 novembre 2026) : proposé
+  // si la boutique l'a activé ; places et prix réservés pendant le délai des réglages (5 jours).
+  async function chargerEspeces() {
+    try {
+      const res = await fetch(`${API_BOUTIQUE}/api/boutique/reglages`);
+      const r = res.ok ? ((await res.json()).especes as Especes | undefined) : undefined;
+      if (!r?.actif) return;
+      $('[data-especes-lieu]').textContent = r.lieu;
+      $('[data-especes-detail]').textContent = `Horaires\u00a0: ${r.horaires ?? 'à annoncer'}. Places et prix réservés ${r.delaiJours}\u00a0jours\u00a0; vos billets partent dès l’encaissement.`;
+      $('[data-moyen-especes]').hidden = false;
+    } catch {
+      /* espèces non proposées : Mobile Money seul */
+    }
+  }
+
+  const moyenChoisi = () => document.querySelector<HTMLInputElement>('[name="moyen"]:checked')?.value ?? 'en_ligne';
+  function majMoyen() {
+    const especes = moyenChoisi() === 'especes';
+    const sansEmail = !etat.client?.email;
+    $('[data-email-paiement]').hidden = especes || !sansEmail;
+    $<HTMLInputElement>('[name="emailPaiement"]').required = !especes && sansEmail;
+    $('[data-payer]').textContent = especes ? 'Valider : je paie en espèces' : `Payer ${formaterXAF(etat.total ?? total)}`;
+  }
+  document.querySelectorAll('[name="moyen"]').forEach((r) => r.addEventListener('change', majMoyen));
+
   $<HTMLFormElement>('[data-formulaire-paiement]').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const bouton = (e.currentTarget as HTMLFormElement).querySelector<HTMLButtonElement>('[data-payer]')!;
+    const form = e.currentTarget as HTMLFormElement;
+    if (!valider(form)) return;
+    const bouton = form.querySelector<HTMLButtonElement>('[data-payer]')!;
     bouton.disabled = true;
+    if (moyenChoisi() === 'especes') {
+      try {
+        const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/especes?t=${etat.jeton}`, { method: 'POST' });
+        const donnees = await res.json();
+        if (!res.ok) throw new Error(donnees.erreur ?? 'Paiement en espèces impossible.');
+        location.href = `/boutique/suivi?commande=${encodeURIComponent(etat.numero ?? '')}&t=${encodeURIComponent(etat.jeton ?? '')}`;
+      } catch (err) {
+        montrerErreur((err as Error).message);
+        bouton.disabled = false;
+      }
+      return;
+    }
     try {
       // Session de paiement chez l'agrégateur, puis redirection vers sa page sécurisée : le client
       // y choisit Mobile Money (son pays, son opérateur), et revient au suivi de commande.
-      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/paiement?t=${etat.jeton}`, { method: 'POST' });
+      const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/paiement?t=${etat.jeton}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: $<HTMLInputElement>('[name="emailPaiement"]').value.trim() }),
+      });
       const donnees = await res.json();
       if (!res.ok || !donnees.redirection) throw new Error(donnees.erreur ?? 'Paiement impossible.');
       bouton.textContent = 'Ouverture de la page de paiement…';

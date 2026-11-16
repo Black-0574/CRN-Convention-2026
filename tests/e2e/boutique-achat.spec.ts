@@ -44,7 +44,7 @@ test('achat de trois billets « Concert pour la vie — VIP », paiement simulé
   // Étape 1 : acheteur (compte express).
   await page.getByLabel('Prénom').fill('Awa');
   await page.getByLabel('Nom', { exact: true }).fill('Essono');
-  await page.getByLabel('E-mail').fill('awa.essono@exemple.org');
+  await page.getByLabel('E-mail', { exact: true }).fill('awa.essono@exemple.org');
   await page.locator('[data-etape="1"]').getByLabel('Téléphone').fill('+241 60 11 11 11');
   await page.getByRole('button', { name: 'Continuer' }).click();
 
@@ -93,7 +93,7 @@ test('tee-shirt livré dans une église du réseau hors du Gabon, payé par cart
 
   await page.getByLabel('Prénom').fill('Awa');
   await page.getByLabel('Nom', { exact: true }).fill('Essono');
-  await page.getByLabel('E-mail').fill('awa.essono@exemple.org');
+  await page.getByLabel('E-mail', { exact: true }).fill('awa.essono@exemple.org');
   await page.locator('[data-etape="1"]').getByLabel('Téléphone').fill('+241 60 11 11 11');
   await page.getByRole('button', { name: 'Continuer' }).click();
 
@@ -124,7 +124,7 @@ test('Pass Partenaire Or (grille validée) : billet nominatif à QR code et kit 
 
   await page.getByLabel('Prénom').fill('Jean');
   await page.getByLabel('Nom', { exact: true }).fill('Mba');
-  await page.getByLabel('E-mail').fill('jean.mba@exemple.org');
+  await page.getByLabel('E-mail', { exact: true }).fill('jean.mba@exemple.org');
   await page.locator('[data-etape="1"]').getByLabel('Téléphone').fill('+241 60 22 22 22');
   await page.getByRole('button', { name: 'Continuer' }).click();
 
@@ -186,7 +186,7 @@ test('accueil du site : section boutique alignée (Billetterie, Articles officie
     const href = await section.getByRole('link', { name: nom }).getAttribute('href');
     expect(href).toMatch(/^\/boutique\/(billetterie|articles)\?utm_source=site-convention&utm_medium=accueil-boutique$/);
   }
-  const fiche = await section.locator('.billet').first().getByRole('link', { name: /^Réserver/ }).getAttribute('href');
+  const fiche = await section.locator('.billet').first().getByRole('link', { name: /^Commander maintenant/ }).getAttribute('href');
   expect(fiche).toMatch(/^\/boutique\/produits\/[^?]+\?utm_source=site-convention&utm_medium=accueil-boutique$/);
   // Pas de favori ni d'aperçu rapide (scripts de la boutique) sur l'accueil du site.
   await expect(section.locator('[data-favori], [data-apercu-rapide]')).toHaveCount(0);

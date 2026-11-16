@@ -4,7 +4,9 @@
   Page statique : la commande est lue dans le navigateur auprès de l'API de la boutique. C'est aussi
   la page où l'agrégateur de paiement renvoie le client. Billets nominatifs (QR code) à télécharger
   une fois le paiement confirmé, livraison des articles, état de la réservation ; mise à jour
-  automatique tant que le paiement est en attente. Commande payée : illustration de confirmation
+  automatique tant que le paiement est en attente. Paiement en espèces (16 novembre 2026) : caisse,
+  horaires, échéance et numéro à donner au caissier ; billets aussi envoyables par WhatsApp une
+  fois payés. Commande payée : illustration de confirmation
   (BQ-09, billet doré dans une enveloppe), décorative.
 */
 import { Image } from 'astro:assets';
@@ -37,6 +39,9 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
     billets: { numero: string; titulaire: string; lien: string }[];
     livraison: { mode: string; destination: string | null; fraisXAF: number; texte: string } | null;
     paiement: { moyen: string | null; detail: string | null };
+    especes: { lieu: string; horaires: string | null; echeance: string | null } | null;
+    canalBillets: 'email' | 'whatsapp' | 'email_whatsapp';
+    whatsapp: string | null;
     courrielsLocaux?: string[];
   };
 
@@ -48,6 +53,22 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
     a_verifier: { titre: 'Paiement en cours de vérification', texte: 'Votre paiement est arrivé après la fin de la réservation. L’équipe de la boutique vérifie votre commande et vous recontacte.' },
     remboursee: { titre: 'Commande remboursée', texte: 'Cette commande a été remboursée ; ses billets ne sont plus valables.' },
   };
+
+  const ESPECES_EXPIREE = { titre: 'Délai de paiement dépassé', texte: 'La commande n’a pas été réglée à la caisse dans le délai prévu : elle est annulée et ses places ont été rendues à la vente. Vous pouvez la refaire sur la boutique.' };
+  const jourHeure = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Libreville' });
+
+  /** Titre et texte de l'état, selon le moyen de paiement et le mode d'envoi des billets. */
+  function etatDe(c: Commande) {
+    if (c.especes && c.statut === 'en_attente') {
+      return { titre: 'À régler en espèces', texte: 'Votre commande est réservée. Présentez-vous à la caisse avec le numéro de commande ci-dessus : vos billets partent dès l’encaissement.' };
+    }
+    if (c.especes && c.statut === 'expiree') return ESPECES_EXPIREE;
+    if (c.statut === 'payee' && c.billets.length) {
+      const envoi = c.canalBillets === 'whatsapp' ? '' : ' Ils vous ont aussi été envoyés par e-mail.';
+      return { titre: LIBELLES.payee!.titre, texte: `Vos billets sont prêts.${envoi}` };
+    }
+    return LIBELLES[c.statut] ?? LIBELLES.en_attente!;
+  }
 
   const $ = (s: string) => document.querySelector<HTMLElement>(s)!;
   const echapper = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -66,7 +87,7 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
   }
 
   function afficher(c: Commande) {
-    const etat = LIBELLES[c.statut] ?? LIBELLES.en_attente!;
+    const etat = etatDe(c);
     document.title = `Commande ${c.numero} · Boutique · Convention CRN 2026`;
     $('[data-numero]').textContent = `Commande ${c.numero}`;
     $('[data-titre]').textContent = etat.titre;
@@ -74,10 +95,17 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
     $('[data-texte]').textContent = etat.texte;
 
     const blocs: string[] = [];
+    if (c.especes && c.statut === 'en_attente') {
+      blocs.push(`<section class="bloc bloc--especes"><h2>Paiement en espèces</h2><p class="especes__montant">${formaterXAF(c.totalXAF)}</p><dl class="especes"><dt>Caisse</dt><dd>${echapper(c.especes.lieu)}</dd><dt>Horaires</dt><dd>${echapper(c.especes.horaires ?? 'À annoncer')}</dd>${
+        c.especes.echeance ? `<dt>À régler avant le</dt><dd>${jourHeure.format(new Date(c.especes.echeance))}</dd>` : ''
+      }<dt>Numéro à donner</dt><dd><strong>${echapper(c.numero)}</strong></dd></dl><p class="aide">Seul le montant exact est encaissé. Passé ce délai, la commande est annulée et les places sont rendues à la vente.</p></section>`);
+    }
     if (c.billets.length > 0) {
       blocs.push(`<section class="bloc"><h2>Vos billets</h2><ul class="billets">${c.billets
         .map((b) => `<li><div><strong>${echapper(b.titulaire)}</strong><span>Billet ${echapper(b.numero)}</span></div><a class="button button--primary" href="${echapper(b.lien)}" target="_blank" rel="noopener">Télécharger (PDF)</a></li>`)
-        .join('')}</ul><p class="aide">Billet nominatif et non transférable : présentez-le (imprimé ou sur téléphone) avec une pièce d’identité. Le QR code est scanné à chaque entrée.</p></section>`);
+        .join('')}</ul>${
+        c.whatsapp ? `<p><a class="button button--secondary" href="${echapper(c.whatsapp)}" target="_blank" rel="noopener noreferrer">Recevoir mes billets sur WhatsApp</a></p>` : ''
+      }<p class="aide">Billet nominatif et non transférable : présentez-le (imprimé ou sur téléphone) avec une pièce d’identité. Le QR code est scanné à chaque entrée.</p></section>`);
     }
     const aLivrer = c.lignes.filter((l) => l.aLivrer);
     if (aLivrer.length > 0 && c.livraison) {
@@ -86,7 +114,9 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
     blocs.push(`<section class="bloc"><h2>Détail</h2><ul class="detail">${c.lignes
       .map((l) => `<li><span>${l.quantite} × ${echapper(l.libelle)}</span><span>${l.inclus ? 'inclus' : formaterXAF(l.quantite * l.prixUnitaireXAF)}</span></li>`)
       .join('')}${c.livraison ? `<li><span>Livraison</span><span>${c.livraison.fraisXAF ? formaterXAF(c.livraison.fraisXAF) : 'offerte'}</span></li>` : ''}</ul><p class="detail__total"><span>Total</span><strong>${formaterXAF(c.totalXAF)}</strong></p>${
-        c.statut === 'payee' && c.paiement.detail ? `<p class="aide">Payé par ${c.paiement.moyen === 'carte' ? 'carte bancaire' : 'Mobile Money'} : ${echapper(c.paiement.detail)}</p>` : ''
+        c.statut === 'payee' && c.paiement.detail
+          ? `<p class="aide">${c.paiement.moyen === 'especes' ? `Payé en espèces : ${echapper(c.paiement.detail.replace(/^Espèces — /, ''))}` : `Payé par ${c.paiement.moyen === 'carte' ? 'carte bancaire' : 'Mobile Money'} : ${echapper(c.paiement.detail)}`}</p>`
+          : ''
       }</section>`);
     if (c.courrielsLocaux?.length) {
       blocs.push(`<section class="bloc bloc--demo"><h2>E-mails envoyés (démonstration locale)</h2><ul>${c.courrielsLocaux
@@ -112,7 +142,7 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
             clearInterval(id);
             afficher(maj);
           }
-        }, 3000);
+        }, c.especes ? 15_000 : 3000);
       }
     }
   })();
@@ -166,6 +196,30 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
     margin-top: 0;
     font-size: var(--text-h4);
     color: var(--crn-bleu-nuit);
+  }
+
+  .especes__montant {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    font-size: var(--text-h2-mobile);
+    color: var(--crn-bleu-nuit);
+  }
+
+  .especes {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 16px;
+    margin: 0 0 var(--space-2);
+  }
+
+  .especes dt {
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .especes dd {
+    margin: 0;
   }
 
   .bloc--demo {
