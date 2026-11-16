@@ -21,14 +21,14 @@ est marqué **À annoncer** et doit rester ainsi tant qu'aucun arbitrage n'a ét
 | --- | --- | --- |
 | Une classe de l'Académie | 20 000 | Classe complète sur trois jours |
 | Pass Académie Intégral | 50 000 | Les trois classes |
-| Femme de Foi — Live | 10 000 | — |
+| Femme 2 Fois — Live | 10 000 | — |
 | J'ai soif | 5 000 | — |
 | Dîner des Élites | 100 000 | Lieu à annoncer |
 | Concert pour la vie — Standard | 5 000 | — |
 | Concert pour la vie — VIP | 25 000 | — |
 | Pagne officiel mixte | 10 000 | — |
 | Tee-shirt officiel | 10 000 | — |
-| Pass Convention Intégral | 120 000 jusqu’au 31 oct., 150 000 jusqu’au 30 nov., 180 000 ensuite | Académie (3 classes), Femme de Foi, J’ai soif, Dîner des Élites, Concert Standard ; tee-shirt inclus |
+| Pass Convention Intégral | 120 000 jusqu’au 31 oct., 150 000 jusqu’au 30 nov., 180 000 ensuite | Académie (3 classes), Femme 2 Fois, J’ai soif, Dîner des Élites, Concert Standard ; tee-shirt inclus |
 | Pass Génération (18 – 28 ans) | 50 000 | Accès de l’Intégral, hors Dîner des Élites |
 | Pass Génération Plus (18 – 28 ans) | 100 000 | Accès de l’Intégral |
 | Pass Partenaire Or | 500 000 | Accès intégral, Concert VIP, plénières réservées, Dîner des Élites, badge Or |
@@ -54,7 +54,7 @@ unique scanné à chaque entrée, aucun accès verbal.
     Rabenkogo · jeu. Wilson Ndi et Silas Makangu
 - **Ven. 11 déc.** — 6h–7h30 Matin de gloire spécial, Sainte Cène et prière pour les familles ;
   17h–21h Soirée africaine et prophétique (Nadia Jocktane, Wilson Ndi, Jek Kalombo)
-- **Sam. 12 déc.** — 9h–12h Femme de Foi — Live (Patricia Piebi) ; 14h–17h30 J'ai soif (Jek Kalombo,
+- **Sam. 12 déc.** — 9h–12h Femme 2 Fois — Live (Patricia Piebi) ; 14h–17h30 J'ai soif (Jek Kalombo,
   Carelle Ambouroué) ; 19h–22h Dîner des Élites (lieu à annoncer)
 - **Dim. 13 déc., lieu à déterminer** (plus au Nomad depuis le 11 novembre 2026) — 9h–12h Culte unique de toutes les églises (orateur à annoncer) ;
   13h–14h30 Cérémonie d'ordination ; 17h Concert pour la vie
@@ -81,7 +81,7 @@ Ne jamais afficher publiquement : repas DIAMANT, petit-déjeuner des orateurs, e
 | Nadia Jocktane | National |
 | François Rabenkogo | National |
 | Jek Kalombo | Prophétique |
-| Patricia Piebi | Plateforme (Femme de Foi — Live) |
+| Patricia Piebi | Plateforme (Femme 2 Fois — Live) |
 | Carelle Ambouroué | Plateforme (J'ai soif) |
 
 ## Artistes — Concert pour la vie (programmation exclusivement nationale et locale)

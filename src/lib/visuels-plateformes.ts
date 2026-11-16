@@ -5,7 +5,7 @@
   l'image est décorative (alt vide).
 
   DÉROGATION à la règle permanente n° 4 (« aucun visage généré par IA »), signalée par écrit puis
-  choisie par le Commanditaire le 5 novembre 2026 (docs/conformite.md) : « Femme de Foi — Live »
+  choisie par le Commanditaire le 5 novembre 2026 (docs/conformite.md) : « Femme 2 Fois — Live »
   (PL-02) et « J'ai soif » (PL-03) montrent des visages générés. Elle ne vaut que pour ces deux
   visuels ; orateurs et artistes restent en photos réelles.
 
@@ -84,7 +84,7 @@ const PAR_SEANCE: [RegExp, VisuelPlateforme][] = [
   [/^Plénière/, VISUELS.plenieres],
   [/^(Culte unique|Cérémonie d’ordination)/, VISUELS.culte],
   [/^Concert pour la vie/, VISUELS.concertStandard],
-  [/^Femme de Foi/, VISUELS.femmeDeFoi],
+  [/^Femme 2 Fois/, VISUELS.femmeDeFoi],
   [/^J’ai soif/, VISUELS.jaiSoif],
   [/^Dîner des Élites/, VISUELS.diner],
 ];
