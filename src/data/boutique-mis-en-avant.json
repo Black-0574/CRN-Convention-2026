@@ -5,6 +5,5 @@
   { "slug": "jai-soif", "nom": "J’ai soif", "image": null, "prixXAF": 5000, "badge": "Billet nominatif", "ordre": 4 },
   { "slug": "concert-vip", "nom": "Concert pour la vie — VIP", "image": null, "prixXAF": 25000, "badge": "Billet nominatif", "ordre": 5 },
   { "slug": "concert-standard", "nom": "Concert pour la vie — Standard", "image": null, "prixXAF": 5000, "badge": "Billet nominatif", "ordre": 6 },
-  { "slug": "tee-shirt-officiel", "nom": "Tee-shirt officiel", "image": null, "prixXAF": 10000, "badge": "Article officiel", "ordre": 7 },
   { "slug": "pagne-officiel", "nom": "Pagne officiel mixte", "image": null, "prixXAF": 10000, "badge": "Article officiel", "ordre": 8 }
 ]

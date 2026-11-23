@@ -10,6 +10,7 @@ import { lienProduit, type EmplacementBoutique } from '../../lib/boutique';
 import type { VueProduit } from '../../lib/boutique-api';
 import { formaterEUR, formaterXAF } from '../../lib/boutique-format';
 import { rayonDe, texteRecherche } from '../../lib/boutique-rayons';
+import { axesVariantes } from '../../lib/boutique-variantes';
 
 interface Props {
   produit: VueProduit;
@@ -20,6 +21,7 @@ interface Props {
 }
 const { produit: p, suivi, simple = false } = Astro.props;
 const [photo1, photo2] = p.photos;
+const axes = axesVariantes(p.type, p.variantes);
 const lien = suivi ? lienProduit(p.slug, suivi) : `/boutique/produits/${p.slug}`;
 ---
 
@@ -83,7 +85,12 @@ const lien = suivi ? lienProduit(p.slug, suivi) : `/boutique/produits/${p.slug}`
     <h2>{p.nom}</h2>
     {p.resume && <p>{p.resume}</p>}
     <p><strong>{p.prixXAF !== null ? formaterXAF(p.prixXAF) : 'À annoncer'}</strong>{p.prixXAF !== null && <span> · {formaterEUR(p.prixXAF)}</span>}</p>
-    {p.variantes.length > 1 && <p>Tailles : {p.variantes.map((v) => v.libelle).join(', ')}</p>}
+    {axes ? (
+      <>
+        <p>Couleurs&nbsp;: {axes.couleurs.join(', ')}</p>
+        <p>Tailles&nbsp;: {axes.tailles.join(', ')}</p>
+      </>
+    ) : p.variantes.length > 1 && <p>Tailles&nbsp;: {p.variantes.map((v) => v.libelle).join(', ')}</p>}
     <a class="button button--primary" href={lien}>Commander maintenant</a>
   </template>}
 </article>

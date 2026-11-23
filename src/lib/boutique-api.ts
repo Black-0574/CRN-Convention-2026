@@ -64,7 +64,9 @@ const BACK_OFFICE_PRODUCTION = 'https://admin.crn-convention2026.events';
 export const API_BOUTIQUE = (import.meta.env.PUBLIC_BOUTIQUE_API_URL?.trim() || BACK_OFFICE_PRODUCTION).replace(/\/$/, '');
 
 const REQUIS = Boolean(process.env.PAYLOAD_API_URL);
-const DELAI_MS = 15000;
+// Build de production : 15 s. En local, le serveur de développement du back-office peut mettre
+// plus longtemps à compiler sa première réponse : 60 s.
+const DELAI_MS = REQUIS ? 15000 : 60000;
 
 async function lire<T>(chemin: string): Promise<T> {
   const res = await fetch(`${API_BOUTIQUE}${chemin}`, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(DELAI_MS) });

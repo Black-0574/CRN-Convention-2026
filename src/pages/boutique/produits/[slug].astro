@@ -4,6 +4,7 @@ import CompteARebours from '../../../components/boutique/CompteARebours.astro';
 import Boutique from '../../../layouts/BoutiqueLayout.astro';
 import { catalogue, type VueProduit } from '../../../lib/boutique-api';
 import { creneau, dernierJour, formaterEUR, formaterXAF } from '../../../lib/boutique-format';
+import { axesVariantes } from '../../../lib/boutique-variantes';
 import { visuelProduit } from '../../../lib/visuels-plateformes';
 
 // Une page statique par produit du catalogue, générée au build (site statique), produits réservés
@@ -19,6 +20,12 @@ const maintenant = new Date();
 const palierCourant = p.paliers.find((pa) => new Date(pa.debut) <= maintenant && maintenant < new Date(pa.fin));
 const palierSuivant = p.paliers.find((pa) => new Date(pa.debut) > maintenant);
 const choixVariante = p.variantes.length > 1;
+// Variantes « Couleur — Taille » : couleur puis taille ; la photo suit la couleur choisie.
+const axes = axesVariantes(p.type, p.variantes);
+const photoDe = (couleur: string) => p.photos.find((ph) => ph.alt.toLowerCase().includes(`, ${couleur.toLowerCase()},`));
+const varianteInitiale = axes
+  ? (Object.entries(axes.par).find(([cle, v]) => cle.startsWith(`${axes.couleurs[0]}|`) && v.disponible !== 0)?.[1].id ?? null)
+  : null;
 const vendable = p.prixXAF !== null && !p.indisponible;
 // Sans photo du back-office, un ticket prend le visuel de sa plateforme (BQ-07), panier compris.
 const visuel = p.photos.length > 0 ? undefined : visuelProduit(p.slug);
@@ -105,7 +112,34 @@ const pourPanier = {
 
         {vendable ? (
           <form class="fiche__achat" data-formulaire-achat>
-            {choixVariante && (
+            {axes && (
+              <>
+                <fieldset class="fiche__variantes">
+                  <legend>Couleur</legend>
+                  <div class="fiche__pastilles">
+                    {axes.couleurs.map((c, i) => (
+                      <label class="fiche__variante">
+                        <input type="radio" name="couleur" value={c} checked={i === 0} data-photo={photoDe(c)?.fiche} data-alt={photoDe(c)?.alt} required />
+                        <span>{c}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset class="fiche__variantes">
+                  <legend>Taille</legend>
+                  <div class="fiche__pastilles">
+                    {axes.tailles.map((t) => (
+                      <label class="fiche__variante">
+                        <input type="radio" name="taille" value={t} checked={axes.par[`${axes.couleurs[0]}|${t}`]?.id === varianteInitiale} required />
+                        <span>{t}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <input type="hidden" name="variante" value={varianteInitiale ?? ''} data-variante-axes={JSON.stringify(axes.par)} />
+              </>
+            )}
+            {choixVariante && !axes && (
               <fieldset class="fiche__variantes">
                 <legend>{p.type === 'physique' ? 'Taille' : 'Choix'}</legend>
                 <div class="fiche__pastilles">
@@ -192,6 +226,32 @@ const pourPanier = {
     // panier garde le produit, le client peut y revenir pour en ajouter d'autres.
     location.assign('/boutique/commande');
   });
+
+  // Variantes « Couleur — Taille » : la combinaison choisie donne la variante ; la photo suit la couleur.
+  const champVariante = document.querySelector<HTMLInputElement>('[data-variante-axes]');
+  if (champVariante && formulaire) {
+    const par: Record<string, { id: number; disponible: number | null }> = JSON.parse(champVariante.dataset.varianteAxes ?? '{}');
+    const bouton = formulaire.querySelector<HTMLButtonElement>('.fiche__ajouter');
+    const confirmation = formulaire.querySelector('[data-confirmation]');
+    const mettreAJour = () => {
+      const champs = new FormData(formulaire);
+      const v = par[`${champs.get('couleur')}|${champs.get('taille')}`];
+      const disponible = Boolean(v) && v!.disponible !== 0;
+      champVariante.value = disponible ? String(v!.id) : '';
+      if (bouton) bouton.disabled = !disponible;
+      if (confirmation) confirmation.textContent = disponible || !champs.get('taille') ? '' : 'Cette taille n’est pas disponible dans cette couleur.';
+    };
+    formulaire.addEventListener('change', (e) => {
+      const cible = e.target as HTMLInputElement;
+      const principale = document.querySelector<HTMLImageElement>('[data-photo-principale]');
+      if (cible.name === 'couleur' && cible.dataset.photo && principale) {
+        principale.src = cible.dataset.photo;
+        principale.alt = cible.dataset.alt ?? principale.alt;
+      }
+      mettreAJour();
+    });
+    mettreAJour();
+  }
 
   document.querySelectorAll<HTMLButtonElement>('[data-miniature]').forEach((b) =>
     b.addEventListener('click', () => {
