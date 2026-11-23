@@ -179,7 +179,7 @@ const pourPanier = {
         {p.kit.length > 0 && (
           <section class="fiche__section">
             <h2>Kit inclus</h2>
-            <ul>{p.kit.map((k) => <li>{k.nom}{k.quantite > 1 ? ` × ${k.quantite}` : ''}{k.tailles.length > 0 ? ' (taille au choix de chaque titulaire)' : ''}</li>)}</ul>
+            <ul>{p.kit.map((k) => <li>{k.nom}{k.quantite > 1 ? ` × ${k.quantite}` : ''}{k.tailles.length > 0 ? (k.tailles[0]!.split(' — ').length === 3 ? ' (gamme, couleur et taille au choix de chaque titulaire)' : ' (taille au choix de chaque titulaire)') : ''}</li>)}</ul>
             <p class="fiche__note">À retirer sur le lieu de la Convention.</p>
           </section>
         )}

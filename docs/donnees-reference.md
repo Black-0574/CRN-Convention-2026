@@ -27,8 +27,8 @@ est marqué **À annoncer** et doit rester ainsi tant qu'aucun arbitrage n'a ét
 | Concert pour la vie — Standard | 5 000 | — |
 | Concert pour la vie — VIP | 25 000 | — |
 | Pagne officiel mixte | 10 000 | — |
-| Tee-shirt officiel | 10 000 | — |
-| Pass Convention Intégral | 120 000 jusqu’au 31 oct., 150 000 jusqu’au 30 nov., 180 000 ensuite | Académie (3 classes), Femme 2 Fois, J’ai soif, Dîner des Élites, Concert Standard ; tee-shirt inclus |
+| Tee-shirt officiel — Gammes 1 à 4 | 10 000 chacune (validé le 23 nov. 2026) | Couleurs selon la gamme, tailles S à 4XL |
+| Pass Convention Intégral | 120 000 jusqu’au 31 oct., 150 000 jusqu’au 30 nov., 180 000 ensuite | Académie (3 classes), Femme 2 Fois, J’ai soif, Dîner des Élites, Concert Standard ; tee-shirt inclus, au choix parmi les gammes 1 à 4 |
 | Pass Génération (18 – 28 ans) | 50 000 | Accès de l’Intégral, hors Dîner des Élites |
 | Pass Génération Plus (18 – 28 ans) | 100 000 | Accès de l’Intégral |
 | Pass Partenaire Or | 500 000 | Accès intégral, Concert VIP, plénières réservées, Dîner des Élites, badge Or |

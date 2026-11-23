@@ -210,7 +210,22 @@ const r = await lireReglages();
   function blocTitulaire(l: LignePanier, indexLigne: number, n: number) {
     const id = `t-${indexLigne}-${n}`;
     const tailles = l.kitTailles
-      .map((k) => `<label>Taille du ${echapper(k.nom.toLowerCase())} inclus<select name="${id}-taille" required><option value="">Choisir</option>${k.tailles.map((t) => `<option>${echapper(t)}</option>`).join('')}</select></label>`)
+      .map((k, ki) => {
+        // Tee-shirt au choix (« Gamme N — Couleur — Taille », 23 novembre 2026) : trois listes
+        // liées ; la combinaison choisie remplit le champ caché envoyé au serveur.
+        const niveaux = k.tailles.map((t) => t.split(' — '));
+        if (niveaux.length > 1 && niveaux.every((n) => n.length === 3)) {
+          const nom = echapper(k.nom.replace(/ au choix$/, '').toLowerCase());
+          const gammes = [...new Set(niveaux.map((n) => n[0]!))];
+          return `<div class="choix-kit" data-choix-kit="${ki}">
+            <label>Gamme du ${nom} inclus<select data-niveau="0" required><option value="">Choisir</option>${gammes.map((g) => `<option>${echapper(g)}</option>`).join('')}</select></label>
+            <label>Couleur du ${nom}<select data-niveau="1" required disabled><option value="">Choisir la gamme d’abord</option></select></label>
+            <label>Taille du ${nom}<select data-niveau="2" required disabled><option value="">Choisir la couleur d’abord</option></select></label>
+            <input type="hidden" name="${id}-taille">
+          </div>`;
+        }
+        return `<label>Taille du ${echapper(k.nom.toLowerCase())} inclus<select name="${id}-taille" required><option value="">Choisir</option>${k.tailles.map((t) => `<option>${echapper(t)}</option>`).join('')}</select></label>`;
+      })
       .join('');
     const age = l.ageMin ? `<label>Date de naissance<input name="${id}-naissance" type="date" required></label><p class="aide">Réservé aux ${l.ageMin}–${l.ageMax} ans au 6 décembre 2026 (déclaratif).</p>` : '';
     return `<fieldset class="titulaire" data-titulaire data-ligne="${indexLigne}" data-id="${id}">
@@ -232,6 +247,26 @@ const r = await lireReglages();
     if (conteneur.childElementCount) return;
     conteneur.innerHTML = panier.flatMap((l, i) => (l.nominatif ? Array.from({ length: l.quantite }, (_, n) => blocTitulaire(l, i, n)) : [])).join('');
     if (contientArticlesALivrer(panier)) chargerLivraison();
+    // Tee-shirt au choix : la gamme remplit les couleurs, la couleur remplit les tailles.
+    conteneur.addEventListener('change', (e) => {
+      const liste = e.target as HTMLSelectElement;
+      const choix = liste.closest<HTMLElement>('[data-choix-kit]');
+      if (!choix || liste.dataset.niveau === undefined) return;
+      const bloc = choix.closest<HTMLElement>('[data-titulaire]')!;
+      const tailles = panier[Number(bloc.dataset.ligne)]!.kitTailles[Number(choix.dataset.choixKit)]!.tailles;
+      const listes = [0, 1, 2].map((n) => choix.querySelector<HTMLSelectElement>(`[data-niveau="${n}"]`)!);
+      const niveau = Number(liste.dataset.niveau);
+      for (let n = niveau + 1; n < 3; n++) {
+        const prefixe = listes.slice(0, n).map((s) => s.value);
+        const valeurs = n === niveau + 1 && liste.value
+          ? [...new Set(tailles.map((t) => t.split(' — ')).filter((p) => prefixe.every((v, i) => p[i] === v)).map((p) => p[n]!))]
+          : [];
+        listes[n]!.innerHTML = `<option value="">${valeurs.length ? 'Choisir' : n === 1 ? 'Choisir la gamme d’abord' : 'Choisir la couleur d’abord'}</option>${valeurs.map((v) => `<option>${echapper(v)}</option>`).join('')}`;
+        listes[n]!.disabled = valeurs.length === 0;
+      }
+      const complet = listes.every((s) => s.value);
+      choix.querySelector<HTMLInputElement>('input[type="hidden"]')!.value = complet ? listes.map((s) => s.value).join(' — ') : '';
+    });
     conteneur.querySelector('[data-moi]')?.addEventListener('click', (e) => {
       const bloc = (e.currentTarget as HTMLElement).closest<HTMLElement>('[data-titulaire]')!;
       const id = bloc.dataset.id;
@@ -573,6 +608,11 @@ const r = await lireReglages();
     border-radius: var(--radius-card-sm);
     padding: var(--space-2);
     margin: 0 0 var(--space-2);
+  }
+
+  /* Tee-shirt au choix : les trois listes suivent la grille des champs du titulaire. */
+  .choix-kit {
+    display: contents;
   }
 
   .titulaire legend {

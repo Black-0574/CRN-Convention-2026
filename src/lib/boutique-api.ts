@@ -46,6 +46,9 @@ export interface VueProduit {
   apercu: boolean;
   /** Produit réservé aux tests des équipes : page par lien direct, absent des listes. */
   reserveTests?: boolean;
+  /** « Mis en avant » dans le back-office : en tête des articles de l'accueil. */
+  misEnAvant: boolean;
+  ordreMiseEnAvant: number;
   ordre: number;
 }
 

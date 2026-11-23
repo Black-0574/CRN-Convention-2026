@@ -25,7 +25,12 @@ const BILLETS_ACCUEIL = 4;
 const ARTICLES_ACCUEIL = 4;
 const c = await catalogue();
 const billets = (c?.produits ?? []).filter(estBillet).sort(parOrdre).slice(0, BILLETS_ACCUEIL);
-const articles = (c?.produits ?? []).filter((p) => !estBillet(p)).sort(parOrdre).slice(0, ARTICLES_ACCUEIL);
+// Articles « mis en avant » d'abord (les 4 gammes de tee-shirts, 23 novembre 2026), dans leur
+// ordre de mise en avant, puis les autres dans l'ordre de la boutique.
+const articles = (c?.produits ?? [])
+  .filter((p) => !estBillet(p))
+  .sort((a, b) => Number(b.misEnAvant) - Number(a.misEnAvant) || (a.misEnAvant && b.misEnAvant ? a.ordreMiseEnAvant - b.ordreMiseEnAvant : 0) || parOrdre(a, b))
+  .slice(0, ARTICLES_ACCUEIL);
 const alignee = billets.length + articles.length > 0;
 
 const { produits } = alignee ? { produits: [] } : await chargerMisEnAvant();
