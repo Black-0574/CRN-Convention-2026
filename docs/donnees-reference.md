@@ -47,12 +47,12 @@ unique scanné à chaque entrée, aucun accès verbal.
 - **Dim. 6 déc., 9h–12h** — Culte unique, Robert Ondoa
 - **Lun. 7 déc., 9h–15h** — Pastorale CRN ; **17h–21h** — Cérémonie d'ouverture, Dr. Mike Jocktane
 - **Mar. 8 au jeu. 10 déc.** (mêmes horaires chaque jour) :
-  - 6h–7h30 Matin de gloire
+  - 6h–8h Matin de gloire
   - 9h–12h30 Académie des Sciences Divines (voir détail ci-dessous)
   - 14h–16h Atmosphère prophétique — mar. Jek Kalombo · mer. Wilson Ndi · jeu. Nadia Jocktane
   - 17h–21h Plénière — mar. Robert Ondoa et Michel Ambouroué · mer. Silas Makangu et François
     Rabenkogo · jeu. Wilson Ndi et Silas Makangu
-- **Ven. 11 déc.** — 6h–7h30 Matin de gloire spécial, Sainte Cène et prière pour les familles ;
+- **Ven. 11 déc.** — 6h–8h Matin de gloire spécial, Sainte Cène et prière pour les familles ;
   17h–21h Soirée africaine et prophétique (Nadia Jocktane, Wilson Ndi, Jek Kalombo)
 - **Sam. 12 déc.** — 9h–12h Femme 2 Fois — Live (Patricia Piebi) ; 14h–17h30 J'ai soif (Jek Kalombo,
   Carelle Ambouroué) ; 19h–22h Dîner des Élites (lieu à annoncer)
@@ -91,7 +91,7 @@ Lisa Kate, Annick Nzie, Valentin Mouyama, Charlène Nzamba.
 
 ## Action sociale
 
-Collecte du 9 au 27 novembre 2026, distribution le 5 décembre 2026.
+Collecte du 10 au 27 novembre 2026 dans toutes les Églises CRN (denrées, produits d’hygiène, vêtements ; dons financiers bienvenus), distribution de kits alimentaires aux familles en difficulté le samedi 5 décembre 2026, 9h – 12h, Église Centrale, sous la supervision de l’Évêque Nadia Jocktane (texte du Commanditaire, 23 novembre 2026).
 
 ## Diaspora
 

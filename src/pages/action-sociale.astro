@@ -9,7 +9,7 @@ import CadreOr from '../components/shared/CadreOr.astro';
 
 <BaseLayout
   title="Action sociale"
-  description="Collecte de vivres et de vêtements pour l'action sociale de la Convention CRN 2026, du 9 au 27 novembre."
+  description="Distribution de kits alimentaires aux familles en difficulté le 5 décembre 2026, après une collecte de denrées, produits d’hygiène et vêtements du 10 au 27 novembre dans toutes les Églises CRN."
 >
   <PageHero
     eyebrow="De l’autel à la cité"
@@ -23,7 +23,7 @@ import CadreOr from '../components/shared/CadreOr.astro';
     <div class="info-grid" data-reveal-group>
       <CadreOr><InfoCard>
         <p class="info-card__label">Collecte</p>
-        <p class="info-card__value">Du 9 au 27 novembre 2026</p>
+        <p class="info-card__value">Du 10 au 27 novembre 2026, dans toutes les Églises CRN</p>
       </InfoCard></CadreOr>
       <CadreOr><InfoCard>
         <p class="info-card__label">Distribution</p>
@@ -31,9 +31,43 @@ import CadreOr from '../components/shared/CadreOr.astro';
       </InfoCard></CadreOr>
     </div>
 
+    <!-- Texte du Commanditaire (23 novembre 2026) ; vêtements ajoutés à la liste à sa demande. -->
+    <div class="appel">
+      <h2>Distribution de kits alimentaires aux familles en difficulté</h2>
+      <p>
+        Sous la supervision de la Responsable épiscopale de l’Évangélisation, des Actions sociales et
+        de l’Engagement sociétal, l’Évêque Nadia Jocktane, le Ministère Christ Révélé aux Nations
+        organise la distribution des kits alimentaires aux familles en difficulté le samedi
+        5&nbsp;décembre 2026 à l’Église Centrale.
+      </p>
+
+      <h2>Collecte de denrées alimentaires</h2>
+      <p>
+        Pour mener à bien cette action, une grande collecte de denrées alimentaires débute dès le mardi
+        10&nbsp;novembre 2026 dans l’ensemble de nos Églises.
+      </p>
+
+      <h3>Nous avons besoin de&nbsp;:</h3>
+      <ul>
+        <li>riz, pâtes&nbsp;;</li>
+        <li>huile, sucre&nbsp;;</li>
+        <li>boîtes de conserve (sardines, maquereau, cassoulet)&nbsp;;</li>
+        <li>lait en poudre&nbsp;;</li>
+        <li>savon et produits d’hygiène&nbsp;;</li>
+        <li>vêtements.</li>
+      </ul>
+      <p>Les dons financiers sont également les bienvenus.</p>
+
+      <p>
+        Chaque sac de riz, chaque litre d’huile, chaque boîte de conserve compte. Ensemble, apportons
+        espoir et dignité à nos frères et sœurs.
+      </p>
+      <p>Nous comptons sur la mobilisation de chacun pour la réussite de ce moment de charité.</p>
+      <p class="appel__benediction">Que Dieu vous bénisse.</p>
+    </div>
+
     <p class="info-footnote">
-      Les points de collecte seront précisés prochainement sur cette page. Pour soutenir cette action
-      depuis la diaspora, consultez la page <a href="/diaspora">Diaspora</a>.
+      Pour soutenir cette action depuis la diaspora, consultez la page <a href="/diaspora">Diaspora</a>.
     </p>
   </Section>
 </BaseLayout>
@@ -66,6 +100,37 @@ import CadreOr from '../components/shared/CadreOr.astro';
   .info-footnote {
     margin-top: var(--space-3);
     color: var(--color-text-muted);
+  }
+
+  .appel {
+    max-width: 72ch;
+    margin-top: var(--space-6);
+  }
+
+  .appel h2 {
+    font-family: var(--font-titrage);
+    color: var(--crn-bleu-nuit);
+    margin: var(--space-3) 0 var(--space-1);
+  }
+
+  .appel h2:first-child {
+    margin-top: 0;
+  }
+
+  .appel h3 {
+    color: var(--crn-bleu-nuit);
+    margin: var(--space-2) 0 var(--space-1);
+  }
+
+  .appel ul {
+    margin: 0 0 var(--space-2);
+    padding-left: 1.25em;
+  }
+
+  .appel__benediction {
+    font-family: var(--font-titrage);
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
   }
 
   @media (min-width: 768px) {
