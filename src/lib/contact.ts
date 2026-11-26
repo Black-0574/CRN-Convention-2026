@@ -11,3 +11,10 @@ export const hotline = {
   tel: 'tel:+24162705183',
   whatsapp: 'https://wa.me/24162705183',
 };
+
+/** Contact de la Boutique de la Convention (barre de la boutique), 26 novembre 2026. */
+export const contactBoutique = {
+  email: 'boutique@crn-convention2026.events',
+  telAffichage: '074 08 61 73',
+  tel: 'tel:+24174086173',
+};

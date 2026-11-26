@@ -7,6 +7,7 @@
 */
 import BaseLayout from './BaseLayout.astro';
 import TiroirPanier from '../components/boutique/TiroirPanier.astro';
+import ContactBoutique from '../components/boutique/ContactBoutique.astro';
 
 interface Props {
   title: string;
@@ -23,6 +24,7 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} Â
   <div class="b-barre">
     <div class="container b-barre__inner">
       <a class="b-barre__titre" href="/boutique">La Boutique officielle de la Convention 2026</a>
+      <ContactBoutique class="b-barre__contact" />
       <nav class="b-barre__nav" aria-label="Rubriques de la boutique">
         <a href="/boutique/billetterie?categorie=pass">Pass</a>
         <a href="/boutique/billetterie?categorie=tickets">Tickets</a>
@@ -34,6 +36,10 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} Â
         <span class="b-barre__compteur" data-compteur-panier hidden>0</span>
       </button>
     </div>
+  </div>
+  <!-- Mobile : le contact dÃ©file avec la page, pour garder la partie fixÃ©e de l'Ã©cran courte. -->
+  <div class="b-contact-mobile">
+    <div class="container"><ContactBoutique /></div>
   </div>
 
   <slot />
@@ -138,6 +144,29 @@ const titre = title === 'Accueil' ? 'La Boutique de la Convention' : `${title} Â
     .b-barre__titre {
       font-size: 20px;
       flex: 0 1 auto;
+    }
+  }
+
+  /* Contact de la boutique : dans la barre, sur sa propre ligne sous le titre, Ã  partir de la
+     tablette ; sur mobile, dans une bande qui dÃ©file juste sous la barre. */
+  .b-barre__inner :global(.b-barre__contact) {
+    display: none;
+    order: 2;
+    width: 100%;
+  }
+
+  .b-contact-mobile {
+    background: var(--crn-blanc);
+    border-bottom: 1px solid var(--crn-gris-clair);
+  }
+
+  @media (min-width: 768px) {
+    .b-barre__inner :global(.b-barre__contact) {
+      display: flex;
+    }
+
+    .b-contact-mobile {
+      display: none;
     }
   }
 

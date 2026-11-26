@@ -1,0 +1,58 @@
+---
+/*
+  Contact de la Boutique de la Convention (e-mail et téléphone, 26 novembre 2026), affiché dans la
+  barre de la boutique (BoutiqueLayout).
+*/
+import Icon from '../shared/Icon.astro';
+import { contactBoutique } from '../../lib/contact';
+
+interface Props {
+  class?: string;
+}
+const { class: classe } = Astro.props;
+---
+
+<ul class:list={['contact-boutique', classe]} aria-label="Contacter la boutique">
+  <li>
+    <a href={`mailto:${contactBoutique.email}`}>
+      <Icon name="mail" size={18} />
+      <span>{contactBoutique.email}</span>
+    </a>
+  </li>
+  <li>
+    <a href={contactBoutique.tel} aria-label={`Appeler la boutique, ${contactBoutique.telAffichage}`}>
+      <Icon name="phone" size={18} />
+      <span aria-hidden="true">{contactBoutique.telAffichage}</span>
+    </a>
+  </li>
+</ul>
+
+<style>
+  .contact-boutique {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .contact-boutique a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--tap-target-min);
+    color: var(--crn-bleu-nuit);
+    font-size: 16px;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-boutique a:hover {
+    text-decoration: underline;
+  }
+
+  .contact-boutique :global(svg) {
+    flex-shrink: 0;
+  }
+</style>
