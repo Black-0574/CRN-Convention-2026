@@ -40,6 +40,8 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
     livraison: { mode: string; destination: string | null; fraisXAF: number; texte: string } | null;
     paiement: { moyen: string | null; detail: string | null };
     especes: { lieu: string; horaires: string | null; echeance: string | null } | null;
+    codeMarchand: { operateur: string; nom: string; ussd: string; codeCommercant: string; etapes: string[]; echeance: string | null; preuveRecue: boolean; idTransaction: string | null } | null;
+    alternativeCodeMarchand: { id: string; nom: string }[] | null;
     canalBillets: 'email' | 'whatsapp' | 'email_whatsapp';
     whatsapp: string | null;
     courrielsLocaux?: string[];
@@ -63,6 +65,12 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
       return { titre: 'À régler en espèces', texte: 'Votre commande est réservée. Présentez-vous à la caisse avec le numéro de commande ci-dessus : vos billets partent dès l’encaissement.' };
     }
     if (c.especes && c.statut === 'expiree') return ESPECES_EXPIREE;
+    if (c.codeMarchand && c.statut === 'en_attente') {
+      return c.codeMarchand.preuveRecue
+        ? { titre: 'Paiement en cours de vérification', texte: 'Merci, votre preuve de paiement est arrivée. La boutique vérifie la réception du paiement : vos billets partent dès la validation.' }
+        : { titre: `À régler par ${c.codeMarchand.nom}`, texte: 'Votre commande est réservée. Payez depuis votre téléphone en suivant les étapes ci-dessous, puis envoyez votre preuve de paiement.' };
+    }
+    if (c.codeMarchand && c.statut === 'expiree') return ESPECES_EXPIREE;
     if (c.statut === 'payee' && c.billets.length) {
       const envoi = c.canalBillets === 'whatsapp' ? '' : ' Ils vous ont aussi été envoyés par e-mail.';
       return { titre: LIBELLES.payee!.titre, texte: `Vos billets sont prêts.${envoi}` };
@@ -100,6 +108,24 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
         c.especes.echeance ? `<dt>À régler avant le</dt><dd>${jourHeure.format(new Date(c.especes.echeance))}</dd>` : ''
       }<dt>Numéro à donner</dt><dd><strong>${echapper(c.numero)}</strong></dd></dl><p class="aide">Seul le montant exact est encaissé. Passé ce délai, la commande est annulée et les places sont rendues à la vente.</p></section>`);
     }
+    // Mobile Money par code marchand (28 novembre 2026) : procédure, puis preuve de paiement.
+    if (c.codeMarchand && c.statut === 'en_attente') {
+      const cm = c.codeMarchand;
+      blocs.push(`<section class="bloc bloc--especes"><h2>Paiement ${echapper(cm.nom)}</h2><p class="especes__montant">${formaterXAF(c.totalXAF)}</p><ol class="etapes-ussd">${cm.etapes
+        .map((e) => `<li>${echapper(e).replace(/( : |: )(.+)$/, (_, sep, valeur) => `${sep}<strong class="valeur-ussd">${valeur}</strong>`)}</li>`)
+        .join('')}</ol>${cm.echeance && !cm.preuveRecue ? `<p class="aide">À régler avant le ${jourHeure.format(new Date(cm.echeance))} : passé ce délai, la commande est annulée et les places sont rendues à la vente.</p>` : ''}</section>`);
+      blocs.push(`<section class="bloc"><h2>${cm.preuveRecue ? 'Preuve de paiement envoyée' : 'Envoyer ma preuve de paiement'}</h2>${
+        cm.preuveRecue
+          ? `<p>Reçue${cm.idTransaction ? ` (transaction <strong>${echapper(cm.idTransaction)}</strong>)` : ''}. En cas d’erreur, vous pouvez en envoyer une autre.</p>`
+          : '<p>Après le paiement, vous recevez un SMS de confirmation : envoyez-en la capture et l’identifiant de transaction qu’il indique.</p>'
+      }<form class="preuve" data-preuve novalidate><label>Capture du SMS de confirmation<input type="file" name="capture" accept="image/*" required /></label><label>Identifiant de transaction<input type="text" name="idTransaction" autocomplete="off" required /></label><p class="message-erreur" data-preuve-erreur role="alert" hidden></p><button type="submit" class="button button--primary">Envoyer ma preuve</button></form></section>`);
+    }
+    // Paiement en ligne en attente : alternative par code marchand, si le paiement ne passe pas.
+    if (c.alternativeCodeMarchand?.length) {
+      blocs.push(`<section class="bloc"><h2>Le paiement en ligne ne passe pas ?</h2><p>Payez depuis votre téléphone avec le code marchand de votre opérateur, puis envoyez la capture du SMS de confirmation. Vos places restent réservées 48&nbsp;heures.</p><div class="alternatives">${c.alternativeCodeMarchand
+        .map((o) => `<button type="button" class="button button--secondary" data-code-marchand="${echapper(o.id)}">Payer par ${echapper(o.nom)}</button>`)
+        .join('')}</div><p class="message-erreur" data-alternative-erreur role="alert" hidden></p></section>`);
+    }
     if (c.billets.length > 0) {
       blocs.push(`<section class="bloc"><h2>Vos billets</h2><ul class="billets">${c.billets
         .map((b) => `<li><div><strong>${echapper(b.titulaire)}</strong><span>Billet ${echapper(b.numero)}</span></div><a class="button button--primary" href="${echapper(b.lien)}" target="_blank" rel="noopener">Télécharger (PDF)</a></li>`)
@@ -115,7 +141,13 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
       .map((l) => `<li><span>${l.quantite} × ${echapper(l.libelle)}</span><span>${l.inclus ? 'inclus' : formaterXAF(l.quantite * l.prixUnitaireXAF)}</span></li>`)
       .join('')}${c.livraison ? `<li><span>Livraison</span><span>${c.livraison.fraisXAF ? formaterXAF(c.livraison.fraisXAF) : 'offerte'}</span></li>` : ''}</ul><p class="detail__total"><span>Total</span><strong>${formaterXAF(c.totalXAF)}</strong></p>${
         c.statut === 'payee' && c.paiement.detail
-          ? `<p class="aide">${c.paiement.moyen === 'especes' ? `Payé en espèces : ${echapper(c.paiement.detail.replace(/^Espèces — /, ''))}` : `Payé par ${c.paiement.moyen === 'carte' ? 'carte bancaire' : 'Mobile Money'} : ${echapper(c.paiement.detail)}`}</p>`
+          ? `<p class="aide">${
+              c.paiement.moyen === 'especes'
+                ? `Payé en espèces : ${echapper(c.paiement.detail.replace(/^Espèces — /, ''))}`
+                : c.paiement.moyen === 'code_marchand'
+                  ? `Payé par code marchand : ${echapper(c.paiement.detail)}`
+                  : `Payé par ${c.paiement.moyen === 'carte' ? 'carte bancaire' : 'Mobile Money'} : ${echapper(c.paiement.detail)}`
+            }</p>`
           : ''
       }</section>`);
     if (c.courrielsLocaux?.length) {
@@ -127,6 +159,74 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
     // Commande payée : le panier a rempli son office.
     if (c.statut === 'payee') vider();
   }
+
+  const actionBoutique = (chemin: string) => `${API_BOUTIQUE}/api/boutique/commandes/${encodeURIComponent(numero)}/${chemin}?t=${encodeURIComponent(jeton)}`;
+
+  /** Capture réduite dans le navigateur (JPEG, 1 600 px au plus) : envoi léger en 3G ; sinon le fichier tel quel. */
+  async function reduire(fichier: File): Promise<Blob> {
+    try {
+      const image = await createImageBitmap(fichier);
+      const echelle = Math.min(1, 1600 / Math.max(image.width, image.height));
+      const toile = document.createElement('canvas');
+      toile.width = Math.round(image.width * echelle);
+      toile.height = Math.round(image.height * echelle);
+      toile.getContext('2d')!.drawImage(image, 0, 0, toile.width, toile.height);
+      return await new Promise<Blob>((ok, ko) => toile.toBlob((b) => (b ? ok(b) : ko(new Error('conversion'))), 'image/jpeg', 0.82));
+    } catch {
+      return fichier;
+    }
+  }
+
+  // Code marchand (28 novembre 2026) : choix depuis le suivi, puis envoi de la preuve.
+  $('[data-contenu]').addEventListener('click', async (e) => {
+    const bouton = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-code-marchand]');
+    if (!bouton) return;
+    const erreur = $('[data-alternative-erreur]');
+    bouton.disabled = true;
+    try {
+      const res = await fetch(actionBoutique('code-marchand'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ operateur: bouton.dataset.codeMarchand }) });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.erreur ?? 'Paiement par code marchand impossible.');
+      const maj = await lire();
+      if (maj) afficher(maj);
+    } catch (err) {
+      erreur.textContent = (err as Error).message;
+      erreur.hidden = false;
+      bouton.disabled = false;
+    }
+  });
+
+  $('[data-contenu]').addEventListener('submit', async (e) => {
+    const form = (e.target as HTMLElement).closest<HTMLFormElement>('[data-preuve]');
+    if (!form) return;
+    e.preventDefault();
+    const erreur = form.querySelector<HTMLElement>('[data-preuve-erreur]')!;
+    const fichier = form.querySelector<HTMLInputElement>('[name="capture"]')!.files?.[0];
+    const idTransaction = form.querySelector<HTMLInputElement>('[name="idTransaction"]')!.value.trim();
+    const montrer = (m: string) => {
+      erreur.textContent = m;
+      erreur.hidden = false;
+    };
+    if (!fichier) return montrer('Joignez la capture du SMS de confirmation.');
+    if (idTransaction.length < 4) return montrer('Indiquez l’identifiant de transaction reçu par SMS.');
+    const bouton = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    bouton.disabled = true;
+    bouton.textContent = 'Envoi en cours…';
+    try {
+      const donnees = new FormData();
+      donnees.append('capture', await reduire(fichier), 'capture.jpg');
+      donnees.append('idTransaction', idTransaction);
+      const res = await fetch(actionBoutique('preuve'), { method: 'POST', body: donnees });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.erreur ?? 'Envoi impossible, réessayez.');
+      const maj = await lire();
+      if (maj) afficher(maj);
+    } catch (err) {
+      montrer((err as Error).message);
+      bouton.disabled = false;
+      bouton.textContent = 'Envoyer ma preuve';
+    }
+  });
 
   (async () => {
     const c = await lire();
@@ -142,7 +242,7 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
             clearInterval(id);
             afficher(maj);
           }
-        }, c.especes ? 15_000 : 3000);
+        }, c.especes || c.codeMarchand || c.alternativeCodeMarchand ? 15_000 : 3000);
       }
     }
   })();
@@ -220,6 +320,66 @@ import illustrationMerci from '../../assets/images/boutique-habillage/confirmati
 
   .especes dd {
     margin: 0;
+  }
+
+  /* Code marchand : étapes USSD et envoi de la preuve. */
+  .etapes-ussd {
+    margin: 0 0 var(--space-2);
+    padding-left: 24px;
+    display: grid;
+    gap: 6px;
+    font-size: var(--text-p);
+  }
+
+  .preuve {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .preuve label {
+    display: grid;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .preuve input[type='text'],
+  .preuve input[type='file'] {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    min-height: var(--tap-target-min);
+    padding: 8px 12px;
+    border: 1.5px solid var(--crn-gris-clair);
+    border-radius: var(--radius-control);
+    background: var(--crn-blanc);
+    font: inherit;
+    font-weight: 400;
+    color: var(--crn-noir);
+  }
+
+  .preuve label {
+    min-width: 0;
+  }
+
+  /* Valeur à saisir au téléphone (code, montant, référence) : jamais coupée. */
+  .valeur-ussd {
+    white-space: nowrap;
+    color: var(--crn-bleu-nuit);
+  }
+
+  .alternatives {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .message-erreur {
+    color: var(--crn-bleu-nuit);
+    font-weight: 700;
+    border-left: 3px solid var(--crn-or);
+    padding-left: 12px;
   }
 
   .bloc--demo {

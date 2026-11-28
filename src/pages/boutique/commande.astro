@@ -102,7 +102,25 @@ const r = await lireReglages();
                 <input type="radio" name="moyen" value="especes" />
                 <span><strong>Espèces</strong> — à la caisse de la <span data-especes-lieu></span><br /><span data-especes-detail></span></span>
               </label>
+              <label class="livraison__mode" data-moyen-code-marchand hidden>
+                <input type="radio" name="moyen" value="code_marchand" />
+                <span><strong>Mobile Money — code marchand</strong> — depuis votre téléphone<br />Vous payez avec le menu de votre opérateur (Airtel Money, Moov Money), puis envoyez la capture du SMS de confirmation : vos billets partent après vérification. Places et prix réservés <span data-code-marchand-delai></span>&nbsp;heures.</span>
+              </label>
             </div>
+            <fieldset class="operateurs" data-operateurs hidden>
+              <legend>Votre opérateur</legend>
+              <label class="operateur">
+                <input type="radio" name="operateur" value="airtel" />
+                <img src="/images/paiement/airtel-money.webp" alt="" width="48" height="48" />
+                <span>Airtel Money</span>
+              </label>
+              <label class="operateur">
+                <input type="radio" name="operateur" value="moov" />
+                <img src="/images/paiement/moov-money.webp" alt="" width="48" height="48" />
+                <img src="/images/paiement/mobicash.webp" alt="" width="48" height="48" />
+                <span>Moov Money (Mobicash)</span>
+              </label>
+            </fieldset>
             <label class="champ-seul" data-email-paiement hidden>
               E-mail<input name="emailPaiement" type="email" autocomplete="email" />
               <span class="aide">Notre partenaire de paiement l’exige pour un paiement Mobile Money.</span>
@@ -436,7 +454,13 @@ const r = await lireReglages();
   async function chargerEspeces() {
     try {
       const res = await fetch(`${API_BOUTIQUE}/api/boutique/reglages`);
-      const r = res.ok ? ((await res.json()).especes as Especes | undefined) : undefined;
+      const reglages = res.ok ? ((await res.json()) as { especes?: Especes; codeMarchand?: { actif: boolean; delaiHeures: number } }) : {};
+      // Mobile Money par code marchand (28 novembre 2026), si la boutique le propose.
+      if (reglages.codeMarchand?.actif) {
+        $('[data-code-marchand-delai]').textContent = String(reglages.codeMarchand.delaiHeures);
+        $('[data-moyen-code-marchand]').hidden = false;
+      }
+      const r = reglages.especes;
       if (!r?.actif) return;
       $('[data-especes-lieu]').textContent = r.lieu;
       $('[data-especes-detail]').textContent = `Horaires\u00a0: ${r.horaires ?? 'à annoncer'}. Places et prix réservés ${r.delaiJours}\u00a0jours\u00a0; vos billets partent dès l’encaissement.`;
@@ -449,10 +473,13 @@ const r = await lireReglages();
   const moyenChoisi = () => document.querySelector<HTMLInputElement>('[name="moyen"]:checked')?.value ?? 'en_ligne';
   function majMoyen() {
     const especes = moyenChoisi() === 'especes';
+    const codeMarchand = moyenChoisi() === 'code_marchand';
     const sansEmail = !etat.client?.email;
-    $('[data-email-paiement]').hidden = especes || !sansEmail;
-    $<HTMLInputElement>('[name="emailPaiement"]').required = !especes && sansEmail;
-    $('[data-payer]').textContent = especes ? 'Valider : je paie en espèces' : `Payer ${formaterXAF(etat.total ?? total)}`;
+    $('[data-email-paiement]').hidden = especes || codeMarchand || !sansEmail;
+    $<HTMLInputElement>('[name="emailPaiement"]').required = !especes && !codeMarchand && sansEmail;
+    $('[data-operateurs]').hidden = !codeMarchand;
+    document.querySelectorAll<HTMLInputElement>('[name="operateur"]').forEach((r) => (r.required = codeMarchand));
+    $('[data-payer]').textContent = especes ? 'Valider : je paie en espèces' : codeMarchand ? 'Valider : je paie par code marchand' : `Payer ${formaterXAF(etat.total ?? total)}`;
   }
   document.querySelectorAll('[name="moyen"]').forEach((r) => r.addEventListener('change', majMoyen));
 
@@ -462,6 +489,24 @@ const r = await lireReglages();
     if (!valider(form)) return;
     const bouton = form.querySelector<HTMLButtonElement>('[data-payer]')!;
     bouton.disabled = true;
+    if (moyenChoisi() === 'code_marchand') {
+      try {
+        const operateur = document.querySelector<HTMLInputElement>('[name="operateur"]:checked')?.value;
+        if (!operateur) throw new Error('Choisissez votre opérateur : Airtel Money ou Moov Money.');
+        const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/code-marchand?t=${etat.jeton}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ operateur }),
+        });
+        const donnees = await res.json();
+        if (!res.ok) throw new Error(donnees.erreur ?? 'Paiement par code marchand impossible.');
+        location.href = `/boutique/suivi?commande=${encodeURIComponent(etat.numero ?? '')}&t=${encodeURIComponent(etat.jeton ?? '')}`;
+      } catch (err) {
+        montrerErreur((err as Error).message);
+        bouton.disabled = false;
+      }
+      return;
+    }
     if (moyenChoisi() === 'especes') {
       try {
         const res = await fetch(`${API_BOUTIQUE}/api/boutique/commandes/${etat.numero}/especes?t=${etat.jeton}`, { method: 'POST' });
@@ -704,6 +749,46 @@ const r = await lireReglages();
   }
 
   .livraison__mode:has(input:checked) {
+    border-color: var(--crn-bleu-nuit);
+    box-shadow: inset 0 0 0 1px var(--crn-bleu-nuit);
+  }
+
+  /* Code marchand : choix de l'opérateur (logos hébergés sur le site, NF-CNV-001). */
+  .operateurs {
+    display: grid;
+    gap: 8px;
+    margin: var(--space-2) 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .operateurs legend {
+    font-weight: 700;
+    color: var(--crn-bleu-nuit);
+    margin-bottom: 8px;
+  }
+
+  .operateur {
+    display: flex !important;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px !important;
+    min-height: var(--tap-target-min);
+    padding: 8px 16px;
+    border: 1.5px solid var(--crn-gris-clair);
+    border-radius: var(--radius-control);
+    background: var(--crn-blanc);
+    font-weight: 700 !important;
+    cursor: pointer;
+  }
+
+  .operateur img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+  }
+
+  .operateur:has(input:checked) {
     border-color: var(--crn-bleu-nuit);
     box-shadow: inset 0 0 0 1px var(--crn-bleu-nuit);
   }
